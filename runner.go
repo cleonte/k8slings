@@ -12,12 +12,49 @@ const notDoneMarker = "I AM NOT DONE"
 
 var errNotDone = errors.New("remove the `I AM NOT DONE` line when you think you're finished")
 
+// skipKinds are namespaced resources we never delete by hand: they are either
+// controller-managed or noise.
+var skipKinds = map[string]bool{
+	"events": true, "events.events.k8s.io": true, "endpoints": true,
+	"endpointslices.discovery.k8s.io": true, "leases.coordination.k8s.io": true,
+}
+
+var deletableKinds string
+
+// namespacedKinds lists every deletable namespaced resource type the cluster
+// knows about (cached), so new exercises never need a hand-maintained list.
+func namespacedKinds() string {
+	if deletableKinds != "" {
+		return deletableKinds
+	}
+	out, err := kubectl("api-resources", "--verbs=delete", "--namespaced", "-o", "name")
+	if err != nil {
+		return "all,cm,secret,sa,role,rolebinding,networkpolicy,pvc"
+	}
+	var kinds []string
+	for _, k := range strings.Fields(out) {
+		if !skipKinds[k] {
+			kinds = append(kinds, k)
+		}
+	}
+	deletableKinds = strings.Join(kinds, ",")
+	return deletableKinds
+}
+
 // cleanNamespace wipes everything the learner might have created so each run
 // starts from the manifest alone (and renamed objects can't linger).
 func cleanNamespace(ns string) {
 	kubectl("create", "namespace", ns) // ignore AlreadyExists
-	kubectl("delete", "all,cm,secret,sa,role,rolebinding,networkpolicy,pvc",
+	kubectl("delete", namespacedKinds(),
 		"--all", "-n", ns, "--now", "--wait=true", "--timeout=60s")
+	// Deleting sa --all removes "default"; bare Pods are rejected until the
+	// controller recreates it, so wait for it.
+	for i := 0; i < 30; i++ {
+		if _, err := kubectl("get", "sa", "default", "-n", ns); err == nil {
+			return
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
 }
 
 // Run applies the learner's manifest and polls the exercise's check until it
