@@ -1,0 +1,14 @@
+# I AM NOT DONE  (delete this line when you think the exercise is fixed)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: site
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: 8080
+        periodSeconds: 3

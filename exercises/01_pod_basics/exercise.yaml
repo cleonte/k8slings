@@ -1,0 +1,11 @@
+# I AM NOT DONE  (delete this line when you think the exercise is fixed)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello
+spec:
+  containers:
+    - name: web
+      image: ngnix:1.27
+      ports:
+        - containerPort: 80
