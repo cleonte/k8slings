@@ -231,9 +231,10 @@ var registry = []*Exercise{
 }
 
 func findExercise(id string) *Exercise {
+	num := strings.TrimLeft(id, "0")
 	for _, ex := range registry {
-		if ex.ID == id || strings.TrimLeft(strings.SplitN(ex.ID, "_", 2)[0], "0") == id ||
-			strings.SplitN(ex.ID, "_", 2)[1] == id {
+		parts := strings.SplitN(ex.ID, "_", 2)
+		if ex.ID == id || strings.TrimLeft(parts[0], "0") == num || parts[1] == id {
 			return ex
 		}
 	}
