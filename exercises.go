@@ -53,6 +53,23 @@ func (e *Env) logs(pod string) (string, error) {
 	return out, nil
 }
 
+// exec runs a command inside a pod (read-only for the cluster state).
+func (e *Env) exec(pod, container string, cmd ...string) (string, error) {
+	args := []string{"exec", pod, "-n", e.NS}
+	if container != "" {
+		args = append(args, "-c", container)
+	}
+	return kubectl(append(args, append([]string{"--"}, cmd...)...)...)
+}
+
+// canI reports the answer of `kubectl auth can-i` for a ServiceAccount of the
+// exercise namespace: "yes" or "no".
+func (e *Env) canI(sa, verb, resource, ns string) string {
+	who := fmt.Sprintf("system:serviceaccount:%s:%s", e.NS, sa)
+	out, _ := kubectl("auth", "can-i", verb, resource, "-n", ns, "--as", who)
+	return strings.TrimSpace(out)
+}
+
 func (e *Env) podRunning(pod string) error {
 	phase, err := e.get("pod/"+pod, "{.status.phase}")
 	if err != nil {
@@ -224,6 +241,166 @@ var registry = []*Exercise{
 			}
 			if can("delete") != "no" {
 				return fmt.Errorf("serviceaccount reader must NOT be able to delete pods (least privilege)")
+			}
+			return nil
+		},
+	},
+	{
+		ID: "12_secrets", Title: "Secrets: inject a credential", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			ref, err := e.get("pod/app", "{.spec.containers[0].env[0].valueFrom.secretKeyRef.name}")
+			if err != nil {
+				return err
+			}
+			if ref != "db-creds" {
+				return fmt.Errorf("pod app should read DB_PASSWORD from Secret db-creds via secretKeyRef, has %q", ref)
+			}
+			if err := e.podRunning("app"); err != nil {
+				return err
+			}
+			out, err := e.logs("app")
+			if err != nil {
+				return err
+			}
+			if !strings.Contains(out, "password-length=11") {
+				return fmt.Errorf("pod logs should contain 'password-length=11', got %q", firstLine(out))
+			}
+			return nil
+		},
+	},
+	{
+		ID: "13_pvc_storage", Title: "Storage: a claim that binds", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			if err := e.expect("pvc/notes", "{.status.phase}", "Bound", "PVC notes phase"); err != nil {
+				return err
+			}
+			if err := e.podRunning("writer"); err != nil {
+				return err
+			}
+			out, err := e.logs("writer")
+			if err != nil {
+				return err
+			}
+			if !strings.Contains(out, "saved") {
+				return fmt.Errorf("pod logs should contain 'saved', got %q", firstLine(out))
+			}
+			return nil
+		},
+	},
+	{
+		ID: "14_init_container", Title: "Pods: init container and shared volume", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			if err := e.expect("pod/web", "{.status.initContainerStatuses[0].state.terminated.exitCode}", "0", "init container exit code"); err != nil {
+				return err
+			}
+			if err := e.podRunning("web"); err != nil {
+				return err
+			}
+			out, err := e.exec("web", "nginx", "cat", "/usr/share/nginx/html/index.html")
+			if err != nil {
+				return fmt.Errorf("cannot read index.html in the nginx container: %s", firstLine(out))
+			}
+			if !strings.Contains(out, "hello from init") {
+				return fmt.Errorf("nginx should serve the file written by the init container, got %q", firstLine(out))
+			}
+			return nil
+		},
+	},
+	{
+		ID: "15_scheduling", Title: "Scheduling: nodeSelector and affinity", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			sel, err := e.get("deploy/batch", "{.spec.template.spec.nodeSelector}")
+			if err != nil {
+				return err
+			}
+			aff, _ := e.get("deploy/batch", "{.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution}")
+			if sel == "" || aff == "" {
+				return fmt.Errorf("keep both the nodeSelector and the required nodeAffinity, fix them instead of deleting them")
+			}
+			return e.expect("deploy/batch", "{.status.readyReplicas}", "2", "ready replicas of deployment batch")
+		},
+	},
+	{
+		ID: "16_networkpolicy", Title: "NetworkPolicy: allow only the client", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			if _, err := e.get("networkpolicy/default-deny", "{.metadata.name}"); err != nil {
+				return fmt.Errorf("keep the default-deny policy")
+			}
+			for _, p := range []string{"server", "client", "intruder"} {
+				if err := e.podRunning(p); err != nil {
+					return err
+				}
+			}
+			if out, err := e.exec("client", "", "wget", "-qO-", "-T", "3", "http://server"); err != nil {
+				return fmt.Errorf("client cannot reach service server yet: %s", firstLine(out))
+			}
+			if _, err := e.exec("intruder", "", "wget", "-qO-", "-T", "3", "http://server"); err == nil {
+				return fmt.Errorf("intruder can reach server; only the client may")
+			}
+			return nil
+		},
+	},
+	{
+		ID: "17_rbac_write", Title: "RBAC: write the policy yourself", Timeout: 30 * time.Second,
+		Check: func(e *Env) error {
+			for _, p := range []struct{ verb, res, ns, want string }{
+				{"get", "pods", e.NS, "yes"},
+				{"list", "pods", e.NS, "yes"},
+				{"watch", "pods", e.NS, "yes"},
+				{"get", "pods/log", e.NS, "yes"},
+				{"get", "deployments.apps", e.NS, "yes"},
+				{"list", "deployments.apps", e.NS, "yes"},
+				{"patch", "deployments.apps", e.NS, "yes"},
+				{"create", "deployments.apps", e.NS, "no"},
+				{"delete", "deployments.apps", e.NS, "no"},
+				{"delete", "pods", e.NS, "no"},
+				{"get", "secrets", e.NS, "no"},
+				{"list", "pods", "kube-system", "no"},
+			} {
+				if got := e.canI("deployer", p.verb, p.res, p.ns); got != p.want {
+					return fmt.Errorf("deployer: can-i %s %s in %s is %q, want %q", p.verb, p.res, p.ns, got, p.want)
+				}
+			}
+			return nil
+		},
+	},
+	{
+		ID: "18_quota_limits", Title: "Quotas: fit the Deployment under the namespace quota", Timeout: 90 * time.Second,
+		Check: func(e *Env) error {
+			if err := e.expect("resourcequota/team-quota", `{.spec.hard.requests\.cpu}`, "500m", "quota requests.cpu (do not change the quota)"); err != nil {
+				return err
+			}
+			req, err := e.get("deploy/web", "{.spec.template.spec.containers[0].resources.requests.cpu}")
+			if err != nil {
+				return err
+			}
+			if req == "" {
+				return fmt.Errorf("set an explicit resources.requests.cpu on the container")
+			}
+			return e.expect("deploy/web", "{.status.readyReplicas}", "3", "ready replicas of deployment web")
+		},
+	},
+	{
+		ID: "19_broken_stack", Title: "Capstone: debug the broken stack", Timeout: 150 * time.Second,
+		Check: func(e *Env) error {
+			if lim, _ := e.get("deploy/site", "{.spec.template.spec.containers[0].resources.limits.memory}"); lim == "" {
+				return fmt.Errorf("keep a memory limit on the container, just make it realistic")
+			}
+			if probe, _ := e.get("deploy/site", "{.spec.template.spec.containers[0].readinessProbe}"); probe == "" {
+				return fmt.Errorf("keep the readinessProbe, fix it instead of deleting it")
+			}
+			if err := e.expect("deploy/site", "{.status.readyReplicas}", "2", "ready replicas of deployment site"); err != nil {
+				return err
+			}
+			if err := e.podRunning("client"); err != nil {
+				return err
+			}
+			out, err := e.exec("client", "", "wget", "-qO-", "-T", "3", "http://site")
+			if err != nil {
+				return fmt.Errorf("client cannot reach service site yet: %s", firstLine(out))
+			}
+			if !strings.Contains(out, "k8slings stack ok") {
+				return fmt.Errorf("service site should return 'k8slings stack ok', got %q", firstLine(out))
 			}
 			return nil
 		},

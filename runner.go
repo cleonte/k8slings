@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -80,8 +81,13 @@ func Run(ws *Workspace, ex *Exercise, progress func(string)) error {
 		return fmt.Errorf("kubectl apply failed:\n%s", indent(out))
 	}
 
+	timeout := ex.Timeout
+	if s, err := strconv.Atoi(os.Getenv("K8SLINGS_TIMEOUT")); err == nil && s > 0 {
+		timeout = time.Duration(s) * time.Second // lets e2e fail fast on "still broken" runs
+	}
+
 	env := &Env{NS: ns}
-	deadline := time.Now().Add(ex.Timeout)
+	deadline := time.Now().Add(timeout)
 	var last error
 	for {
 		last = ex.Check(env)

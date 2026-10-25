@@ -1,0 +1,4 @@
+- `kubectl get storageclass` lists what this cluster offers (kind ships one default class).
+- `kubectl -n k8slings-13-pvc-storage describe pvc notes` shows why it is Pending. Fix one error, re-run, read the next.
+- The default kind provisioner only supports node-local volumes: think about which access mode that implies.
+- The binding of a node-local volume is delayed until a pod uses the claim (`WaitForFirstConsumer`), so Pending alone is not always an error.

@@ -1,0 +1,4 @@
+- Test it: `kubectl -n k8slings-16-networkpolicy exec client -- wget -qO- -T 3 http://server`
+- The `from` selector must match the labels the client pod really has: `kubectl get pods --show-labels`.
+- The `ports` entry is the port on the *destination pod*, not the Service port. What does nginx listen on?
+- Do not widen the rule to all pods; `intruder` must stay blocked.

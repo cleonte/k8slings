@@ -1,0 +1,3 @@
+- The first error comes from `kubectl apply`: a `volumeMounts` name must match a name under `volumes`.
+- After that the pod runs, but nginx serves its default page. Where does the official nginx image read static files from?
+- Verify: `kubectl -n k8slings-14-init-container exec web -c nginx -- cat /usr/share/nginx/html/index.html`

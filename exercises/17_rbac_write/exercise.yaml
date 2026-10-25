@@ -1,0 +1,8 @@
+# I AM NOT DONE  (delete this line when you think the exercise is fixed)
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployer
+
+# TODO: write a Role and a RoleBinding that give `deployer` exactly the
+# permissions listed in README.md. Nothing else exists yet.

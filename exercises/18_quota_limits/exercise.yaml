@@ -1,0 +1,42 @@
+# I AM NOT DONE  (delete this line when you think the exercise is fixed)
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: team-quota
+spec:
+  hard:
+    requests.cpu: 500m
+    requests.memory: 512Mi
+    pods: "4"
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 200m
+        memory: 128Mi
+      default:
+        cpu: 400m
+        memory: 256Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

@@ -1,0 +1,22 @@
+# I AM NOT DONE  (delete this line when you think the exercise is fixed)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  initContainers:
+    - name: fetch
+      image: busybox:1.36
+      command: ["sh", "-c", "echo '<h1>hello from init</h1>' > /work/index.html"]
+      volumeMounts:
+        - name: share
+          mountPath: /work
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      volumeMounts:
+        - name: shared
+          mountPath: /html
+  volumes:
+    - name: shared
+      emptyDir: {}

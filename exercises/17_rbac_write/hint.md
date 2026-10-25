@@ -1,0 +1,4 @@
+- Two rules are needed (different API groups): core (`""`) for pods and `pods/log`, `apps` for deployments.
+- Test each line of the Goal with `kubectl auth can-i <verb> <resource> -n k8slings-17-rbac-write --as system:serviceaccount:k8slings-17-rbac-write:deployer`.
+- Use `Role` + `RoleBinding`, not `ClusterRole` + `ClusterRoleBinding`: the latter would also open `kube-system`.
+- Subject kind is `ServiceAccount`; in a RoleBinding it needs `name` (and `namespace` is optional when it matches the binding's).
