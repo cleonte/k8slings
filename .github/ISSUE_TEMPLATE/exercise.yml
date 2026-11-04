@@ -1,0 +1,38 @@
+name: Exercise problem
+description: An exercise is wrong, unclear, impossible, or accepts a wrong answer.
+labels: [exercise]
+body:
+  - type: input
+    id: exercise
+    attributes:
+      label: Exercise name
+      placeholder: pods1
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What is wrong
+      options:
+        - It is unclear what to do
+        - My correct solution is rejected
+        - A wrong solution is accepted
+        - The hint or README is wrong
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What you wrote, and what k8slings said. Paste the output of `k8slings run <name>`.
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: k8slings-version
+    attributes:
+      label: k8slings version
+      description: Output of `k8slings --version`.
+    validations:
+      required: true

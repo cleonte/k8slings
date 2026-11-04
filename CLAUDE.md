@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: design (Phase 0).** This file describes the architecture k8slings is going to have, not what the code does today. The repository currently holds a working prototype (see "The prototype" below). Nothing in the target architecture is built until the design in this file and in ROADMAP.md is approved. Sections marked *(target)* do not exist yet.
+> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, and the first exercises are built. Everything marked *(target)* is still design: the TUI and `watch`, `doctor`, cluster and fix modes, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
 
 ## What this project is
 

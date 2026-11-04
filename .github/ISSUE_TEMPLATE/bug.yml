@@ -1,0 +1,40 @@
+name: Bug report
+description: k8slings itself misbehaves (commands, watch, TUI, install, cluster).
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: The command you ran, what you expected, and what you got.
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Output
+      render: shell
+  - type: input
+    id: k8slings-version
+    attributes:
+      label: k8slings version
+      description: Output of `k8slings --version`.
+    validations:
+      required: true
+  - type: input
+    id: kubectl-kind
+    attributes:
+      label: kind and kubectl versions (cluster exercises only)
+      description: Output of `kind version` and `kubectl version --client`.
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [Linux, macOS, Windows, Other]
+    validations:
+      required: true
+  - type: input
+    id: runtime
+    attributes:
+      label: Container runtime (cluster exercises only)
+      description: Docker Desktop, Colima, Lima, Docker on Linux, or something else.
