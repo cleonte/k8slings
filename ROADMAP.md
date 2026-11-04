@@ -131,11 +131,11 @@ Branch `phase-1-skeleton`. Reuse golings code where it fits, keep Apache-2.0 hea
 
 Branch `phase-2-tui`.
 
-- [ ] Watcher package (debounced, sees atomic saves), copied and adapted.
-- [ ] Bubble Tea v2 full-screen `watch`: progress, topic, result pane, re-run on save; keys `h s r n l c f q`; scrolling; `--plain` and automatic fallback when not a TTY.
-- [ ] `l` list with filter by name or topic; `c` check-all (parallel, offline only for now); `f` full output.
+- [x] Watcher package (debounced, sees atomic saves), copied and adapted.
+- [x] Bubble Tea v2 full-screen `watch`: progress, topic, result pane, re-run on save; keys `h s r n l c f q`; scrolling; `--plain` and automatic fallback when not a TTY. (`f` only says nothing was shortened until cluster output exists.)
+- [x] `l` list with filter by name or topic; `c` check-all (sequential: offline checks take milliseconds; parallel arrives with cluster mode); `f` full output (placeholder, see above).
 - [ ] `doctor` (offline part first: workspace, schema version, embedded versions); `--verbose` flags.
-- [ ] `solution` gating, `reset` confirmation, failure shortening for schema and CEL errors.
+- [x] `solution` gating, `reset` confirmation, failure shortening for schema and CEL errors (the last was done in Phase 1).
 - [ ] `make smoke` and `scripts/smoke.sh`; macOS weekly smoke workflow; demo tapes for the README (vhs).
 
 ## Phase 3 — Cluster mode and its topics

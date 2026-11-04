@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, and the first exercises are built. Everything marked *(target)* is still design: the TUI and `watch`, `doctor`, cluster and fix modes, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
+> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, `watch` (full-screen and `--plain`), and the first exercises are built. Everything marked *(target)* is still design: `doctor`, cluster and fix modes, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
 
 ## What this project is
 

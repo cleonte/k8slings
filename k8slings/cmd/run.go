@@ -38,21 +38,40 @@ example specific exercise : k8slings run pods1`,
 				return err
 			}
 
-			result, err := ex.Run(newEnv())
-			if exercises.IsSkipped(err) {
-				color.Yellow(err.Error())
-				return err
-			}
-			if err != nil {
-				printFailure(ex, err)
-				return err
-			}
-			color.Green("✅ %s passes (%d objects checked).\n", result.Exercise.Name, result.Objects)
-			if ex.State() == exercises.Pending {
-				color.White("Remove the 'I AM NOT DONE' line from %s to keep going.", ex.File())
-				return fmt.Errorf("exercise is still pending")
-			}
-			return nil
+			return runExercise(ex)
 		},
 	}
+}
+
+// runExercise checks one exercise and reports the result for the learner.
+func runExercise(ex exercises.Exercise) error {
+	result, err := ex.Run(newEnv())
+	if exercises.IsSkipped(err) {
+		color.Yellow(err.Error())
+		return err
+	}
+	if err != nil {
+		printFailure(ex, err)
+		return err
+	}
+	color.Green("✅ %s passes (%d objects checked).\n", result.Exercise.Name, result.Objects)
+	if ex.State() == exercises.Pending {
+		color.White("Remove the 'I AM NOT DONE' line from %s to keep going.", ex.File())
+		return fmt.Errorf("exercise is still pending")
+	}
+	return nil
+}
+
+// runNext checks the first exercise that is not done yet.
+func runNext(infoFile string) error {
+	ex, err := exercises.NextPending(infoFile)
+	if errors.Is(err, exercises.ErrNoPending) {
+		color.Green("🎉 Every exercise is done.")
+		return nil
+	}
+	if err != nil {
+		color.Red("%s", err)
+		return err
+	}
+	return runExercise(ex)
 }
