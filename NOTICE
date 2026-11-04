@@ -1,0 +1,14 @@
+k8slings
+
+Copyright 2026 Cristian Leonte.
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The command line, manifest, workspace and documentation structure of this
+project is derived from golings (https://github.com/cleonte/golings,
+Copyright 2026 Cristian Leonte), which is a fork of golings by Mauricio Abreu
+(https://github.com/mauricioabreu/golings), also licensed under the Apache
+License, Version 2.0.
+
+Exercise ideas, manifests and text are adapted from k8s-2-weeks (code under
+the MIT License, written content under CC BY 4.0).
