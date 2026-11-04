@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: backup}
+    assert:
+      - expr: has(object.spec.restartPolicy) && object.spec.restartPolicy != 'Always'
+        message: "With restartPolicy Always the task would restart forever after finishing."
+      - expr: object.spec.restartPolicy in ['OnFailure', 'Never']
+        message: "Use a restartPolicy that does not restart a container that succeeded."

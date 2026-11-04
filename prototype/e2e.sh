@@ -6,10 +6,10 @@
 # Exercises use separate namespaces, so they run in parallel (JOBS, default 4).
 # The "still broken" run only needs to fail, so it uses a short timeout
 # (BROKEN_TIMEOUT seconds, default 20). Pass ids to run a subset:
-#   bash scripts/e2e.sh 16_networkpolicy 19_broken_stack
+#   bash prototype/e2e.sh 16_networkpolicy 19_broken_stack
 # KEEP=1 skips the final `destroy`.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
 BIN="$ROOT/bin/k8slings"
 BROKEN_TIMEOUT="${BROKEN_TIMEOUT:-20}"
 

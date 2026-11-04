@@ -114,18 +114,18 @@ Run on Apple silicon, Lima `docker` VM (4 CPU, 8 GiB), kind v0.33.0, node image 
 
 Branch `phase-1-skeleton`. Reuse golings code where it fits, keep Apache-2.0 headers and NOTICE, adapt rather than reinvent.
 
-- [ ] `go.mod` at Go 1.26, module `github.com/cleonte/k8slings`; package layout from CLAUDE.md; cobra root with `init`, `run`, `hint`, `list`, `verify`, `reset`, `solution` (plain output first).
-- [ ] `embed.go` with the two FS values (exercises, solutions); `info.toml` loader with validation (every path exists, names unique, modes valid, `requires` known).
-- [ ] Marker handling (`# I AM NOT DONE`, `# TODO:`), `n`-style mark-done helper, workspace `init`/`reset` that never overwrites.
-- [ ] Schema package with generated, embedded schemas (`scripts/gen-schemas.sh`), strict mode, learner-friendly error shortening.
-- [ ] `check` package: `check.yaml` model, CEL evaluator, failure messages; unit tests for both.
-- [ ] Manifest-mode runner.
-- [ ] `TestSolutions` for manifest mode, plus manifest tests (every exercise has a solution and vice versa, hints and docs links present, no `metadata.namespace`, every kind used has an embedded schema).
-- [ ] First 10 exercises: pods (5), labels and selectors (4) and namespaces (1 to start), with README, hint, docs link, TODO, solution.
+- [x] `go.mod` at Go 1.26, module `github.com/cleonte/k8slings`; package layout from CLAUDE.md; cobra root with `init`, `run`, `hint`, `list`, `verify`, `reset`, `solution` (plain output first).
+- [x] `embed.go` with the two FS values (exercises, solutions); `info.toml` loader with validation (every path exists, names unique, modes valid, `requires` known).
+- [x] Marker handling (`# I AM NOT DONE`, `# TODO:`), `n`-style mark-done helper, workspace `init`/`reset` that never overwrites.
+- [x] Schema package with generated, embedded schemas (`scripts/gen-schemas.sh`), strict mode, learner-friendly error shortening.
+- [x] `check` package: `check.yaml` model, CEL evaluator, failure messages; unit tests for both.
+- [x] Manifest-mode runner.
+- [x] `TestSolutions` for manifest mode, plus manifest tests (every exercise has a solution and vice versa, hints and docs links present, no `metadata.namespace`, every kind used has an embedded schema).
+- [ ] First 10 exercises: pods (5) done; labels and selectors (4) and namespaces (1) still to do, each with README, hint, docs link, TODO, solution.
 - [ ] Migrate the prototype's manifest-destined exercises (01–04, 07–10, 12) once each check has been reviewed.
-- [ ] Docs consistency test with `<!-- count:... -->` markers in README and ROADMAP.
-- [ ] README, CHANGELOG (Keep a Changelog), CONTRIBUTING (adding an exercise, running tests, releasing), `.gitignore`, issue templates (bug, exercise problem, feature), `dependabot.yml` (grouped Go and Actions updates). `LICENSE` and `NOTICE` per the Phase 0 decision.
-- [ ] CI: build/vet/test on Linux for Go 1.26, 1.27, stable; Windows job; formatting and vet.
+- [x] Docs consistency test with `<!-- count:... -->` markers in README and ROADMAP.
+- [x] README, CHANGELOG (Keep a Changelog), CONTRIBUTING (adding an exercise, running tests, releasing), `.gitignore`, issue templates (bug, exercise problem, feature), `dependabot.yml` (grouped Go and Actions updates). `LICENSE` and `NOTICE` per the Phase 0 decision.
+- [x] CI: build/vet/test on Linux for Go 1.26, 1.27, stable; Windows job; formatting and vet.
 
 ## Phase 2 — TUI and tooling parity with golings
 

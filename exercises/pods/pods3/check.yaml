@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: configured}
+    assert:
+      - expr: object.spec.containers[0].env.exists(e, e.name == 'LOG_LEVEL' && e.value == 'debug')
+        message: "LOG_LEVEL should be set to debug."
+      - expr: object.spec.containers[0].env.exists(e, e.name == 'APP_MODE' && e.value == 'demo')
+        message: "APP_MODE should be set to demo."

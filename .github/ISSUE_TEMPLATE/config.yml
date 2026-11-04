@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: How to use k8slings
+    url: https://github.com/cleonte/k8slings#doing-exercises
+    about: The README explains how to install k8slings and do the exercises.

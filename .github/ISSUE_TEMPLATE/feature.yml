@@ -1,0 +1,22 @@
+name: Idea or new exercise
+description: Suggest a feature, a topic or an exercise.
+title: "[idea] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What and why
+    validations:
+      required: true
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      placeholder: iterators, or a new topic
+  - type: textarea
+    id: sketch
+    attributes:
+      label: Exercise sketch
+      description: "Optional: the broken code, and what the learner should fix."
+      render: go

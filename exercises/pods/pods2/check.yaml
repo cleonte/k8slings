@@ -1,0 +1,5 @@
+objects:
+  - select: {kind: Pod, name: greeter}
+    assert:
+      - expr: object.spec.containers[0].command == ['echo', 'hello', 'k8slings']
+        message: "The container should run: echo hello k8slings (one list item per word)."
