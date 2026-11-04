@@ -1,0 +1,16 @@
+# namespaces1: a Pod for the staging namespace.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: smoke-test
+  namespace: staging
+spec:
+  containers:
+    - name: curl
+      image: busybox:1.37
+      command: ["sleep", "3600"]

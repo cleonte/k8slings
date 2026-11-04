@@ -223,7 +223,7 @@ Cluster exercises must check quickly. Rules: reuse one cluster; one namespace pe
 - Never weaken a check just to make a solution pass. If bug, solution and check disagree, fix the exercise.
 - Every exercise has a verified solution in `solutions/`, mirroring `exercises/`. Order matters: put new exercises where they belong in the learning progression.
 - Pick the cheapest mode that can decide correctness. Promote manifest to cluster only if runtime behaviour is the lesson.
-- Exercise YAML never sets `metadata.namespace`.
+- Cluster and fix exercise YAML never sets `metadata.namespace` (k8slings picks it). Manifest exercises may, when the namespace is the lesson.
 - No behaviour that depends on a registry rate limit, the wall clock or the order of API list results.
 - Windows: manifest mode and all paths in `info.toml` use forward slashes; no file permissions in tests.
 
@@ -242,7 +242,7 @@ The current code is a working single-package `package main` (about 1,000 lines, 
 
 - Per-exercise namespace is `k8slings-<id>`. Before each check every namespaced resource type from `kubectl api-resources` is deleted (no kind list to maintain) and `run` waits for `sa/default` to reappear, because bare Pods are rejected until then.
 - The "still broken" e2e case uses a short timeout (`BROKEN_TIMEOUT`, default 20 s) rather than the exercise's; the solution run uses the real one.
-- Exercises 03 and 10 are broken at apply time (API rejection); `Run` returns the apply error, so the "still broken" case fails fast. These are natural manifest-mode exercises (the schema step reproduces the rejection offline).
+- Exercises 03 and 10 are broken at apply time (API rejection); `Run` returns the apply error, so the "still broken" case fails fast. These are natural manifest-mode exercises, but note that the rejection comes from the API server's semantic validation, not from the OpenAPI schema, so it must be reproduced with a CEL assertion in `check.yaml` (a Deployment selector must match its template labels; a Job's `restartPolicy` must be `OnFailure` or `Never`). The schema alone catches only type and unknown-field errors.
 - Exercise 06 reads EndpointSlices with the jsonpath filter `?(@.conditions.ready==true)`; this depends on the kind node image, so re-prove it on every Kubernetes bump.
 - Exercises 01 and 08 pull `nginx`; the first run is slow and timeouts may need tuning (the image preload in `cluster up` addresses this).
 - Exercises 02 and 07 read pod logs right after Running; a race is possible and polling must absorb it.

@@ -1,0 +1,14 @@
+# jobs1: run a command once.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: main
+          image: busybox:1.37
+          command: ["sh", "-c", "echo done"]

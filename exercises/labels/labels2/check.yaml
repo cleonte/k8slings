@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Service, name: web}
+    assert:
+      - expr: has(object.spec.selector) && size(object.spec.selector) > 0
+        message: "The Service needs a selector."
+      - expr: objects.exists(d, d.kind == 'Deployment' && object.spec.selector.all(k, k in d.spec.template.metadata.labels && d.spec.template.metadata.labels[k] == object.spec.selector[k]))
+        message: "The Service selector matches no Pod of the Deployment: every key and value in it must be a label of the Pods."

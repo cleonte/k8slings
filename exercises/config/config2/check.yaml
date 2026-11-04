@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: object.spec.containers[0].env.exists(e, e.name == 'DB_PASSWORD' && has(e.valueFrom) && has(e.valueFrom.secretKeyRef))
+        message: "Keep reading DB_PASSWORD from a Secret with secretKeyRef; do not put the password in the Pod."
+      - expr: object.spec.containers[0].env.all(e, !has(e.valueFrom) || !has(e.valueFrom.secretKeyRef) || objects.exists(s, s.kind == 'Secret' && s.metadata.name == e.valueFrom.secretKeyRef.name && ((has(s.data) && e.valueFrom.secretKeyRef.key in s.data) || (has(s.stringData) && e.valueFrom.secretKeyRef.key in s.stringData))))
+        message: "The Pod asks for a Secret or a key that does not exist."

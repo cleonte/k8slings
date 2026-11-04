@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: object.spec.containers[0].env.exists(e, e.name == 'LOG_LEVEL' && has(e.valueFrom) && has(e.valueFrom.configMapKeyRef))
+        message: "Keep reading LOG_LEVEL from a ConfigMap with configMapKeyRef."
+      - expr: object.spec.containers[0].env.all(e, !has(e.valueFrom) || !has(e.valueFrom.configMapKeyRef) || objects.exists(m, m.kind == 'ConfigMap' && m.metadata.name == e.valueFrom.configMapKeyRef.name && has(m.data) && e.valueFrom.configMapKeyRef.key in m.data))
+        message: "The Pod asks for a ConfigMap key that does not exist."

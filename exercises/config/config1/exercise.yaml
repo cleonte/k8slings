@@ -1,0 +1,25 @@
+# I AM NOT DONE
+# config1: a Pod that reads its log level from a ConfigMap.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  # TODO: the Pod below asks for a key called LOG_LEVEL.
+  LOGLEVEL: debug
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: main
+      image: busybox:1.37
+      command: ["sh", "-c", "echo level=$LOG_LEVEL; sleep 3600"]
+      env:
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: LOG_LEVEL

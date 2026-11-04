@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The first Go version of the CLI, built like golings: `init`, `run`, `hint`, `list`, `verify`, `reset` and `solution`, with the exercises and solutions embedded in the binary.
 - Manifest mode: exercises are checked offline, against the embedded Kubernetes 1.37 JSON schemas (unknown fields are errors) and CEL assertions from a `check.yaml` that stays inside the binary.
-- Five exercises about Pods.
+- 15 exercises: pods, labels and selectors, namespaces, deployments, config (ConfigMap and Secret references), probes and jobs; six of them migrated from the prototype with their runtime checks turned into manifest checks.
 - `TestSolutions`: every exercise must fail as shipped and pass with its solution.
 
 ### Changed

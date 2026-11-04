@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-> **Early development.** There are <!-- count:exercises -->5<!-- /count --> exercises in <!-- count:topics -->1<!-- /count --> topic so far, all of them *manifest* exercises that run offline. Cluster and troubleshooting exercises are on the [roadmap](ROADMAP.md).
+> **Early development.** There are <!-- count:exercises -->15<!-- /count --> exercises in <!-- count:topics -->7<!-- /count --> topics so far, all of them *manifest* exercises that run offline. Cluster and troubleshooting exercises are on the [roadmap](ROADMAP.md).
 
 ## How it works
 

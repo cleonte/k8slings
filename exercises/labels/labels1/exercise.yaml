@@ -1,0 +1,20 @@
+# I AM NOT DONE
+# labels1: a Deployment and the Pods it creates.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        # TODO: these labels do not satisfy the selector above.
+        app: webapp
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# jobs1: run a command once.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hello
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      # TODO: Kubernetes rejects this restart policy for a Job.
+      restartPolicy: Always
+      containers:
+        - name: main
+          image: busybox:1.37
+          command: ["sh", "-c", "echo done"]
