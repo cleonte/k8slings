@@ -1,0 +1,14 @@
+# I AM NOT DONE
+# pods3: configure a container with environment variables.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configured
+spec:
+  containers:
+    - name: app
+      image: nginx:1.27
+      # TODO: env is a list of {name, value} entries, not a map.
+      env:
+        LOG_LEVEL: debug
+        APP_MODE: demo

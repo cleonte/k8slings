@@ -1,0 +1,9 @@
+# pods1: a Pod with one nginx container called web.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hello
+spec:
+  containers:
+    - name: web
+      image: nginx:1.27

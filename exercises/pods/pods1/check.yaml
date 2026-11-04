@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: hello}
+    assert:
+      - expr: size(object.spec.containers) == 1 && object.spec.containers[0].name == 'web'
+        message: "The Pod should have exactly one container, called web."
+      - expr: object.spec.containers[0].image.startsWith('nginx:')
+        message: "The container should run an nginx image."

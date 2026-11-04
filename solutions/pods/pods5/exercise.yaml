@@ -1,0 +1,12 @@
+# pods5: an app with a log-shipping sidecar.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app-with-sidecar
+spec:
+  containers:
+    - name: app
+      image: nginx:1.27
+    - name: sidecar
+      image: busybox:1.37
+      command: ["sh", "-c", "while true; do echo shipping logs; sleep 5; done"]

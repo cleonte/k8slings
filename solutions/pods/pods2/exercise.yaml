@@ -1,0 +1,11 @@
+# pods2: print a greeting and exit.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: greeter
+spec:
+  restartPolicy: Never
+  containers:
+    - name: greeter
+      image: busybox:1.37
+      command: ["echo", "hello", "k8slings"]

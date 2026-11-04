@@ -1,0 +1,14 @@
+# pods3: configure a container with environment variables.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: configured
+spec:
+  containers:
+    - name: app
+      image: nginx:1.27
+      env:
+        - name: LOG_LEVEL
+          value: debug
+        - name: APP_MODE
+          value: demo

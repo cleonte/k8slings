@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: app-with-sidecar}
+    assert:
+      - expr: size(object.spec.containers) == 2
+        message: "The Pod should keep both containers."
+      - expr: object.spec.containers.map(c, c.name).exists(n, n == 'app') && object.spec.containers.map(c, c.name).exists(n, n == 'sidecar')
+        message: "The containers should be called app and sidecar."

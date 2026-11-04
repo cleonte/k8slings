@@ -1,0 +1,45 @@
+[[exercises]]
+name = "pods1"
+path = "exercises/pods/pods1"
+topic = "pods"
+mode = "manifest"
+hint = """
+Read the error: Kubernetes lists a field it does not know. Compare it with the Pod spec."""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/"
+
+[[exercises]]
+name = "pods2"
+path = "exercises/pods/pods2"
+topic = "pods"
+mode = "manifest"
+hint = """
+command is a list of strings, one per word, like ["ls", "-l"]."""
+docs = "https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/"
+
+[[exercises]]
+name = "pods3"
+path = "exercises/pods/pods3"
+topic = "pods"
+mode = "manifest"
+hint = """
+Each entry starts with '- name:' and has a 'value:' under it."""
+docs = "https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/"
+
+[[exercises]]
+name = "pods4"
+path = "exercises/pods/pods4"
+topic = "pods"
+mode = "manifest"
+hint = """
+Which restartPolicy values leave a container that exited with code 0 alone?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#restart-policy"
+
+[[exercises]]
+name = "pods5"
+path = "exercises/pods/pods5"
+topic = "pods"
+mode = "manifest"
+hint = """
+Container names must differ. The second one is the sidecar."""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/#pods-that-run-multiple-containers"
+

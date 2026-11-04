@@ -1,0 +1,13 @@
+# I AM NOT DONE
+# pods2: print a greeting and exit.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: greeter
+spec:
+  restartPolicy: Never
+  containers:
+    - name: greeter
+      image: busybox:1.37
+      # TODO: command must be a list of strings, one per word.
+      command: echo hello k8slings

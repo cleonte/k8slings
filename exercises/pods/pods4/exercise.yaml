@@ -1,0 +1,13 @@
+# I AM NOT DONE
+# pods4: a one-off task that must run once and stay finished.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backup
+spec:
+  # TODO: this Pod runs once; make Kubernetes leave it alone when it exits cleanly.
+  restartPolicy: Always
+  containers:
+    - name: backup
+      image: busybox:1.37
+      command: ["sh", "-c", "echo backing up && sleep 2 && echo done"]
