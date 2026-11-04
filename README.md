@@ -4,6 +4,8 @@ Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](
 
 > **Early development.** There are <!-- count:exercises -->15<!-- /count --> exercises in <!-- count:topics -->7<!-- /count --> topics so far, all of them *manifest* exercises that run offline. Cluster and troubleshooting exercises are on the [roadmap](ROADMAP.md).
 
+![k8slings watch](misc/demo-tui.gif)
+
 ## How it works
 
 You get a folder of Kubernetes manifests, each one broken in one small way. Edit a manifest until `k8slings` is happy, then delete the `# I AM NOT DONE` line at the top and move on.
@@ -35,12 +37,15 @@ k8slings watch           # check the first exercise that is not done yet, and ag
 | `k8slings watch` | Full-screen view that re-checks the current exercise every time you save. `--plain` for plain lines. |
 | `k8slings run next` / `run <name>` | Check one exercise. |
 | `k8slings hint <name>` | Show the hint and a link to the Kubernetes docs. |
+| `k8slings doctor` | Check the workspace and what the binary brings with it. |
 | `k8slings list` | All exercises, by topic, with your progress. |
 | `k8slings verify` | Check every exercise in order. |
 | `k8slings solution <name>` | Show the solution (hidden until you solve it; `--reveal` to look anyway). |
 | `k8slings reset <name>` | Restore an exercise to its original, broken state. |
 
 In `watch`: `h` hint, `s` solution, `r` reset, `n` next, `l` list, `c` check all, `q` quit.
+
+![k8slings run](misc/demo.gif)
 
 Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to edit. Look for the `# TODO:` comment.
 

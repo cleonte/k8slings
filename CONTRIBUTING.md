@@ -31,9 +31,20 @@ If the exercise uses a kind that has no embedded schema, add it to `scripts/gen-
 ```sh
 go test ./...        # everything that needs no cluster
 make smoke           # go install into a temp folder, then run what a learner types
+                     # (macOS runs it weekly in CI, macos-smoke.yml, not on pull requests)
 ```
 
 Tests must pass on Windows too: no `/tmp`, forward slashes in `info.toml`, no file permissions.
+
+## Regenerating the demo GIFs
+
+The GIFs in the README are recorded from scripts with [vhs](https://github.com/charmbracelet/vhs) (`brew install vhs`, which also installs `ttyd`). Install the k8slings of your checkout first, then run a tape:
+
+```sh
+go install ./k8slings
+vhs demo-tui.tape   # misc/demo-tui.gif: the full-screen `k8slings watch`
+vhs demo.tape       # misc/demo.gif: `k8slings run`
+```
 
 ## Updating the Kubernetes schemas
 
