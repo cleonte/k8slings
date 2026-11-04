@@ -27,17 +27,20 @@ go install github.com/cleonte/k8slings/k8slings@latest
 ```sh
 k8slings init            # creates k8slings-exercises/
 cd k8slings-exercises
-k8slings run next        # run the first exercise that is not done yet
+k8slings watch           # check the first exercise that is not done yet, and again on every save
 ```
 
 | Command | What it does |
 |---|---|
+| `k8slings watch` | Full-screen view that re-checks the current exercise every time you save. `--plain` for plain lines. |
 | `k8slings run next` / `run <name>` | Check one exercise. |
 | `k8slings hint <name>` | Show the hint and a link to the Kubernetes docs. |
 | `k8slings list` | All exercises, by topic, with your progress. |
 | `k8slings verify` | Check every exercise in order. |
 | `k8slings solution <name>` | Show the solution (hidden until you solve it; `--reveal` to look anyway). |
 | `k8slings reset <name>` | Restore an exercise to its original, broken state. |
+
+In `watch`: `h` hint, `s` solution, `r` reset, `n` next, `l` list, `c` check all, `q` quit.
 
 Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to edit. Look for the `# TODO:` comment.
 
