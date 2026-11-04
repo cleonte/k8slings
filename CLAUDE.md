@@ -190,7 +190,7 @@ Docker Desktop and Docker on Linux are the supported baseline. macOS with Colima
 
 ### Doctor *(target)*
 
-`k8slings doctor` checks: Go is irrelevant at run time (the binary is static), but it checks Docker or a compatible runtime is reachable and reports its kind; `kind` present and at least the pinned minimum version; `kubectl` present and within one minor version of the cluster; the cluster exists, is the right one, its nodes are Ready and core pods (CoreDNS, kube-proxy, kindnet, local-path-provisioner) are Running; the inotify limits on Colima/Lima VMs; which add-ons are installed. Offline mode needs none of this, so `doctor` separates "offline ready" from "cluster ready" and exits 0 when offline is ready, with a clear note about what the cluster part is missing.
+`k8slings doctor` checks: Go is irrelevant at run time (the binary is static), but it checks Docker or a compatible runtime is reachable and reports its kind; `kind` present and at least the pinned minimum version; `kubectl` present and within one minor version of the cluster; the cluster exists, is the right one, its nodes are Ready and core pods (CoreDNS, kube-proxy, kindnet, local-path-provisioner) are Running; the inotify limits on Colima/Lima VMs, **before** `cluster up` (measured: Lima's default `max_user_instances = 128` makes a 3-node `kind create` report success while workers never join and kube-proxy crashes); which add-ons are installed. `cluster up` itself must verify all nodes Ready and kube-proxy Running rather than trust kind's exit code. Offline mode needs none of this, so `doctor` separates "offline ready" from "cluster ready" and exits 0 when offline is ready, with a clear note about what the cluster part is missing.
 
 ## Add-ons *(target)*
 
