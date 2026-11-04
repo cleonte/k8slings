@@ -43,3 +43,93 @@ hint = """
 Container names must differ. The second one is the sidecar."""
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/#pods-that-run-multiple-containers"
 
+[[exercises]]
+name = "labels1"
+path = "exercises/labels/labels1"
+topic = "labels"
+mode = "manifest"
+hint = """
+Compare the selector with the labels of the Pod template, key by key."""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#selector"
+
+[[exercises]]
+name = "labels2"
+path = "exercises/labels/labels2"
+topic = "labels"
+mode = "manifest"
+hint = """
+A Service finds Pods by their labels. Which labels do the Pods have?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/"
+
+[[exercises]]
+name = "labels3"
+path = "exercises/labels/labels3"
+topic = "labels"
+mode = "manifest"
+hint = """
+What does YAML make of an unquoted 2? Quote it."""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set"
+
+[[exercises]]
+name = "labels4"
+path = "exercises/labels/labels4"
+topic = "labels"
+mode = "manifest"
+hint = """
+Which of the two, labels or annotations, can a selector use?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/"
+
+[[exercises]]
+name = "namespaces1"
+path = "exercises/namespaces/namespaces1"
+topic = "namespaces"
+mode = "manifest"
+hint = """
+Compare the Pod's namespace with the name of the Namespace object, letter by letter."""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
+
+[[exercises]]
+name = "deployments1"
+path = "exercises/deployments/deployments1"
+topic = "deployments"
+mode = "manifest"
+hint = """
+Two fields to change: replicas, and the image tag of the container."""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment"
+
+[[exercises]]
+name = "config1"
+path = "exercises/config/config1"
+topic = "config"
+mode = "manifest"
+hint = """
+The Pod asks for LOG_LEVEL. Look at the key in the ConfigMap."""
+docs = "https://kubernetes.io/docs/concepts/configuration/configmap/"
+
+[[exercises]]
+name = "config2"
+path = "exercises/config/config2"
+topic = "config"
+mode = "manifest"
+hint = """
+The Pod must name the Secret and the key that the Secret really has."""
+docs = "https://kubernetes.io/docs/concepts/configuration/secret/"
+
+[[exercises]]
+name = "probes1"
+path = "exercises/probes/probes1"
+topic = "probes"
+mode = "manifest"
+hint = """
+Which port does nginx listen on, and what does it answer at /?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+
+[[exercises]]
+name = "jobs1"
+path = "exercises/jobs/jobs1"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Which restartPolicy values does a Job allow?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
+

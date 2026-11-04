@@ -63,8 +63,8 @@ func TestManifest(t *testing.T) {
 			if !todoRe.Match(broken) {
 				t.Errorf("%s needs a '# TODO:' comment at the fix site", ex.Source())
 			}
-			if namespaceRe.Match(broken) {
-				t.Errorf("%s must not set metadata.namespace", ex.Source())
+			if ex.Mode != exercises.ModeManifest && namespaceRe.Match(broken) {
+				t.Errorf("%s must not set metadata.namespace: k8slings picks the namespace of cluster and fix exercises", ex.Source())
 			}
 
 			sol, err := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())

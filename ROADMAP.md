@@ -121,8 +121,8 @@ Branch `phase-1-skeleton`. Reuse golings code where it fits, keep Apache-2.0 hea
 - [x] `check` package: `check.yaml` model, CEL evaluator, failure messages; unit tests for both.
 - [x] Manifest-mode runner.
 - [x] `TestSolutions` for manifest mode, plus manifest tests (every exercise has a solution and vice versa, hints and docs links present, no `metadata.namespace`, every kind used has an embedded schema).
-- [ ] First 10 exercises: pods (5) done; labels and selectors (4) and namespaces (1) still to do, each with README, hint, docs link, TODO, solution.
-- [ ] Migrate the prototype's manifest-destined exercises (01–04, 07–10, 12) once each check has been reviewed.
+- [x] First 10 exercises: pods (5), labels and selectors (4), namespaces (1), each with README, hint, docs link, TODO, solution.
+- [x] Migrate the prototype's manifest-destined exercises once each check has been reviewed: 03→labels1, 04→deployments1, 07→config1, 08→probes1, 10→jobs1, 12→config2. Prototype 01 and 02 are covered by pods1 and pods3. **09 (resources) is not migrated**: its check compares quantities (`64Gi` against `64Mi`), which plain CEL cannot do. Needs a quantity helper in the `check` package (or the Kubernetes CEL quantity library) first; tracked in Phase 3.
 - [x] Docs consistency test with `<!-- count:... -->` markers in README and ROADMAP.
 - [x] README, CHANGELOG (Keep a Changelog), CONTRIBUTING (adding an exercise, running tests, releasing), `.gitignore`, issue templates (bug, exercise problem, feature), `dependabot.yml` (grouped Go and Actions updates). `LICENSE` and `NOTICE` per the Phase 0 decision.
 - [x] CI: build/vet/test on Linux for Go 1.26, 1.27, stable; Windows job; formatting and vet.

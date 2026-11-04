@@ -1,0 +1,5 @@
+objects:
+  - select: {kind: Job, name: hello}
+    assert:
+      - expr: has(object.spec.template.spec.restartPolicy) && object.spec.template.spec.restartPolicy in ['OnFailure', 'Never']
+        message: "A Job's Pods must have restartPolicy OnFailure or Never; Always would restart a finished container forever."

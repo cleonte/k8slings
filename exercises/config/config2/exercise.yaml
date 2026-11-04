@@ -1,0 +1,26 @@
+# I AM NOT DONE
+# config2: a Pod that reads a database password from a Secret.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-creds
+type: Opaque
+stringData:
+  DB_PASSWORD: s3cr3t-pass
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sh", "-c", "echo password-length=${#DB_PASSWORD}; sleep 3600"]
+      env:
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              # TODO: this Secret name and key do not exist.
+              name: db-credentials
+              key: DB_PASS

@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: site}
+    assert:
+      - expr: has(object.spec.containers[0].readinessProbe)
+        message: "Keep the readiness probe; fix it instead of deleting it."
+      - expr: has(object.spec.containers[0].readinessProbe.httpGet) && object.spec.containers[0].readinessProbe.httpGet.port == 80 && object.spec.containers[0].readinessProbe.httpGet.path == '/'
+        message: "The probe should request something nginx really serves: its default page, on the port it listens on."

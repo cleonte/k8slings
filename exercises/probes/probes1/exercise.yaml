@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# probes1: a web server that never becomes Ready.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: site
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      readinessProbe:
+        # TODO: nginx does not serve this path on this port.
+        httpGet:
+          path: /healthz
+          port: 8080
+        periodSeconds: 3

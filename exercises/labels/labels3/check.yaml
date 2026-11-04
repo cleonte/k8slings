@@ -1,0 +1,5 @@
+objects:
+  - select: {kind: Pod, name: shop}
+    assert:
+      - expr: object.metadata.labels.release == '2'
+        message: "The release label should still be 2, as a string."

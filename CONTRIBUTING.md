@@ -7,8 +7,8 @@ Thanks for helping. The design is in [CLAUDE.md](CLAUDE.md) and the plan in [ROA
 An exercise is a folder `exercises/<topic>/<name>/` with three files, plus a solution and a manifest entry:
 
 1. `README.md`: the lesson, a few lines.
-2. `exercise.yaml`: the broken manifest. Line 1 is `# I AM NOT DONE`. A `# TODO:` comment sits at the fix site and says what to do in one sentence, without giving the answer. Never set `metadata.namespace`.
-3. `check.yaml`: the schema mode and the CEL assertions. Every assertion has a `message` written for the learner. This file is embedded in the binary and is not written to the learner's folder.
+2. `exercise.yaml`: the broken manifest. Line 1 is `# I AM NOT DONE`. A `# TODO:` comment sits at the fix site and says what to do in one sentence, without giving the answer. Do not set `metadata.namespace` in cluster and fix exercises (k8slings picks the namespace); manifest exercises may, when the namespace is the lesson.
+3. `check.yaml`: the schema mode and the CEL assertions. Every assertion has a `message` written for the learner. Quote an `expr` that contains `: ` (a map literal such as `{'app': 'web'}`), or YAML will misread it. This file is embedded in the binary and is not written to the learner's folder.
 4. `solutions/<topic>/<name>/exercise.yaml`: a working version, without the marker and the TODO.
 5. An entry in `info.toml`, **in learning order** (not at the end by habit):
 

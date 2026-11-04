@@ -1,0 +1,32 @@
+# I AM NOT DONE
+# labels2: a Deployment and the Service in front of it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: frontend
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  # TODO: this selector matches none of the Pods above.
+  selector:
+    app: frontend
+  ports:
+    - port: 80

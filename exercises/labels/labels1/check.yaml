@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "object.spec.selector.matchLabels == {'app': 'web'}"
+        message: "Keep the selector as it is: app=web. Fix the Pod template instead."
+      - expr: object.spec.selector.matchLabels.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == object.spec.selector.matchLabels[k])
+        message: "The Pod template labels must satisfy the Deployment selector, or Kubernetes rejects the Deployment."

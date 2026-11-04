@@ -1,0 +1,21 @@
+# I AM NOT DONE
+# deployments1: scale up and upgrade.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  # TODO: run 3 replicas.
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: nginx
+          # TODO: upgrade to nginx 1.27.
+          image: nginx:1.25

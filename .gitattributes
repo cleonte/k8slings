@@ -1,0 +1,9 @@
+# The same line endings on every system: the golden files of the tests, the exercises
+# and the manifest are compared byte for byte, and a Windows checkout would
+# otherwise turn them into CRLF.
+* text=auto eol=lf
+
+*.gif binary
+*.png binary
+*.jpg binary
+*.ase binary

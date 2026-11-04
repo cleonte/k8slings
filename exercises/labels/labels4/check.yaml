@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Service, name: api}
+    assert:
+      - expr: "object.spec.selector == {'app': 'api', 'team': 'payments'}"
+        message: "Keep the Service selector as it is (app=api, team=payments). Change the Pod."
+      - expr: objects.exists(p, p.kind == 'Pod' && has(p.metadata.labels) && object.spec.selector.all(k, k in p.metadata.labels && p.metadata.labels[k] == object.spec.selector[k]))
+        message: "No Pod has all the labels the Service selects on."

@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Namespace}
+    assert:
+      - expr: object.metadata.name == 'staging'
+        message: "Keep the namespace called staging."
+  - select: {kind: Pod, name: smoke-test}
+    assert:
+      - expr: has(object.metadata.namespace)
+        message: "The Pod should say which namespace it lives in."
+      - expr: objects.exists(n, n.kind == 'Namespace' && n.metadata.name == object.metadata.namespace)
+        message: "The Pod's namespace must be one that this file creates."
