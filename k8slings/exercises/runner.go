@@ -95,7 +95,8 @@ func (e Exercise) RunSource(env *Env, src []byte) (Result, error) {
 	return Result{Exercise: e, Objects: len(objs)}, nil
 }
 
-var docSeparator = regexp.MustCompile(`(?m)^---[ \t]*$`)
+// Windows editors and git checkouts write CRLF, so the separator line may end in \r.
+var docSeparator = regexp.MustCompile(`(?m)^---[ \t]*\r?$`)
 
 // ParseObjects splits a (possibly multi-document) YAML file into objects.
 // Documents with nothing but comments are skipped.

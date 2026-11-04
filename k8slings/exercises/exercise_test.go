@@ -57,3 +57,10 @@ func TestParseObjectsMultiDocument(t *testing.T) {
 		t.Fatalf("objs=%v err=%v", objs, err)
 	}
 }
+
+func TestParseObjectsCRLF(t *testing.T) {
+	objs, err := ParseObjects([]byte("# c\r\n---\r\nkind: A\r\n---\r\nkind: B\r\n"))
+	if err != nil || len(objs) != 2 {
+		t.Fatalf("objs=%v err=%v", objs, err)
+	}
+}
