@@ -1,0 +1,31 @@
+# The go install smoke test on macOS, apart from the checks of a pull request.
+#
+# GitHub's macOS runners are often not available for a long time, and a job
+# that never gets a runner is cancelled after 15 minutes, which would turn every
+# pull request red. It runs every week and on demand instead (Actions tab,
+# "macOS smoke test", Run workflow).
+name: macOS smoke test
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: go install smoke test (macos-latest)
+    runs-on: macos-latest
+    timeout-minutes: 15
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-go@v7
+      with:
+        go-version: stable
+        cache: true
+
+    - name: Install k8slings, create the exercises, run the first commands
+      run: scripts/smoke.sh

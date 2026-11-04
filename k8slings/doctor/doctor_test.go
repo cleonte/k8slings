@@ -1,0 +1,92 @@
+package doctor
+
+import (
+	"os"
+	"path/filepath"
+	"strings"
+	"testing"
+	"testing/fstest"
+)
+
+var schemas = fstest.MapFS{
+	"schemas/VERSION":         {Data: []byte("v1.37.0\n")},
+	"schemas/pod-v1.json.gz":  {},
+	"schemas/node-v1.json.gz": {},
+}
+
+const info = "[[exercises]]\nname='a'\npath='exercises/t/a'\ntopic='t'\nmode='manifest'\nhint='h'\n"
+
+func workspace(t *testing.T, manifest string) string {
+	t.Helper()
+	t.Chdir(t.TempDir())
+	if err := os.WriteFile("info.toml", []byte(manifest), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	return "info.toml"
+}
+
+func byName(checks []Check, name string) Check {
+	for _, c := range checks {
+		if c.Name == name {
+			return c
+		}
+	}
+	return Check{Name: "(missing) " + name}
+}
+
+func TestHealthyWorkspace(t *testing.T) {
+	infoFile := workspace(t, info)
+	if err := os.MkdirAll(filepath.Join("exercises", "t", "a"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join("exercises", "t", "a", "exercise.yaml"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	checks := Run(infoFile, DefaultEnv(schemas))
+	if Failed(checks) {
+		t.Fatalf("unexpected failure: %+v", checks)
+	}
+	if d := byName(checks, "Kubernetes schemas").Detail; !strings.Contains(d, "v1.37.0") || !strings.Contains(d, "2 kinds") {
+		t.Errorf("schema detail = %q", d)
+	}
+	if byName(checks, "Exercise modes").Status != OK {
+		t.Errorf("a manifest-only workspace should be OK: %+v", byName(checks, "Exercise modes"))
+	}
+}
+
+func TestMissingExerciseFile(t *testing.T) {
+	infoFile := workspace(t, info)
+	checks := Run(infoFile, DefaultEnv(schemas))
+	c := byName(checks, "Exercise files")
+	if c.Status != Fail || !strings.Contains(c.Detail, "reset") {
+		t.Fatalf("got %+v", c)
+	}
+	if !Failed(checks) {
+		t.Fatal("a missing exercise file is a failure")
+	}
+}
+
+func TestNoManifest(t *testing.T) {
+	t.Chdir(t.TempDir())
+	checks := Run("info.toml", DefaultEnv(schemas))
+	c := byName(checks, "Exercise manifest")
+	if c.Status != Fail || !strings.Contains(c.Detail, "k8slings init") {
+		t.Fatalf("got %+v", c)
+	}
+}
+
+func TestClusterExercisesAreAWarning(t *testing.T) {
+	infoFile := workspace(t, info+"[[exercises]]\nname='b'\npath='exercises/t/b'\ntopic='t'\nmode='cluster'\nhint='h'\n")
+	c := byName(Run(infoFile, Env{FileExists: func(string) bool { return true }, Schemas: schemas}), "Exercise modes")
+	if c.Status != Warn || !strings.Contains(c.Detail, "1 of 2") {
+		t.Fatalf("got %+v", c)
+	}
+}
+
+func TestMissingSchemas(t *testing.T) {
+	infoFile := workspace(t, info)
+	checks := Run(infoFile, Env{FileExists: func(string) bool { return true }, Schemas: fstest.MapFS{}})
+	if byName(checks, "Kubernetes schemas").Status != Fail {
+		t.Fatalf("got %+v", byName(checks, "Kubernetes schemas"))
+	}
+}

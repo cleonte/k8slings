@@ -24,6 +24,7 @@ func NewRootCmd(version string) *cobra.Command {
 		Version:       version,
 	}
 
+	rootCmd.AddCommand(DoctorCmd(infoFile, k8slings.Schemas))
 	rootCmd.AddCommand(HintCmd(infoFile))
 	rootCmd.AddCommand(InitCmd(k8slings.FS))
 	rootCmd.AddCommand(ListCmd(infoFile))

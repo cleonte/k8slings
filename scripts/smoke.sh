@@ -42,6 +42,7 @@ cd "$tmp"
 check 0 "Created" k8slings init ws
 cd ws
 check 0 "pods1" k8slings list
+check 0 "Kubernetes schemas" k8slings doctor
 check nonzero "not solved" k8slings run next
 check 0 "" k8slings hint pods2
 check nonzero "pending" k8slings solution pods1
