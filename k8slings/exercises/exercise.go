@@ -97,14 +97,15 @@ func Find(name, infoFile string) (Exercise, error) {
 	return Exercise{}, ErrExerciseNotFound
 }
 
-// NextPending returns the first exercise, in manifest order, that is not done.
+// NextPending returns the first exercise, in manifest order, that is not done
+// and can run here.
 func NextPending(infoFile string) (Exercise, error) {
 	all, err := List(infoFile)
 	if err != nil {
 		return Exercise{}, err
 	}
 	for _, e := range all {
-		if e.State() == Pending {
+		if e.State() == Pending && e.SkipReason() == "" {
 			return e, nil
 		}
 	}
