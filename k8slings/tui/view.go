@@ -131,6 +131,12 @@ func (m *Model) resultLines() []string {
 		for _, l := range failed.Lines {
 			lines = append(lines, errStyle.Render("  • ")+l)
 		}
+		if len(failed.Details) > 0 {
+			lines = append(lines, "")
+			for _, d := range failed.Details {
+				lines = append(lines, dimStyle.Render(d))
+			}
+		}
 		return append(lines, "", dimStyle.Render("Edit "+m.exercise.File()+" and save. Press h for a hint."))
 
 	case m.runErr != nil:

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -15,7 +16,8 @@ import (
 type jumpItem struct {
 	exercise exercises.Exercise
 	done     bool
-	skipped  bool // this machine can not run it
+	skipped  bool   // this machine can not run it
+	reason   string // why, for a skipped one
 }
 
 // FilterValue lets the learner find an exercise by its name or its topic.
@@ -46,7 +48,7 @@ func (jumpDelegate) Render(w io.Writer, m list.Model, index int, item list.Item)
 	}
 	line := fmt.Sprintf("%s%s %s", cursor, mark, name)
 	if it.skipped {
-		line += warnStyle.Render("  " + it.exercise.SkipReason())
+		line += warnStyle.Render("  " + it.reason)
 	} else {
 		line += dimStyle.Render("  " + it.exercise.Topic)
 	}
@@ -60,10 +62,12 @@ func (m *Model) openList() {
 		m.notice = "There are no exercises to list."
 		return
 	}
+	av := m.cfg.Env.Availability(context.Background())
 	items := make([]list.Item, len(all))
 	current := 0
 	for i, e := range all {
-		items[i] = jumpItem{exercise: e, done: e.State() == exercises.Done, skipped: e.SkipReason() != ""}
+		reason := e.SkipReason(av)
+		items[i] = jumpItem{exercise: e, done: e.State() == exercises.Done, skipped: reason != "", reason: reason}
 		if m.hasExercise() && e.Name == m.exercise.Name {
 			current = i
 		}

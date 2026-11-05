@@ -64,3 +64,5 @@ func TestParseObjectsCRLF(t *testing.T) {
 		t.Fatalf("objs=%v err=%v", objs, err)
 	}
 }
+
+func writeFile(name, content string) error { return os.WriteFile(name, []byte(content), 0o644) }

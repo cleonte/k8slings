@@ -98,6 +98,26 @@ Two fields to change: replicas, and the image tag of the container."""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling-a-deployment"
 
 [[exercises]]
+name = "deployments2"
+path = "exercises/deployments/deployments2"
+topic = "deployments"
+mode = "cluster"
+timeout = "120s"
+hint = """
+Which strategy type replaces Pods gradually? Then set how many may be missing and how many may be added."""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
+
+[[exercises]]
+name = "services1"
+path = "exercises/services/services1"
+topic = "services"
+mode = "cluster"
+timeout = "60s"
+hint = """
+Which port does nginx listen on? targetPort is the port of the Pod, not of the Service."""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"

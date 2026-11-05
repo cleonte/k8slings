@@ -59,6 +59,16 @@ func TestRealCluster(t *testing.T) {
 		t.Fatalf("kubectl get nodes = %q, %v", got, err)
 	}
 
+	// Every image the exercises use is on every node, so no exercise pulls from a registry.
+	nodes, _ := output(ctx, ExecRunner{}, nil, "kind", "get", "nodes", "--name", c.Name)
+	for _, node := range strings.Fields(nodes) {
+		for _, img := range PreloadImages {
+			if _, err := output(ctx, ExecRunner{}, nil, "docker", "exec", node, "crictl", "inspecti", img); err != nil {
+				t.Errorf("%s is not on node %s", img, node)
+			}
+		}
+	}
+
 	// A kubeconfig that leads somewhere else is refused, even with the right context name.
 	other := *c
 	other.Kubeconfig = filepath.Join(t.TempDir(), "kubeconfig")

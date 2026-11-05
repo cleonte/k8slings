@@ -1,6 +1,7 @@
 package exercises_test
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"testing"
@@ -24,7 +25,7 @@ func TestSolutions(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			_, err = ex.RunSource(env, broken)
+			_, err = ex.RunSource(context.Background(), env, broken)
 			var failed *exercises.FailedError
 			if !errors.As(err, &failed) {
 				t.Fatalf("the unsolved exercise must fail with a FailedError, got %v", err)
@@ -37,7 +38,7 @@ func TestSolutions(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if _, err := ex.RunSource(env, sol); err != nil {
+			if _, err := ex.RunSource(context.Background(), env, sol); err != nil {
 				t.Fatalf("the solution must pass: %v", err)
 			}
 		})

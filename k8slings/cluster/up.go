@@ -89,6 +89,7 @@ func (c *Cluster) Up(ctx context.Context, o UpOptions) error {
 	if err := c.waitReady(ctx, want, &o); err != nil {
 		return err
 	}
+	c.Preload(ctx, &o)
 	o.logf("The cluster %q is ready. Its kubeconfig is %s (your own ~/.kube/config is untouched).", c.Name, c.Kubeconfig)
 	return nil
 }

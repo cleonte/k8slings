@@ -42,6 +42,8 @@ type Cluster struct {
 	Name       string
 	Kubeconfig string
 	Runner     Runner
+
+	kinds *kindsCache // set by Default; without it nothing is cached
 }
 
 // Default is the cluster learners use, with its kubeconfig below the user
@@ -55,6 +57,7 @@ func Default() (*Cluster, error) {
 		Name:       DefaultName,
 		Kubeconfig: filepath.Join(dir, "k8slings", "kubeconfig"),
 		Runner:     ExecRunner{},
+		kinds:      &kindsCache{},
 	}, nil
 }
 

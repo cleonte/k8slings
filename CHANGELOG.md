@@ -22,6 +22,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `k8slings kubectl ...`: kubectl pinned to the k8slings cluster; flags that choose a cluster, user or credentials are refused.
 - Before cluster exercises run, the kubeconfig is checked against the control-plane container's published API server port, and anything else is refused.
 
+- Cluster exercises. `check.yaml` can have `steps` that are polled against the live cluster (`rollout`, `ready`, `assert`, `endpoints`, `http`, `exec`, `can_i`, `logs`). A cluster exercise is applied to its own namespace, `k8slings-<name>`, which is emptied on every run; typos in the manifest are reported before anything is applied, and a mistake the cluster cannot fix (`now: true`) ends the run at once. When it does not work in time, the failure shows the problem and the Pods and warnings of the namespace.
+- Without a cluster, cluster exercises are skipped with `run \`k8slings cluster up\``, and `watch` and `run next` carry on with the manifest exercises.
+- `cluster up` pulls the images the exercises use (nginx, busybox) into every node.
+- Two cluster exercises: `deployments2` (rolling update) and `services1` (a Service whose targetPort is wrong).
+- `make cluster-test`: creates real clusters and proves the safety rules and every cluster exercise.
+
 ### Changed
 
 - The earlier prototype (a cluster-only version with 19 exercises) moved to `prototype/` until its exercises are migrated.

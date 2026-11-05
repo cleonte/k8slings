@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -19,10 +20,11 @@ example specific exercise : k8slings run pods1`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			env := newEnv()
 			var ex exercises.Exercise
 			var err error
 			if args[0] == "next" {
-				ex, err = exercises.NextPending(infoFile)
+				ex, err = exercises.NextPending(infoFile, env.Availability(cmd.Context()))
 			} else {
 				ex, err = exercises.Find(args[0], infoFile)
 			}
@@ -38,14 +40,14 @@ example specific exercise : k8slings run pods1`,
 				return err
 			}
 
-			return runExercise(ex)
+			return runExercise(cmd.Context(), env, ex)
 		},
 	}
 }
 
 // runExercise checks one exercise and reports the result for the learner.
-func runExercise(ex exercises.Exercise) error {
-	result, err := ex.Run(newEnv())
+func runExercise(ctx context.Context, env *exercises.Env, ex exercises.Exercise) error {
+	result, err := ex.Run(ctx, env)
 	if exercises.IsSkipped(err) {
 		color.Yellow(err.Error())
 		return err
@@ -63,8 +65,9 @@ func runExercise(ex exercises.Exercise) error {
 }
 
 // runNext checks the first exercise that is not done yet.
-func runNext(infoFile string) error {
-	ex, err := exercises.NextPending(infoFile)
+func runNext(ctx context.Context, infoFile string) error {
+	env := newEnv()
+	ex, err := exercises.NextPending(infoFile, env.Availability(ctx))
 	if errors.Is(err, exercises.ErrNoPending) {
 		color.Green("🎉 Every exercise is done.")
 		return nil
@@ -73,5 +76,5 @@ func runNext(infoFile string) error {
 		color.Red("%s", err)
 		return err
 	}
-	return runExercise(ex)
+	return runExercise(ctx, env, ex)
 }

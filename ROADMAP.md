@@ -144,13 +144,13 @@ Branch `phase-3-cluster`.
 
 - [x] `cluster` package: kind wrapper with pinned image, owned kubeconfig, context pinning, the single kubectl builder, container cross-check, refusal rules, and a test that no other code path execs kubectl (`TestOnlyExecGoRunsPrograms`: only `cluster/exec.go` may import `os/exec`).
 - [x] `cluster up | down | status`, `kubectl` pass-through, `--single`; `up` preflights the inotify limit, verifies every node Ready and kube-proxy Running, and retries a failed cold create once. Proven against a real kind cluster on Lima (`make cluster-test`).
-- [ ] Image preload during `cluster up` (busybox, nginx, pause, a curl image) so no exercise depends on a registry pull.
+- [x] Image preload during `cluster up` (nginx, busybox) so no exercise depends on a registry pull. Pulls inside each node with `crictl`: `kind load docker-image` failed on this Docker (containerd image store).
 - [ ] Add-on registry skeleton (`requires` handling, skip messages, `list` locks); `multinode` topology.
 - [ ] `doctor` cluster part: runtime detection (Docker Desktop, Colima, Lima, Linux), kind/kubectl versions and skew, node/core-pod health, inotify limits with the printed fix.
-- [ ] Declarative cluster `check.yaml` steps (`wait`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`) plus the named-Go-check escape hatch.
-- [ ] Cluster-mode runner (namespace wipe/recreate, apply, poll, diagnostics, timeouts, global ceiling).
-- [ ] `TestSolutions` for cluster mode behind `-tags cluster` or an env var; `make cluster-test`.
-- [ ] Migrate the prototype's cluster-destined exercises (05, 06, 11, 13–19); retire `scripts/e2e.sh` once `TestSolutions` covers them.
+- [x] Declarative cluster `check.yaml` steps (`rollout`, `ready`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`). The named-Go-check escape hatch is not built: no exercise needs it yet.
+- [x] Cluster-mode runner (namespace reset, apply, poll, diagnostics, per-exercise timeouts, `now` assertions that fail at once). A global ceiling is not built.
+- [x] `TestClusterSolutions` behind `-tags cluster`; `make cluster-test` (unsolved fails by the exercise's own check, solution passes, on a real cluster).
+- [ ] Migrate the prototype's cluster-destined exercises; retire `prototype/` once `TestClusterSolutions` covers them. Done: 05 → deployments2, 06 → services1 (the selector half of 06 is labels2; services1 is the targetPort half). To do: 11, 13–19.
 - [ ] Topics: deployments and rollouts, services, probes (runtime), resources and quota, jobs and CronJobs, volumes and PVCs, StatefulSets, DaemonSets, scheduling.
 - [ ] Remaining offline topics from the table (ConfigMaps/Secrets, Kustomize, security contexts, RBAC, network policies shape).
 - [ ] Cluster CI job on every PR (path-filtered), with the time budget rule from CLAUDE.md.
