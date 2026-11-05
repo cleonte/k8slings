@@ -1,0 +1,103 @@
+# Proves the cluster half of k8slings on a real kind cluster: the safety rules
+# of the cluster package, and that every cluster exercise fails as shipped and
+# passes with its solution (make cluster-test).
+#
+# The offline tests run on every pull request in test.yml. This job needs Docker
+# and a few minutes, so a pull request only runs it when it touches something it
+# could break; main and a weekly schedule run it regardless, which also catches
+# a new kind or Kubernetes behaviour.
+name: cluster tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "exercises/**"
+      - "solutions/**"
+      - "info.toml"
+      - "k8slings/cluster/**"
+      - "k8slings/check/**"
+      - "k8slings/exercises/**"
+      - "k8slings/cmd/**"
+      - "go.mod"
+      - "go.sum"
+      - "Makefile"
+      - ".github/workflows/cluster.yml"
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cluster-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The oldest kind that published the pinned node image (cluster.MinKindVersion).
+  KIND_VERSION: v0.33.0
+
+jobs:
+  cluster:
+    name: kind cluster (Kubernetes 1.37)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-go@v7
+      with:
+        go-version: "1.26"
+        cache: true
+
+    - name: Install kind
+      run: |
+        curl -fsSLo kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+        sudo install -m 0755 kind /usr/local/bin/kind
+        kind version
+        kubectl version --client
+        docker version --format 'docker {{.Server.Version}}'
+
+    - name: Raise the inotify limits
+      # A kind cluster of three nodes needs more inotify instances than the
+      # default (128): without it the workers do not join. cluster up checks this
+      # itself, and refuses with the fix; the runner needs it done beforehand.
+      run: sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288
+
+    - name: Cluster tests
+      id: tests
+      run: |
+        start=$(date +%s)
+        set -o pipefail
+        make cluster-test 2>&1 | tee cluster-test.log
+        echo "duration=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+
+    - name: Report the time
+      if: always()
+      run: |
+        d="${{ steps.tests.outputs.duration }}"
+        echo "### Cluster tests" >> "$GITHUB_STEP_SUMMARY"
+        echo "Took ${d:-?} seconds (budget: about 600 s to run on every pull request; see CLAUDE.md)." >> "$GITHUB_STEP_SUMMARY"
+        grep -E "fails as intended|solution passes|^--- |^\s+--- " cluster-test.log >> "$GITHUB_STEP_SUMMARY" || true
+
+    - name: Collect what the clusters said
+      if: failure()
+      run: |
+        mkdir -p diagnostics
+        docker ps -a > diagnostics/docker-ps.txt 2>&1 || true
+        for name in $(kind get clusters 2>/dev/null); do
+          kind export logs "diagnostics/$name" --name "$name" || true
+        done
+
+    - uses: actions/upload-artifact@v7
+      if: failure()
+      with:
+        name: cluster-diagnostics
+        path: |
+          cluster-test.log
+          diagnostics/
+        if-no-files-found: ignore
+        retention-days: 7
