@@ -39,7 +39,7 @@ k8slings watch           # check the first exercise that is not done yet, and ag
 | `k8slings hint <name>` | Show the hint and a link to the Kubernetes docs. |
 | `k8slings cluster up` / `down` / `status` | Create, inspect and delete the local kind cluster (needs Docker, kind and kubectl; manifest exercises do not). |
 | `k8slings kubectl ...` | kubectl against the k8slings cluster only. |
-| `k8slings doctor` | Check the workspace and what the binary brings with it. |
+| `k8slings doctor` | Check the workspace, Docker, kind, kubectl and the cluster, and say whether offline mode and cluster mode are ready. |
 | `k8slings list` | All exercises, by topic, with your progress. |
 | `k8slings verify` | Check every exercise in order. |
 | `k8slings solution <name>` | Show the solution (hidden until you solve it; `--reveal` to look anyway). |

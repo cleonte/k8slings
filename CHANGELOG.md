@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `TestSolutions`: every exercise must fail as shipped and pass with its solution.
 - `k8slings watch`: a full-screen view (Bubble Tea v2) that checks the next exercise whenever you save a file. Keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `n` next, `l` list with filter, `c` check all, `f` full output, `q` quit. `--plain` prints lines instead and is used automatically when input or output is not a terminal.
 
-- `k8slings doctor`: checks the manifest, that every exercise file is in place, the embedded Kubernetes schema version, and warns about exercises that need a cluster. (The Docker, kind and cluster checks arrive with cluster mode.)
+- `k8slings doctor`: two halves. Offline mode: the manifest, that every exercise file is in place, the embedded Kubernetes schema version. Cluster mode: the container runtime (Docker Desktop, Colima, Lima, Linux, ...), kind, kubectl, the Docker host's inotify limits with the fix for your runtime, and the health of the cluster (nodes, CoreDNS, kube-proxy, kindnet, storage, version skew). Missing tools and a missing cluster are warnings, since manifest exercises do not need them; a broken cluster is a failure.
 - README demo GIFs, recorded with vhs from `demo.tape` and `demo-tui.tape`.
 - A weekly macOS smoke test (`go install`, then the first commands a learner types).
 

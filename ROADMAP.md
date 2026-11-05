@@ -146,7 +146,7 @@ Branch `phase-3-cluster`.
 - [x] `cluster up | down | status`, `kubectl` pass-through, `--single`; `up` preflights the inotify limit, verifies every node Ready and kube-proxy Running, and retries a failed cold create once. Proven against a real kind cluster on Lima (`make cluster-test`).
 - [x] Image preload during `cluster up` (nginx, busybox) so no exercise depends on a registry pull. Pulls inside each node with `crictl`: `kind load docker-image` failed on this Docker (containerd image store).
 - [ ] Add-on registry skeleton (`requires` handling, skip messages, `list` locks); `multinode` topology.
-- [ ] `doctor` cluster part: runtime detection (Docker Desktop, Colima, Lima, Linux), kind/kubectl versions and skew, node/core-pod health, inotify limits with the printed fix.
+- [x] `doctor` cluster part: runtime detection (Docker Desktop, Colima, Lima, Rancher Desktop, Podman, Linux), kind/kubectl versions and skew, inotify limits with the fix for the runtime, node and core-pod health. Verified on a real cluster, including a stopped worker.
 - [x] Declarative cluster `check.yaml` steps (`rollout`, `ready`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`). The named-Go-check escape hatch is not built: no exercise needs it yet.
 - [x] Cluster-mode runner (namespace reset, apply, poll, diagnostics, per-exercise timeouts, `now` assertions that fail at once). A global ceiling is not built.
 - [x] `TestClusterSolutions` behind `-tags cluster`; `make cluster-test` (unsolved fails by the exercise's own check, solution passes, on a real cluster).

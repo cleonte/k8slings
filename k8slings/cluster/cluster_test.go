@@ -102,8 +102,8 @@ func TestCompareVersions(t *testing.T) {
 		a, b string
 		want int
 	}{{"v0.33.0", "v0.33.0", 0}, {"v0.32.9", "v0.33.0", -1}, {"v0.33.1", "v0.33.0", 1}, {"v1.0.0", "v0.99.9", 1}, {"v0.9.0", "v0.10.0", -1}} {
-		if got := compareVersions(tc.a, tc.b); got != tc.want {
-			t.Errorf("compareVersions(%s, %s) = %d, want %d", tc.a, tc.b, got, tc.want)
+		if got := CompareVersions(tc.a, tc.b); got != tc.want {
+			t.Errorf("CompareVersions(%s, %s) = %d, want %d", tc.a, tc.b, got, tc.want)
 		}
 	}
 }

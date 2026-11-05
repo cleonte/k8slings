@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -42,21 +43,21 @@ func TestHealthyWorkspace(t *testing.T) {
 	if err := os.WriteFile(filepath.Join("exercises", "t", "a", "exercise.yaml"), nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	checks := Run(infoFile, DefaultEnv(schemas))
+	checks := Run(context.Background(), infoFile, DefaultEnv(schemas, nil))
 	if Failed(checks) {
 		t.Fatalf("unexpected failure: %+v", checks)
 	}
 	if d := byName(checks, "Kubernetes schemas").Detail; !strings.Contains(d, "v1.37.0") || !strings.Contains(d, "2 kinds") {
 		t.Errorf("schema detail = %q", d)
 	}
-	if byName(checks, "Exercise modes").Status != OK {
+	if c := byName(checks, "Exercise modes"); c.Status != OK || c.Group != Offline {
 		t.Errorf("a manifest-only workspace should be OK: %+v", byName(checks, "Exercise modes"))
 	}
 }
 
 func TestMissingExerciseFile(t *testing.T) {
 	infoFile := workspace(t, info)
-	checks := Run(infoFile, DefaultEnv(schemas))
+	checks := Run(context.Background(), infoFile, DefaultEnv(schemas, nil))
 	c := byName(checks, "Exercise files")
 	if c.Status != Fail || !strings.Contains(c.Detail, "reset") {
 		t.Fatalf("got %+v", c)
@@ -68,7 +69,7 @@ func TestMissingExerciseFile(t *testing.T) {
 
 func TestNoManifest(t *testing.T) {
 	t.Chdir(t.TempDir())
-	checks := Run("info.toml", DefaultEnv(schemas))
+	checks := Run(context.Background(), "info.toml", DefaultEnv(schemas, nil))
 	c := byName(checks, "Exercise manifest")
 	if c.Status != Fail || !strings.Contains(c.Detail, "k8slings init") {
 		t.Fatalf("got %+v", c)
@@ -77,7 +78,7 @@ func TestNoManifest(t *testing.T) {
 
 func TestClusterExercisesAreAWarning(t *testing.T) {
 	infoFile := workspace(t, info+"[[exercises]]\nname='b'\npath='exercises/t/b'\ntopic='t'\nmode='cluster'\nhint='h'\n")
-	c := byName(Run(infoFile, Env{FileExists: func(string) bool { return true }, Schemas: schemas}), "Exercise modes")
+	c := byName(Run(context.Background(), infoFile, Env{FileExists: func(string) bool { return true }, Schemas: schemas}), "Exercise modes")
 	if c.Status != Warn || !strings.Contains(c.Detail, "1 of 2") {
 		t.Fatalf("got %+v", c)
 	}
@@ -85,7 +86,7 @@ func TestClusterExercisesAreAWarning(t *testing.T) {
 
 func TestMissingSchemas(t *testing.T) {
 	infoFile := workspace(t, info)
-	checks := Run(infoFile, Env{FileExists: func(string) bool { return true }, Schemas: fstest.MapFS{}})
+	checks := Run(context.Background(), infoFile, Env{FileExists: func(string) bool { return true }, Schemas: fstest.MapFS{}})
 	if byName(checks, "Kubernetes schemas").Status != Fail {
 		t.Fatalf("got %+v", byName(checks, "Kubernetes schemas"))
 	}
