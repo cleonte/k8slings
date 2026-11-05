@@ -153,7 +153,7 @@ Branch `phase-3-cluster`.
 - [ ] Migrate the prototype's cluster-destined exercises; retire `prototype/` once `TestClusterSolutions` covers them. Done: 05 → deployments2, 06 → services1 (the selector half of 06 is labels2; services1 is the targetPort half). To do: 11, 13–19.
 - [ ] Topics: deployments and rollouts, services, probes (runtime), resources and quota, jobs and CronJobs, volumes and PVCs, StatefulSets, DaemonSets, scheduling.
 - [ ] Remaining offline topics from the table (ConfigMaps/Secrets, Kustomize, security contexts, RBAC, network policies shape).
-- [ ] Cluster CI job on every PR (path-filtered), with the time budget rule from CLAUDE.md.
+- [x] Cluster CI job on every PR that touches exercises, solutions or the cluster code (path-filtered), on `main` and weekly. First run: 3 min 52 s, inside the budget. It found a real bug (the inotify preflight was skipped when the node image had to be pulled first).
 
 ## Phase 4 — Fix mode and troubleshooting
 

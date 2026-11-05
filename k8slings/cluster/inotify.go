@@ -25,15 +25,18 @@ func (c *Cluster) InotifyLimits(ctx context.Context) (instances, watches int, er
 	if err != nil {
 		return 0, 0, fmt.Errorf("cannot read the inotify limits: %s", firstLine(out))
 	}
+	// The two numbers are the last two words. Before them there can be Docker's
+	// progress output, when the node image had to be pulled first (stdout and
+	// stderr arrive together), which is exactly the case of a fresh machine.
 	fields := strings.Fields(out)
-	if len(fields) != 2 {
+	if len(fields) < 2 {
 		return 0, 0, fmt.Errorf("unexpected inotify limits: %q", out)
 	}
-	if instances, err = strconv.Atoi(fields[0]); err != nil {
-		return 0, 0, err
+	if instances, err = strconv.Atoi(fields[len(fields)-2]); err != nil {
+		return 0, 0, fmt.Errorf("unexpected inotify limits: %q", lastLines(out, 3))
 	}
-	if watches, err = strconv.Atoi(fields[1]); err != nil {
-		return 0, 0, err
+	if watches, err = strconv.Atoi(fields[len(fields)-1]); err != nil {
+		return 0, 0, fmt.Errorf("unexpected inotify limits: %q", lastLines(out, 3))
 	}
 	return instances, watches, nil
 }
