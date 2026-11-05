@@ -10,6 +10,7 @@ import (
 
 	"github.com/cleonte/k8slings"
 	"github.com/cleonte/k8slings/k8slings/check"
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/schema"
 )
@@ -126,6 +127,47 @@ func TestNoOrphans(t *testing.T) {
 		})
 		if err != nil {
 			t.Fatal(err)
+		}
+	}
+}
+
+var imageRe = regexp.MustCompile(`(?m)^\s*(?:-\s*)?image:\s*["']?([^\s"']+)`)
+
+// Cluster exercises need steps (what to wait for), manifest exercises must not
+// have any, and every image a cluster exercise runs is preloaded into the nodes
+// so that no exercise depends on a registry.
+func TestModesAndImages(t *testing.T) {
+	preloaded := map[string]bool{}
+	for _, img := range cluster.PreloadImages {
+		preloaded[img] = true
+	}
+	for _, ex := range load(t) {
+		raw, err := fs.ReadFile(k8slings.FS, ex.CheckPath())
+		if err != nil {
+			t.Fatal(err)
+		}
+		c, err := check.Load(raw)
+		if err != nil {
+			t.Fatal(err)
+		}
+		switch ex.Mode {
+		case exercises.ModeManifest:
+			if c.HasSteps() {
+				t.Errorf("%s is a manifest exercise, so its check.yaml must not have steps", ex.Name)
+			}
+		case exercises.ModeCluster:
+			if !c.HasSteps() {
+				t.Errorf("%s is a cluster exercise and needs steps in its check.yaml", ex.Name)
+			}
+			broken, _ := fs.ReadFile(k8slings.FS, ex.Source())
+			sol, _ := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
+			for _, src := range [][]byte{broken, sol} {
+				for _, m := range imageRe.FindAllSubmatch(src, -1) {
+					if !preloaded[string(m[1])] {
+						t.Errorf("%s uses the image %s, which cluster.PreloadImages does not list", ex.Name, m[1])
+					}
+				}
+			}
 		}
 	}
 }

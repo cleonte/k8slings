@@ -99,18 +99,22 @@ func Find(name, infoFile string) (Exercise, error) {
 
 // NextPending returns the first exercise, in manifest order, that is not done
 // and can run here.
-func NextPending(infoFile string) (Exercise, error) {
+func NextPending(infoFile string, av Availability) (Exercise, error) {
 	all, err := List(infoFile)
 	if err != nil {
 		return Exercise{}, err
 	}
 	for _, e := range all {
-		if e.State() == Pending && e.SkipReason() == "" {
+		if e.State() == Pending && e.SkipReason(av) == "" {
 			return e, nil
 		}
 	}
 	return Exercise{}, ErrNoPending
 }
+
+// Namespace is the namespace a cluster exercise runs in: one per exercise, so
+// that cleaning up is trivial and exercises cannot disturb each other.
+func (e Exercise) Namespace() string { return "k8slings-" + e.Name }
 
 // File is the path, on disk, of the file the learner edits.
 func (e Exercise) File() string { return filepath.FromSlash(path.Join(e.Path, ExerciseFile)) }

@@ -78,6 +78,7 @@ type Model struct {
 	skipped  int
 	topic    string // e.g. "Topic: pods (2/5)"
 	exercise exercises.Exercise
+	avail    exercises.Availability // what this machine can run, looked at on every run
 	// pinned is the exercise picked from the list. It is the one that runs
 	// until n moves on, instead of the first pending one.
 	pinned string
@@ -109,8 +110,8 @@ type checkDoneMsg struct{ items []checkItem }
 
 func New(cfg Config) *Model {
 	if cfg.Run == nil {
-		cfg.Run = func(_ context.Context, ex exercises.Exercise) (exercises.Result, error) {
-			return ex.Run(cfg.Env)
+		cfg.Run = func(ctx context.Context, ex exercises.Exercise) (exercises.Result, error) {
+			return ex.Run(ctx, cfg.Env)
 		}
 	}
 	return &Model{cfg: cfg, width: 80, height: 24}
@@ -356,7 +357,8 @@ func (m *Model) startRun() tea.Cmd {
 		return nil
 	}
 	m.done, m.total = done, total
-	if skipped, err := exercises.Skipped(m.cfg.InfoFile); err == nil {
+	m.avail = m.cfg.Env.Availability(context.Background())
+	if skipped, err := exercises.Skipped(m.cfg.InfoFile, m.avail); err == nil {
 		m.skipped = len(skipped)
 	}
 
@@ -394,7 +396,7 @@ func (m *Model) nextExercise() (exercises.Exercise, error) {
 		}
 		m.pinned = ""
 	}
-	return exercises.NextPending(m.cfg.InfoFile)
+	return exercises.NextPending(m.cfg.InfoFile, m.avail)
 }
 
 func (m *Model) topicLine(exercise exercises.Exercise) string {

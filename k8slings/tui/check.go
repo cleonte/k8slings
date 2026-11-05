@@ -44,7 +44,7 @@ func (m *Model) startCheck() tea.Cmd {
 			var failed *exercises.FailedError
 			switch {
 			case exercises.IsSkipped(err):
-				it.status = checkSkipped
+				it.status, it.detail = checkSkipped, err.Error()
 			case errors.As(err, &failed):
 				it.status, it.detail = checkFailed, failed.Lines[0]
 				it.broken = e.State() == exercises.Done
@@ -70,7 +70,7 @@ func (m *Model) checkLines() []string {
 			lines = append(lines, okStyle.Render("✔ ")+it.exercise.Name)
 		case checkSkipped:
 			skipped++
-			lines = append(lines, warnStyle.Render("↷ "+it.exercise.Name)+dimStyle.Render("  "+it.exercise.SkipReason()))
+			lines = append(lines, warnStyle.Render("↷ "+it.exercise.Name)+dimStyle.Render("  "+it.detail))
 		default:
 			failed++
 			line := errStyle.Render("✘ ") + it.exercise.Name + dimStyle.Render("  "+it.detail)

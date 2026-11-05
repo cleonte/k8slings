@@ -1,0 +1,22 @@
+# I AM NOT DONE
+# deployments2: a shop that must stay up while it is updated.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 3
+  # TODO: this strategy takes every Pod down at once during an update.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: shop
+  template:
+    metadata:
+      labels:
+        app: shop
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.27

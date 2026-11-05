@@ -10,5 +10,6 @@ run:
 # Installs k8slings into a temporary folder and runs the first commands a learner types.
 smoke:
 	@scripts/smoke.sh
+# Needs Docker, kind and kubectl. Each test makes its own cluster, one after the other (-p 1).
 cluster-test:
-	@go test -tags cluster -run TestRealCluster -timeout 20m -v ./k8slings/cluster/
+	@go test -tags cluster -p 1 -timeout 40m -v -run 'TestRealCluster|TestClusterSolutions' ./k8slings/...

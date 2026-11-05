@@ -1,23 +1,57 @@
 package exercises
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io/fs"
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/cleonte/k8slings/k8slings/check"
 	"github.com/cleonte/k8slings/k8slings/schema"
 	"sigs.k8s.io/yaml"
 )
 
+// Kube is the k8slings cluster, as far as running an exercise needs it. It is
+// implemented by cluster.Cluster; tests use a fake.
+type Kube interface {
+	check.Kube
+	// Verify says whether the kubeconfig leads to the cluster's own API server.
+	Verify(ctx context.Context) error
+	ResetNamespace(ctx context.Context, ns string) error
+	Apply(ctx context.Context, ns string, manifest []byte) (string, error)
+	Nodes(ctx context.Context) (int, error)
+	Diagnose(ctx context.Context, ns string) []string
+}
+
 // Env is what running an exercise needs: the embedded exercise tree (for the
-// check.yaml files, which are never written to the workspace) and the schemas.
+// check.yaml files, which are never written to the workspace), the schemas and,
+// for cluster exercises, the cluster.
 type Env struct {
 	Embedded  fs.FS // the k8slings.FS: info.toml and exercises/
 	Validator *schema.Validator
+	// Kube is nil when there is no cluster support; cluster exercises are then skipped.
+	Kube Kube
+	// Poll is how often a cluster check is repeated; default 2 seconds.
+	Poll time.Duration
+	// Timeout, when set, replaces the timeout of every cluster exercise. The
+	// proof that an unsolved exercise fails uses a short one.
+	Timeout time.Duration
+}
+
+// DefaultTimeout is how long a cluster exercise has to start working.
+const DefaultTimeout = 60 * time.Second
+
+// Availability looks at what this machine can run right now.
+func (e *Env) Availability(ctx context.Context) Availability {
+	if e == nil || e.Kube == nil || e.Kube.Verify(ctx) != nil {
+		return Availability{}
+	}
+	n, _ := e.Kube.Nodes(ctx)
+	return Availability{Cluster: true, Nodes: n}
 }
 
 // Result is what a successful run reports.
@@ -28,7 +62,12 @@ type Result struct {
 
 // FailedError means the exercise is not solved. Lines are written for the
 // learner, one problem per line.
-type FailedError struct{ Lines []string }
+type FailedError struct {
+	Lines []string
+	// Details is what the cluster looks like, for a learner who is stuck: not
+	// problems themselves, so it is shown without bullets.
+	Details []string
+}
 
 func (e *FailedError) Error() string { return strings.Join(e.Lines, "\n") }
 
@@ -45,18 +84,23 @@ func IsSkipped(err error) bool {
 // Run checks the learner's exercise file. It does not look at the
 // "I AM NOT DONE" marker; callers decide what a pending-but-passing exercise
 // means.
-func (e Exercise) Run(env *Env) (Result, error) {
+func (e Exercise) Run(ctx context.Context, env *Env) (Result, error) {
 	src, err := os.ReadFile(e.File())
 	if err != nil {
 		return Result{}, fmt.Errorf("cannot read %s: %w", e.File(), err)
 	}
-	return e.RunSource(env, src)
+	return e.RunSource(ctx, env, src)
 }
 
 // RunSource checks src as if it were the content of the exercise file.
-func (e Exercise) RunSource(env *Env, src []byte) (Result, error) {
-	if e.Mode != ModeManifest {
-		return Result{}, &SkippedError{fmt.Sprintf("%s is a %s exercise; that mode is not available yet", e.Name, e.Mode)}
+func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, error) {
+	if e.Mode == ModeFix {
+		return Result{}, &SkippedError{fmt.Sprintf("%s: %s", e.Name, e.SkipReason(Availability{}))}
+	}
+	if e.Mode == ModeCluster {
+		if reason := e.SkipReason(env.Availability(ctx)); reason != "" {
+			return Result{}, &SkippedError{fmt.Sprintf("%s %s", e.Name, reason)}
+		}
 	}
 	raw, err := fs.ReadFile(env.Embedded, e.CheckPath())
 	if err != nil {
@@ -68,10 +112,10 @@ func (e Exercise) RunSource(env *Env, src []byte) (Result, error) {
 	}
 	objs, err := ParseObjects(src)
 	if err != nil {
-		return Result{}, &FailedError{[]string{"Your YAML could not be read: " + err.Error()}}
+		return Result{}, &FailedError{Lines: []string{"Your YAML could not be read: " + err.Error()}}
 	}
 	if len(objs) == 0 {
-		return Result{}, &FailedError{[]string{"The file has no Kubernetes objects."}}
+		return Result{}, &FailedError{Lines: []string{"The file has no Kubernetes objects."}}
 	}
 
 	if c.Schema == "strict" {
@@ -86,13 +130,89 @@ func (e Exercise) RunSource(env *Env, src []byte) (Result, error) {
 			}
 		}
 		if len(problems) > 0 {
-			return Result{}, &FailedError{problems}
+			return Result{}, &FailedError{Lines: problems}
 		}
 	}
 	if failures := c.Run(objs); len(failures) > 0 {
-		return Result{}, &FailedError{failures}
+		return Result{}, &FailedError{Lines: failures}
+	}
+	if e.Mode == ModeCluster {
+		if err := e.runCluster(ctx, env, c, src); err != nil {
+			return Result{}, err
+		}
 	}
 	return Result{Exercise: e, Objects: len(objs)}, nil
+}
+
+// timeout is how long the cluster has to make the exercise work.
+func (e Exercise) timeout(env *Env) time.Duration {
+	if env.Timeout > 0 {
+		return env.Timeout
+	}
+	if d, err := time.ParseDuration(e.Timeout); err == nil && d > 0 {
+		return d
+	}
+	return DefaultTimeout
+}
+
+// runCluster applies the manifest to the exercise's own namespace and polls the
+// steps of the check until they all hold or the time is up. The static checks
+// (schema, assertions on the manifest) have already passed, so a typo is
+// reported in milliseconds, without touching the cluster.
+func (e Exercise) runCluster(ctx context.Context, env *Env, c *check.Compiled, src []byte) error {
+	ns := e.Namespace()
+	if err := env.Kube.ResetNamespace(ctx, ns); err != nil {
+		return err
+	}
+	if out, err := env.Kube.Apply(ctx, ns, src); err != nil {
+		// Some mistakes are rejected by the API server when the manifest is applied.
+		return &FailedError{Lines: applyProblems(out)}
+	}
+
+	poll := env.Poll
+	if poll <= 0 {
+		poll = 2 * time.Second
+	}
+	deadline := time.Now().Add(e.timeout(env))
+	for {
+		problem := c.RunSteps(ctx, env.Kube, ns)
+		if problem.Message == "" {
+			return nil
+		}
+		if problem.Final {
+			return &FailedError{Lines: []string{problem.Message}}
+		}
+		if time.Now().After(deadline) || ctx.Err() != nil {
+			failed := &FailedError{Lines: []string{problem.Message}}
+			if ctx.Err() == nil {
+				failed.Details = env.Kube.Diagnose(ctx, ns)
+			}
+			return failed
+		}
+		select {
+		case <-ctx.Done():
+		case <-time.After(poll):
+		}
+	}
+}
+
+// applyProblems keeps the lines of a failed `kubectl apply` that say what was
+// rejected, falling back to all of them.
+func applyProblems(out string) []string {
+	var errs, all []string
+	for _, l := range strings.Split(out, "\n") {
+		if l = strings.TrimSpace(l); l == "" {
+			continue
+		}
+		all = append(all, l)
+		if strings.Contains(l, "rror") {
+			errs = append(errs, l)
+		}
+	}
+	if len(errs) > 0 {
+		return errs
+	}
+	return all
 }
 
 // Windows editors and git checkouts write CRLF, so the separator line may end in \r.

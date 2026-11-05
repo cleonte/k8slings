@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, `watch` (full-screen and `--plain`), `doctor` (offline checks), the `cluster` package (`cluster up|down|status`, `kubectl`), and the first exercises are built. Everything marked *(target)* is still design: the cluster half of `doctor`, the cluster-mode runner and its `check.yaml` steps, fix mode, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
+> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, `watch` (full-screen and `--plain`), `doctor` (offline checks), the `cluster` package (`cluster up|down|status`, `kubectl`), and the first exercises are built. Everything marked *(target)* is still design: the cluster half of `doctor`, fix mode, and the rest of the cluster exercises, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
 
 ## What this project is
 
@@ -132,24 +132,25 @@ The runner applies `exercise.yaml` to a fresh namespace in the k8slings cluster,
 
 Flow, inherited from the prototype: marker gate, cluster reachable, wipe and recreate the namespace `k8slings-<name>`, `kubectl apply -n <ns>`, then poll the check every 2 s until it passes or the timeout expires, then print diagnostics (pod states, events, last logs) if it did not. Exercise YAML never sets `metadata.namespace`.
 
-`check.yaml` for cluster mode is declarative too, using the same CEL against **live** objects, with a small step vocabulary:
+`check.yaml` for cluster mode is declarative too, using the same CEL against **live** objects, with a small step vocabulary. The static part of the file (`schema`, `objects`) runs first, on the manifest alone, so a typo is reported in milliseconds without touching the cluster. (YAML reads an unquoted `off` as `false`; `schema: off` is accepted anyway.)
 
 ```yaml
 steps:
-  - wait: { for: rollout, resource: deployment/web, timeout: 90s }
-  - wait: { for: condition=Ready, resource: pod, selector: app=web }
-  - assert:
-      resource: service/web
-      expr: object.status.loadBalancer == null     # any CEL over the live object
-  - endpoints: { service: web, min: 2 }            # EndpointSlice ready addresses
-  - http: { service: web, port: 80, path: /, status: 200, body_contains: "nginx" }
-  - exec: { pod: client, args: ["wget","-qO-","-T","3","http://server"], ok: true }
-  - exec: { pod: intruder, args: ["wget","-qO-","-T","3","http://server"], ok: false }
-  - can_i: { as: sa/reader, verb: get, resource: pods, ok: true }
-  - logs: { pod: app, contains: "ready" }
+  - rollout: deployment/web                          # generation seen, all replicas updated and available
+  - ready: {pod: client}                             # or {selector: app=web, min: 2}
+  - assert:                                          # any CEL over a live object (`object`) or a list (`objects`)
+      resource: deployment/web                       # or: resources: pods, selector: app=web
+      expr: "object.spec.strategy.type == 'RollingUpdate'"
+      message: "Use a rolling update."
+      now: true                                      # about the spec, not the cluster catching up: fail at once
+  - endpoints: {service: web, min: 2, port: 80}      # ready EndpointSlice addresses
+  - http: {service: web, port: 80, path: /, body_contains: nginx}
+  - exec: {pod: intruder, args: [wget, -qO-, -T, "3", http://server], ok: false}
+  - can_i: {as: reader, verb: delete, resource: pods, ok: false}   # a ServiceAccount of the exercise namespace
+  - logs: {pod: app, contains: "ready"}
 ```
 
-`http` goes through the API-server service proxy (`kubectl get --raw /api/v1/namespaces/<ns>/services/<name>:<port>/proxy/`), so no port-forward process, no host port, no firewall prompt, and it works the same on Colima, Lima and Docker Desktop. Traffic-policy questions (NetworkPolicy) must not use it, because the proxy bypasses pod-to-pod policy; those use `exec` from a client pod inside the namespace. Ingress/Gateway exercises are the one place that needs host reachability; see Add-ons.
+Steps are evaluated in order and the first one that does not hold is reported; the runner polls the whole list every 2 s until it passes or the exercise's timeout (default 60 s) is up, then shows the problem and what the namespace looks like (Pods and the last warnings). A step marked `now: true` ends the run immediately when it fails, because waiting cannot fix a mistake in what the learner wrote. An `exec` step first requires its Pod to be Running, so a Pod that has not started cannot count as "blocked". `http` goes through the API-server service proxy (`kubectl get --raw /api/v1/namespaces/<ns>/services/<name>:<port>/proxy/`), so no port-forward process, no host port, no firewall prompt, and it works the same on Colima, Lima and Docker Desktop. Traffic-policy questions (NetworkPolicy) must not use it, because the proxy bypasses pod-to-pod policy; those use `exec` from a client pod inside the namespace. Ingress/Gateway exercises are the one place that needs host reachability; see Add-ons.
 
 Why declarative and not a Go `Check` func per exercise (as in the prototype's `registry`): a declarative file is reviewable without reading Go, shares one evaluator and one set of timeouts, produces uniform failure output, and lets the same file drive fix mode. The cost is a fixed vocabulary. The escape hatch is a **named Go check**: `check.yaml` may contain `go: <name>`, resolved in a registry in `k8slings/check/named.go`. It is reserved for checks the vocabulary cannot express (parsing log content, arithmetic on quota status) and every use needs a sentence in the PR on why the vocabulary was not enough. Named checks follow the same purity rules.
 
@@ -206,7 +207,7 @@ The add-on registry (`k8slings/cluster/addons.go`) has, per add-on: name, pinned
 
 ## Speed
 
-Cluster exercises must check quickly. Rules: reuse one cluster; one namespace per exercise; poll every 2 s with a per-exercise timeout (default 60 s cluster, 120 s fix) and a global ceiling; delete the namespace with `--wait=false` followed by a wait for the *next* run's namespace only; pre-load the handful of images exercises use (`busybox`, `nginx`, `registry.k8s.io/pause`, a tiny curl image) with `kind load` during `cluster up`, so no exercise depends on a registry pull; prefer images that are already in the node image. An exercise whose solution takes more than about 30 s on CI hardware needs a reason.
+Cluster exercises must check quickly. Rules: reuse one cluster; one namespace per exercise; poll every 2 s with a per-exercise timeout (default 60 s cluster, 120 s fix) and a global ceiling; delete the namespace with `--wait=false` followed by a wait for the *next* run's namespace only; pre-load the handful of images exercises use (`cluster.PreloadImages`: `nginx:1.27`, `busybox:1.37`) into every node during `cluster up`, by pulling inside each node (`crictl pull`), so no exercise depends on a registry pull. `kind load docker-image` is deliberately not used: it fails ("content digest ... not found") when Docker uses its containerd image store. A test requires that every image a cluster exercise uses is in the list. An exercise whose solution takes more than about 30 s on CI hardware needs a reason.
 
 ## CI *(target)*
 

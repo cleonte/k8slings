@@ -104,21 +104,21 @@ func filesCheck(all []exercises.Exercise, env Env) Check {
 	}
 }
 
-// modesCheck says how many exercises cannot run yet, so that "all done" is
+// modesCheck says how many exercises need the cluster, so that "all done" is
 // not mistaken for "everything there is".
 func modesCheck(all []exercises.Exercise) Check {
-	skipped := 0
+	cluster := 0
 	for _, e := range all {
-		if e.SkipReason() != "" {
-			skipped++
+		if e.Mode != exercises.ModeManifest {
+			cluster++
 		}
 	}
-	if skipped == 0 {
+	if cluster == 0 {
 		return Check{Name: "Exercise modes", Status: OK, Detail: "every exercise runs offline, no cluster needed"}
 	}
 	return Check{
 		Name:   "Exercise modes",
 		Status: Warn,
-		Detail: fmt.Sprintf("%d of %d exercises need a cluster, which k8slings cannot set up yet; they are skipped", skipped, len(all)),
+		Detail: fmt.Sprintf("%d of %d exercises need the cluster (`k8slings cluster up`); until it exists they are skipped", cluster, len(all)),
 	}
 }

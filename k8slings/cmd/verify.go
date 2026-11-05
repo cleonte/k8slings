@@ -26,7 +26,7 @@ func VerifyCmd(infoFile string) *cobra.Command {
 			env := newEnv()
 			skipped := 0
 			for _, ex := range all {
-				_, err := ex.Run(env)
+				_, err := ex.Run(cmd.Context(), env)
 				if exercises.IsSkipped(err) {
 					color.Yellow("↷ %s skipped: %s", ex.Name, err)
 					skipped++

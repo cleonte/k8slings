@@ -53,9 +53,9 @@ again) or q (quit).`,
 			}
 
 			watchLoop(cmd.InOrStdin(), changes, watchActions{
-				run:  func() { _ = runNext(infoFile) },
+				run:  func() { _ = runNext(ctx, infoFile) },
 				list: func() { _ = ListCmd(infoFile).RunE(nil, nil) },
-				hint: func() { printNextHint(infoFile) },
+				hint: func() { printNextHint(ctx, infoFile) },
 			})
 			return nil
 		},
@@ -70,8 +70,8 @@ func isTerminal(f any) bool {
 	return ok && term.IsTerminal(int(file.Fd()))
 }
 
-func printNextHint(infoFile string) {
-	ex, err := exercises.NextPending(infoFile)
+func printNextHint(ctx context.Context, infoFile string) {
+	ex, err := exercises.NextPending(infoFile, newEnv().Availability(ctx))
 	if err != nil {
 		color.Yellow("There is no pending exercise to give a hint for.")
 		return

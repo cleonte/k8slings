@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-> **Early development.** There are <!-- count:exercises -->15<!-- /count --> exercises in <!-- count:topics -->7<!-- /count --> topics so far, all of them *manifest* exercises that run offline. Cluster and troubleshooting exercises are on the [roadmap](ROADMAP.md).
+> **Early development.** There are <!-- count:exercises -->17<!-- /count --> exercises in <!-- count:topics -->8<!-- /count --> topics so far, most of them *manifest* exercises that run offline, and a few *cluster* exercises that need `k8slings cluster up`. Troubleshooting exercises are on the [roadmap](ROADMAP.md).
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -13,7 +13,7 @@ You get a folder of Kubernetes manifests, each one broken in one small way. Edit
 There are three kinds of exercise (see [CLAUDE.md](CLAUDE.md) for the details):
 
 - **manifest**: offline, no cluster. Your YAML is validated against the Kubernetes schema and checked with a few assertions. You can start with nothing but this binary.
-- **cluster** *(planned)*: your manifest is applied to a local [kind](https://kind.sigs.k8s.io/) cluster and checked against what really happens.
+- **cluster**: your manifest is applied to a local [kind](https://kind.sigs.k8s.io/) cluster of its own (`k8slings cluster up`, needs Docker, kind and kubectl) and checked against what really happens: a rollout completes, a Service has endpoints, a request gets through. Without the cluster these exercises are skipped.
 - **fix** *(planned)*: the tool breaks something in the cluster, you repair it with `kubectl`.
 
 ## Install

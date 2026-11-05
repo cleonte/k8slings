@@ -1,0 +1,12 @@
+steps:
+  - assert:
+      resource: deployment/shop
+      now: true
+      expr: "object.spec.strategy.type == 'RollingUpdate'"
+      message: "The strategy should be RollingUpdate: Recreate stops every Pod before starting new ones."
+  - assert:
+      resource: deployment/shop
+      now: true
+      expr: "has(object.spec.strategy.rollingUpdate) && string(object.spec.strategy.rollingUpdate.maxUnavailable) in ['0', '0%'] && string(object.spec.strategy.rollingUpdate.maxSurge) in ['1', '25%']"
+      message: "For zero downtime no Pod may be unavailable during the update (maxUnavailable 0), and one extra Pod may be started (maxSurge 1)."
+  - rollout: deployment/shop

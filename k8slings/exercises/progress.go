@@ -2,11 +2,33 @@ package exercises
 
 import "fmt"
 
+// Availability is what this machine can run: whether the k8slings cluster is
+// there and healthy, and how many nodes it has.
+type Availability struct {
+	Cluster bool
+	Nodes   int
+}
+
 // SkipReason says why the exercise cannot run on this machine, or is empty if
-// it can. Only manifest exercises run today.
-func (e Exercise) SkipReason() string {
-	if e.Mode != ModeManifest {
-		return fmt.Sprintf("%s exercises are not available yet", e.Mode)
+// it can. Manifest exercises always run.
+func (e Exercise) SkipReason(av Availability) string {
+	switch e.Mode {
+	case ModeFix:
+		return "fix exercises are not available yet"
+	case ModeCluster:
+		if !av.Cluster {
+			return "needs the cluster: run `k8slings cluster up`"
+		}
+	}
+	for _, need := range e.Requires {
+		switch need {
+		case "multinode":
+			if av.Nodes < 3 {
+				return "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
+			}
+		default:
+			return fmt.Sprintf("needs the %s add-on, which is not available yet", need)
+		}
 	}
 	return ""
 }
@@ -26,14 +48,14 @@ func Progress(infoFile string) (done, total int, err error) {
 }
 
 // Skipped returns the exercises that cannot run here.
-func Skipped(infoFile string) ([]Exercise, error) {
+func Skipped(infoFile string, av Availability) ([]Exercise, error) {
 	all, err := List(infoFile)
 	if err != nil {
 		return nil, err
 	}
 	var skipped []Exercise
 	for _, e := range all {
-		if e.SkipReason() != "" {
+		if e.SkipReason(av) != "" {
 			skipped = append(skipped, e)
 		}
 	}

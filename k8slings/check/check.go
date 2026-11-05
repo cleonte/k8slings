@@ -4,6 +4,7 @@
 package check
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -15,8 +16,31 @@ import (
 type File struct {
 	// Schema is "strict" (the default, validated against the embedded schemas)
 	// or "off".
-	Schema  string `json:"schema"`
-	Objects []Rule `json:"objects"`
+	Schema  SchemaMode `json:"schema"`
+	Objects []Rule     `json:"objects"`
+	// Steps are the checks against the live cluster (cluster mode). They are
+	// read-only and are polled until all of them pass, see steps.go.
+	Steps []Step `json:"steps"`
+}
+
+// SchemaMode is "strict" or "off". YAML 1.1 reads an unquoted `off` as the
+// boolean false, so that is accepted as "off" too.
+type SchemaMode string
+
+func (m *SchemaMode) UnmarshalJSON(data []byte) error {
+	switch string(data) {
+	case "false":
+		*m = "off"
+		return nil
+	case "true":
+		return fmt.Errorf("schema must be strict or off")
+	}
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	*m = SchemaMode(s)
+	return nil
 }
 
 // Rule selects objects from the learner's manifest and asserts things on them.
@@ -44,6 +68,7 @@ type Compiled struct {
 	File
 	env   *cel.Env
 	progs [][]cel.Program
+	steps []compiledStep
 }
 
 // Load parses and compiles a check.yaml. Authoring mistakes (bad YAML, a
@@ -92,6 +117,9 @@ func Load(data []byte) (*Compiled, error) {
 			progs = append(progs, prg)
 		}
 		c.progs = append(c.progs, progs)
+	}
+	if err := c.compileSteps(); err != nil {
+		return nil, err
 	}
 	return c, nil
 }
