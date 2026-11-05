@@ -30,6 +30,7 @@ If the exercise uses a kind that has no embedded schema, add it to `scripts/gen-
 
 ```sh
 go test ./...        # everything that needs no cluster
+make cluster-test    # needs Docker, kind, kubectl: creates a real cluster (k8slings-test), checks the safety rules, deletes it
 make smoke           # go install into a temp folder, then run what a learner types
                      # (macOS runs it weekly in CI, macos-smoke.yml, not on pull requests)
 ```

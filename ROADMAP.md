@@ -142,8 +142,9 @@ Branch `phase-2-tui`.
 
 Branch `phase-3-cluster`.
 
-- [ ] `cluster` package: kind wrapper with pinned image, owned kubeconfig, context pinning, the single kubectl builder, container cross-check, refusal rules, and a test that no other code path execs kubectl.
-- [ ] `cluster up | down | status`, `kubectl` pass-through, image preload, `--single`.
+- [x] `cluster` package: kind wrapper with pinned image, owned kubeconfig, context pinning, the single kubectl builder, container cross-check, refusal rules, and a test that no other code path execs kubectl (`TestOnlyExecGoRunsPrograms`: only `cluster/exec.go` may import `os/exec`).
+- [x] `cluster up | down | status`, `kubectl` pass-through, `--single`; `up` preflights the inotify limit, verifies every node Ready and kube-proxy Running, and retries a failed cold create once. Proven against a real kind cluster on Lima (`make cluster-test`).
+- [ ] Image preload during `cluster up` (busybox, nginx, pause, a curl image) so no exercise depends on a registry pull.
 - [ ] Add-on registry skeleton (`requires` handling, skip messages, `list` locks); `multinode` topology.
 - [ ] `doctor` cluster part: runtime detection (Docker Desktop, Colima, Lima, Linux), kind/kubectl versions and skew, node/core-pod health, inotify limits with the printed fix.
 - [ ] Declarative cluster `check.yaml` steps (`wait`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`) plus the named-Go-check escape hatch.
