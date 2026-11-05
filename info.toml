@@ -44,6 +44,16 @@ Container names must differ. The second one is the sidecar."""
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/#pods-that-run-multiple-containers"
 
 [[exercises]]
+name = "pods6"
+path = "exercises/pods/pods6"
+topic = "pods"
+mode = "cluster"
+timeout = "60s"
+hint = """
+There are two mistakes. A mount refers to a volume by name; and nginx serves the files in /usr/share/nginx/html."""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+
+[[exercises]]
 name = "labels1"
 path = "exercises/labels/labels1"
 topic = "labels"
@@ -153,3 +163,22 @@ hint = """
 Which restartPolicy values does a Job allow?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
 
+[[exercises]]
+name = "rbac1"
+path = "exercises/rbac/rbac1"
+topic = "rbac"
+mode = "cluster"
+timeout = "30s"
+hint = """
+A Role grants verbs on resources; a RoleBinding names who gets the Role. Check both the verbs and the subject's name."""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
+
+[[exercises]]
+name = "rbac2"
+path = "exercises/rbac/rbac2"
+topic = "rbac"
+mode = "cluster"
+timeout = "30s"
+hint = """
+Three rules are enough: pods (get, list, watch), pods/log (get), and deployments in the apps group (get, list, patch). Then bind the Role to the ServiceAccount."""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-example"

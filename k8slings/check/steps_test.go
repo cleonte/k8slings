@@ -223,6 +223,22 @@ func TestCanI(t *testing.T) {
 	}
 }
 
+// kubectl auth can-i get pods/log asks about the Pod called "log"; the log
+// subresource needs --subresource. A check that forgot this passed a Role
+// without any access to pod logs.
+func TestCanIPassesSubresourcesAsSubresources(t *testing.T) {
+	c := steps(t, "  - can_i: {as: deployer, verb: get, resource: pods/log}\n")
+	k := &fakeKube{rules: []rule{{words: []string{"auth can-i get pods -n ns1 --as system:serviceaccount:ns1:deployer --subresource=log"}, out: "no"}}}
+	if got := run(c, k); !strings.Contains(got, "cannot get pods/log") {
+		t.Fatalf("got %q (calls: %v)", got, k.calls)
+	}
+	for _, call := range k.calls {
+		if strings.Contains(call, "pods/log") {
+			t.Fatalf("pods/log must not be passed to kubectl as one word: %s", call)
+		}
+	}
+}
+
 func TestLogs(t *testing.T) {
 	c := steps(t, "  - logs: {pod: app, contains: level=debug}\n")
 	k := &fakeKube{rules: []rule{{words: []string{"logs app -n ns1"}, out: "level=info"}}}
@@ -232,6 +248,14 @@ func TestLogs(t *testing.T) {
 	k.rules[0].out = "level=debug"
 	if got := run(c, k); got != "" {
 		t.Fatalf("got %q", got)
+	}
+}
+
+func TestNowOnAnyStep(t *testing.T) {
+	c := steps(t, "  - can_i: {as: reader, verb: list, resource: pods}\n    now: true\n")
+	k := &fakeKube{rules: []rule{{words: []string{"auth can-i list pods"}, out: "no"}}}
+	if p := c.RunSteps(context.Background(), k, "ns1"); !p.Final || !strings.Contains(p.Message, "cannot list pods") {
+		t.Fatalf("now on a can_i step should be final: %+v", p)
 	}
 }
 

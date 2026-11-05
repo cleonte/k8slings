@@ -25,7 +25,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Cluster exercises. `check.yaml` can have `steps` that are polled against the live cluster (`rollout`, `ready`, `assert`, `endpoints`, `http`, `exec`, `can_i`, `logs`). A cluster exercise is applied to its own namespace, `k8slings-<name>`, which is emptied on every run; typos in the manifest are reported before anything is applied, and a mistake the cluster cannot fix (`now: true`) ends the run at once. When it does not work in time, the failure shows the problem and the Pods and warnings of the namespace.
 - Without a cluster, cluster exercises are skipped with `run \`k8slings cluster up\``, and `watch` and `run next` carry on with the manifest exercises.
 - `cluster up` pulls the images the exercises use (nginx, busybox) into every node.
-- Two cluster exercises: `deployments2` (rolling update) and `services1` (a Service whose targetPort is wrong).
+- Five cluster exercises: `deployments2` (rolling update), `services1` (a Service whose targetPort is wrong), `pods6` (an init container and a shared volume), and `rbac1` and `rbac2` (what a ServiceAccount may really do, asked of the API server).
+- `now: true` works on every check step, not only `assert`.
 - `make cluster-test`: creates real clusters and proves the safety rules and every cluster exercise.
 
 ### Changed

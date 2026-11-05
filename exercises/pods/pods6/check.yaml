@@ -1,0 +1,11 @@
+steps:
+  - ready: {pod: web}
+  - assert:
+      resource: pod/web
+      expr: "object.status.initContainerStatuses[0].state.terminated.exitCode == 0"
+      message: "The init container should finish successfully before nginx starts."
+  - exec:
+      pod: web
+      container: nginx
+      args: [cat, /usr/share/nginx/html/index.html]
+      contains: "hello from init"

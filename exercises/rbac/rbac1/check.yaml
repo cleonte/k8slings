@@ -1,0 +1,7 @@
+steps:
+  - can_i: {as: reader, verb: get, resource: pods}
+    now: true
+  - can_i: {as: reader, verb: list, resource: pods}
+    now: true
+  - can_i: {as: reader, verb: delete, resource: pods, ok: false}
+    now: true

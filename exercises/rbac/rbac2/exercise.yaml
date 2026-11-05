@@ -1,0 +1,8 @@
+# I AM NOT DONE
+# rbac2: give the deployer ServiceAccount exactly the permissions in README.md.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployer
+---
+# TODO: add a Role and a RoleBinding that give `deployer` those permissions, and nothing else.
