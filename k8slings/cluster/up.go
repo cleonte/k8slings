@@ -115,7 +115,7 @@ func (c *Cluster) checkTools(ctx context.Context) error {
 	if have == "" {
 		return fmt.Errorf("cannot read the kind version from %q", out)
 	}
-	if compareVersions(have, MinKindVersion) < 0 {
+	if CompareVersions(have, MinKindVersion) < 0 {
 		return fmt.Errorf("kind %s is too old: k8slings needs %s or newer, the version that published the pinned node image", have, MinKindVersion)
 	}
 	return nil
@@ -123,8 +123,8 @@ func (c *Cluster) checkTools(ctx context.Context) error {
 
 var kindVersionRe = regexp.MustCompile(`v\d+\.\d+\.\d+`)
 
-// compareVersions compares two vMAJOR.MINOR.PATCH strings.
-func compareVersions(a, b string) int {
+// CompareVersions compares two vMAJOR.MINOR.PATCH strings.
+func CompareVersions(a, b string) int {
 	pa, pb := versionParts(a), versionParts(b)
 	for i := range pa {
 		if pa[i] != pb[i] {
