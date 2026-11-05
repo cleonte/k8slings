@@ -37,6 +37,8 @@ k8slings watch           # check the first exercise that is not done yet, and ag
 | `k8slings watch` | Full-screen view that re-checks the current exercise every time you save. `--plain` for plain lines. |
 | `k8slings run next` / `run <name>` | Check one exercise. |
 | `k8slings hint <name>` | Show the hint and a link to the Kubernetes docs. |
+| `k8slings cluster up` / `down` / `status` | Create, inspect and delete the local kind cluster (needs Docker, kind and kubectl; manifest exercises do not). |
+| `k8slings kubectl ...` | kubectl against the k8slings cluster only. |
 | `k8slings doctor` | Check the workspace and what the binary brings with it. |
 | `k8slings list` | All exercises, by topic, with your progress. |
 | `k8slings verify` | Check every exercise in order. |

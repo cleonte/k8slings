@@ -10,3 +10,5 @@ run:
 # Installs k8slings into a temporary folder and runs the first commands a learner types.
 smoke:
 	@scripts/smoke.sh
+cluster-test:
+	@go test -tags cluster -run TestRealCluster -timeout 20m -v ./k8slings/cluster/

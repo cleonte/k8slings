@@ -18,6 +18,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - README demo GIFs, recorded with vhs from `demo.tape` and `demo-tui.tape`.
 - A weekly macOS smoke test (`go install`, then the first commands a learner types).
 
+- `k8slings cluster up|down|status`: one kind cluster of its own (one control plane and two workers, `--single` for one node) on a Kubernetes 1.37 node image pinned by digest. It has its own kubeconfig, so `~/.kube/config` and your current context are never touched. `up` checks the Docker host's inotify limit first and prints the fix for Lima, Colima or Linux, waits until every node is Ready and kube-proxy is Running, and retries a failed first start once.
+- `k8slings kubectl ...`: kubectl pinned to the k8slings cluster; flags that choose a cluster, user or credentials are refused.
+- Before cluster exercises run, the kubeconfig is checked against the control-plane container's published API server port, and anything else is refused.
+
 ### Changed
 
 - The earlier prototype (a cluster-only version with 19 exercises) moved to `prototype/` until its exercises are migrated.
