@@ -1,5 +1,5 @@
 # TEMPORARY: reproduces an intermittent failure of resources2 on GitHub's
-# runners. Delete this file before merging.
+# runners. Delete this file before merging. (round 2: reset fix)
 name: flake hunt
 on:
   pull_request:

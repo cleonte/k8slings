@@ -16,6 +16,8 @@ func namespaceFake(defaultSAAfter int) func(Cmd) (string, error) {
 		switch {
 		case strings.Contains(args, "api-resources"):
 			return "pods\nservices\nevents\nendpoints\nleases.coordination.k8s.io\nserviceaccounts\ndeployments.apps\n", nil
+		case strings.Contains(args, "get pods"):
+			return "No resources found in " + "ns namespace.", nil
 		case strings.Contains(args, "get serviceaccount default"):
 			gets++
 			if gets < defaultSAAfter {
@@ -35,7 +37,7 @@ func TestResetNamespaceEmptiesItAndWaitsForTheDefaultServiceAccount(t *testing.T
 	del := f.called("kubectl --kubeconfig")
 	var deleteArgs []string
 	for _, call := range del {
-		if slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "--wait=true") {
+		if slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "--wait=true") && !slices.Contains(call.Args, "--cascade=orphan") {
 			deleteArgs = call.Args // the one that lists the kinds
 		}
 	}
@@ -50,6 +52,62 @@ func TestResetNamespaceEmptiesItAndWaitsForTheDefaultServiceAccount(t *testing.T
 	}
 	if !strings.Contains(joined, "--all -n k8slings-pods1") || !strings.Contains(joined, "--now") {
 		t.Errorf("delete = %s", joined)
+	}
+}
+
+// Deleting Pods together with their Deployment lets the ReplicaSet create new
+// ones meanwhile, which the garbage collector removes only later: they then
+// count against the next run's quota. Controllers must go first, orphaning
+// their Pods (foreground cascading would make the garbage collector use the
+// 30 s default grace period), and the namespace must be verified empty.
+func TestResetNamespaceDeletesControllersFirstAndWaitsForNoPods(t *testing.T) {
+	c, f := newCluster(t, namespaceFake(1))
+	if err := c.ResetNamespace(context.Background(), "k8slings-x"); err != nil {
+		t.Fatal(err)
+	}
+	var order []string
+	for _, call := range f.called("kubectl") {
+		switch {
+		case slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "--cascade=orphan"):
+			order = append(order, "controllers")
+			if !strings.Contains(strings.Join(call.Args, " "), "deployments.apps") {
+				t.Errorf("controllers delete lacks deployments: %v", call.Args)
+			}
+			if slices.Contains(call.Args, "--cascade=foreground") {
+				t.Errorf("foreground cascading makes the garbage collector use the 30 s grace period: %v", call.Args)
+			}
+		case slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "--wait=true"):
+			order = append(order, "everything else")
+		case slices.Contains(call.Args, "pods") && slices.Contains(call.Args, "get"):
+			order = append(order, "wait for no pods")
+		}
+	}
+	if got := strings.Join(order, " > "); got != "controllers > everything else > wait for no pods" {
+		t.Fatalf("order = %s", got)
+	}
+}
+
+func TestResetNamespaceWaitsWhileTerminatingPodsRemain(t *testing.T) {
+	polls := 0
+	c, _ := newCluster(t, func(cmd Cmd) (string, error) {
+		args := strings.Join(cmd.Args, " ")
+		switch {
+		case strings.Contains(args, "api-resources"):
+			return "pods\nserviceaccounts\n", nil
+		case strings.Contains(args, "get pods"):
+			polls++
+			if polls < 3 {
+				return "web-1   1/1   Terminating   0   10s", nil
+			}
+			return "", nil
+		}
+		return "", nil
+	})
+	if err := c.ResetNamespace(context.Background(), "k8slings-x"); err != nil {
+		t.Fatal(err)
+	}
+	if polls < 3 {
+		t.Fatalf("the reset returned after %d polls while a Pod was still terminating", polls)
 	}
 }
 

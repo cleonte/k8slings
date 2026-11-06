@@ -53,8 +53,26 @@ func (c *Cluster) namespacedKinds(ctx context.Context) string {
 // namespace and waiting for it to disappear.
 func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 	_, _ = c.Kubectl(ctx, "create", "namespace", ns) // AlreadyExists is fine
+
+	// Controllers go first, and without touching their Pods (--cascade=orphan):
+	// that is instant, and from then on nothing can create new Pods. Deleting the
+	// Pods in the same command as their Deployment lets the ReplicaSet create new
+	// ones meanwhile, and the garbage collector removes those later, in the
+	// background, after this function has returned: they then count against the
+	// next run's ResourceQuota ("exceeded quota ... used: pods=4" with only two
+	// Pods in sight), which was seen on CI as a Deployment stuck one Pod short.
+	// Foreground cascading would also work, but the garbage collector then uses
+	// the default 30 s grace period, and a Pod whose main process ignores SIGTERM
+	// (busybox sleep) would make every run wait that long. The Pods are deleted
+	// below, with --now.
+	if out, err := c.Kubectl(ctx, "delete", controllerKinds, "--all", "-n", ns, "--cascade=orphan", "--now", "--wait=true", "--timeout=60s"); err != nil {
+		return fmt.Errorf("cannot empty namespace %s: %s", ns, firstLine(out))
+	}
 	if out, err := c.Kubectl(ctx, "delete", c.namespacedKinds(ctx), "--all", "-n", ns, "--now", "--wait=true", "--timeout=60s"); err != nil {
 		return fmt.Errorf("cannot empty namespace %s: %s", ns, firstLine(out))
+	}
+	if err := c.waitNoPods(ctx, ns); err != nil {
+		return err
 	}
 	// Events of earlier runs would show up in the diagnosis of this one (a Pod
 	// of the previous attempt, a claim "being deleted"), so they go too. They
@@ -73,6 +91,26 @@ func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 		}
 	}
 	return fmt.Errorf("the default ServiceAccount of namespace %s did not come back", ns)
+}
+
+// controllerKinds are the resources that create Pods.
+const controllerKinds = "deployments.apps,statefulsets.apps,daemonsets.apps,replicasets.apps,jobs.batch,cronjobs.batch"
+
+// waitNoPods waits until the namespace has no Pods at all, not even terminating
+// ones: whatever is left would still count against a quota.
+func (c *Cluster) waitNoPods(ctx context.Context, ns string) error {
+	for range 120 {
+		out, err := c.Kubectl(ctx, "get", "pods", "-n", ns, "--no-headers")
+		if err == nil && strings.TrimSpace(out) == "" || err == nil && strings.HasPrefix(strings.TrimSpace(out), "No resources found") {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(500 * time.Millisecond):
+		}
+	}
+	return fmt.Errorf("namespace %s still has Pods after it was emptied", ns)
 }
 
 // Apply applies a manifest to the namespace.
