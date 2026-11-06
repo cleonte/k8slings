@@ -26,7 +26,8 @@ func VerifyCmd(infoFile string) *cobra.Command {
 			env := newEnv()
 			skipped := 0
 			for _, ex := range all {
-				_, err := ex.Run(cmd.Context(), env)
+				// Checking everything must not break the cluster for exercises not started.
+				_, err := ex.Run(exercises.NoSeed(cmd.Context()), env)
 				if exercises.IsSkipped(err) {
 					color.Yellow("↷ %s skipped: %s", ex.Name, err)
 					skipped++

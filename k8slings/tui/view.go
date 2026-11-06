@@ -70,7 +70,7 @@ func (m *Model) lines() []string {
 	case modeConfirmReset:
 		return []string{
 			warnStyle.Render("Reset " + m.exercise.Name + " to its original state?"),
-			"This discards your changes to " + m.exercise.File() + ".",
+			resetWarning(m.exercise),
 			"",
 			"y to reset it, any other key to keep your work",
 		}
@@ -126,6 +126,17 @@ func (m *Model) resultLines() []string {
 	case exercises.IsSkipped(m.runErr):
 		return []string{warnStyle.Render(m.runErr.Error())}
 
+	case exercises.IsSeeded(m.runErr):
+		return []string{
+			okStyle.Render("🧰 " + m.exercise.Name + ": the cluster is now broken on purpose."),
+			"",
+			"Read the ticket:  " + m.exercise.File(),
+			"Look around:      k8slings kubectl -n " + m.exercise.Namespace() + " get pods",
+			"",
+			dimStyle.Render("This view checks the cluster again every couple of seconds and turns green when it is repaired."),
+			dimStyle.Render("Press h for a hint."),
+		}
+
 	case errors.As(m.runErr, &failed):
 		lines := []string{errStyle.Render("✘ " + m.exercise.Name + " is not solved yet:"), ""}
 		for _, l := range failed.Lines {
@@ -137,6 +148,9 @@ func (m *Model) resultLines() []string {
 				lines = append(lines, dimStyle.Render(d))
 			}
 		}
+		if m.exercise.Mode == exercises.ModeFix {
+			return append(lines, "", dimStyle.Render("Repair it with k8slings kubectl -n "+m.exercise.Namespace()+" ...; this view looks again every couple of seconds. Press h for a hint."))
+		}
 		return append(lines, "", dimStyle.Render("Edit "+m.exercise.File()+" and save. Press h for a hint."))
 
 	case m.runErr != nil:
@@ -144,6 +158,9 @@ func (m *Model) resultLines() []string {
 	}
 
 	lines := []string{okStyle.Render("✔ " + m.exercise.Name + " works!"), ""}
+	if m.exercise.Mode == exercises.ModeFix {
+		return append(lines, "The cluster is repaired. Press n for the next exercise.")
+	}
 	if m.exercise.State() == exercises.Pending {
 		lines = append(lines, warnStyle.Render("Remove the `# I AM NOT DONE` line from the file, or press n, to move on to the next exercise."))
 	}
@@ -190,4 +207,12 @@ func (m *Model) footer() string {
 		return dimStyle.Render(line)
 	}
 	return dimStyle.Render("q quit")
+}
+
+// resetWarning says what a reset costs.
+func resetWarning(ex exercises.Exercise) string {
+	if ex.Mode == exercises.ModeFix {
+		return "This breaks the cluster again, as it was when you started, and forgets that it was fixed."
+	}
+	return "This discards your changes to " + ex.File() + "."
 }

@@ -47,6 +47,10 @@ func TestManifest(t *testing.T) {
 			if !strings.HasPrefix(ex.Docs, "https://") {
 				t.Errorf("docs %q should be an https link", ex.Docs)
 			}
+			if ex.Mode == exercises.ModeFix {
+				testFixExercise(t, ex)
+				return
+			}
 			for _, f := range []string{"README.md", exercises.ExerciseFile, exercises.CheckFile} {
 				if _, err := fs.Stat(k8slings.FS, path.Join(ex.Path, f)); err != nil {
 					t.Errorf("missing %s: %v", f, err)
@@ -131,7 +135,9 @@ func TestNoOrphans(t *testing.T) {
 	}
 }
 
-var imageRe = regexp.MustCompile(`(?m)^\s*(?:-\s*)?image:\s*["']?([^\s"']+)`)
+// imageRe finds the images in a manifest (`image: x`) and in a kubectl script
+// (`--image=x`, `set image deployment/web app=x`).
+var imageRe = regexp.MustCompile(`(?m)(?:^\s*(?:-\s*)?image:\s*["']?|--image=|set image \S+ \S+=)([^\s"']+)`)
 
 // Cluster exercises need steps (what to wait for), manifest exercises must not
 // have any, and every image a cluster exercise runs is preloaded into the nodes
@@ -155,7 +161,7 @@ func TestModesAndImages(t *testing.T) {
 			if c.HasSteps() {
 				t.Errorf("%s is a manifest exercise, so its check.yaml must not have steps", ex.Name)
 			}
-		case exercises.ModeCluster:
+		case exercises.ModeCluster, exercises.ModeFix:
 			if c.Shipped == "" {
 				t.Errorf("%s is a cluster exercise: its check.yaml needs `shipped:`, what the first problem of the unsolved exercise says", ex.Name)
 			}
@@ -163,14 +169,97 @@ func TestModesAndImages(t *testing.T) {
 				t.Errorf("%s is a cluster exercise and needs steps in its check.yaml", ex.Name)
 			}
 			broken, _ := fs.ReadFile(k8slings.FS, ex.Source())
+			if ex.Mode == exercises.ModeFix {
+				broken, _ = fs.ReadFile(k8slings.FS, ex.SetupPath())
+			}
 			sol, _ := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
-			for _, src := range [][]byte{broken, sol} {
+			sources := [][]byte{broken, sol}
+			if shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.sh")); len(shortcuts) > 0 {
+				for _, f := range shortcuts {
+					data, _ := fs.ReadFile(k8slings.Solutions, f)
+					sources = append(sources, data)
+				}
+			}
+			for _, src := range sources {
 				for _, m := range imageRe.FindAllSubmatch(src, -1) {
 					if !preloaded[string(m[1])] {
 						t.Errorf("%s uses the image %s, which cluster.PreloadImages does not list", ex.Name, m[1])
 					}
 				}
 			}
+		}
+	}
+}
+
+var rejectedRe = regexp.MustCompile(`^# rejected: "(.+)"$`)
+
+// A fix exercise has no file to edit: a ticket (README.md), the broken state
+// (setup.yaml) and the checks stay in the binary except the README, and the
+// solution is a kubectl script. Each shortcut script says what the check must
+// say when it is tried.
+func testFixExercise(t *testing.T, ex exercises.Exercise) {
+	t.Helper()
+	for _, f := range []string{exercises.ReadmeFile, exercises.SetupFile, exercises.CheckFile} {
+		if _, err := fs.Stat(k8slings.FS, path.Join(ex.Path, f)); err != nil {
+			t.Errorf("missing %s: %v", f, err)
+		}
+	}
+	if _, err := fs.Stat(k8slings.FS, path.Join(ex.Path, exercises.ExerciseFile)); err == nil {
+		t.Errorf("a fix exercise has no %s: the learner repairs the cluster", exercises.ExerciseFile)
+	}
+
+	setup, err := fs.ReadFile(k8slings.FS, ex.SetupPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if namespaceRe.Match(setup) {
+		t.Errorf("%s must not set metadata.namespace: k8slings picks it", ex.SetupPath())
+	}
+	objs, err := exercises.ParseObjects(setup)
+	if err != nil || len(objs) == 0 {
+		t.Fatalf("setup does not parse: %v", err)
+	}
+	validator := schema.New(k8slings.Schemas)
+	for _, o := range objs {
+		if _, err := validator.Validate(o); err != nil {
+			var noSchema schema.ErrNoSchema
+			if errors.As(err, &noSchema) {
+				t.Errorf("no embedded schema for %s: add it to scripts/gen-schemas.sh", noSchema)
+			}
+		}
+	}
+
+	raw, err := fs.ReadFile(k8slings.FS, ex.CheckPath())
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := check.Load(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(c.UnchangedResources()) == 0 {
+		t.Errorf("%s needs an `unchanged:` step: without it, deleting the broken object and creating a new one would pass", ex.Name)
+	}
+
+	script, err := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
+	if err != nil {
+		t.Fatalf("missing solution script: %v", err)
+	}
+	if strings.TrimSpace(string(script)) == "" {
+		t.Error("the solution script is empty")
+	}
+	shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.sh"))
+	if len(shortcuts) == 0 {
+		t.Errorf("%s needs at least one shortcut-*.sh: a way to cheat that the check must refuse", ex.Name)
+	}
+	for _, f := range shortcuts {
+		data, err := fs.ReadFile(k8slings.Solutions, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		first, _, _ := strings.Cut(string(data), "\n")
+		if !rejectedRe.MatchString(first) {
+			t.Errorf(`%s must start with: # rejected: "what the check says"`, f)
 		}
 	}
 }

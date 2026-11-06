@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->35<!-- /count --> exercises in <!-- count:topics -->17<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens.
+You get <!-- count:exercises -->36<!-- /count --> exercises in <!-- count:topics -->18<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -12,6 +12,8 @@ Each exercise is a Kubernetes manifest that is broken in one small way (the last
 
 - **Manifest exercises** run offline. Your YAML is validated against the Kubernetes 1.37 schema (a misspelled `contianers:` is caught, with a message you can read) and checked with a few assertions about what you wrote.
 - **Cluster exercises** are applied to a local [kind](https://kind.sigs.k8s.io/) cluster of their own and checked against what really happens: a rollout completes, a Service has endpoints, a request gets through, a network policy keeps an intruder out, a ServiceAccount may or may not delete Pods. When it does not work yet, you see the Pods and the warnings of the cluster. Without the cluster, these exercises are skipped and the rest carry on.
+
+- **Fix exercises** break the cluster on purpose and hand you a ticket, as in a real incident: Pods that keep restarting, a Service with no endpoints. There is no file to edit. You look around and repair it with `kubectl` (`k8slings kubectl ...` is `kubectl` for the k8slings cluster), and `watch` turns green by itself when it works. Deleting the broken thing and creating a new one does not count: k8slings notices.
 
 What you will practise: Pods, labels and selectors, namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, requests, limits and quotas, Jobs, volumes and claims, scheduling, RBAC, network policies, and a capstone: a broken stack to debug like a real incident.
 
@@ -72,7 +74,7 @@ Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to
 
 ## Status
 
-k8slings is young. The offline and cluster exercises described above work and are proven in CI on every change, including on a real kind cluster. Still to come, see the [roadmap](ROADMAP.md): troubleshooting exercises where you repair a broken live cluster with `kubectl`, more topics (StatefulSets, DaemonSets, security contexts, Kustomize), and exercises that need add-ons (HPA, Ingress and the Gateway API).
+k8slings is young. The offline and cluster exercises described above work and are proven in CI on every change, including on a real kind cluster. Still to come, see the [roadmap](ROADMAP.md): more troubleshooting exercises (there is one so far), Kustomize, and exercises that need add-ons (HPA, Ingress and the Gateway API).
 
 ## Contributing
 

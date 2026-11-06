@@ -163,11 +163,12 @@ Branch `phase-3-cluster`.
 
 Branch `phase-4-fix`.
 
-- [ ] Mode plumbing: `setup.yaml`/`setup.sh` seeding, ownership labels, namespace and cluster-scoped cleanup by label, progress storage in `.k8slings.json`.
-- [ ] `watch` behaviour for fix: poll the check while current, turn green on pass, no marker, "seeded, now fix it" message.
-- [ ] `reset` re-seeds; `solution` prints `solution.sh`; `forbid:` rules in `check.yaml` (UID unchanged, image unchanged, resource not deleted-and-recreated).
-- [ ] `TestSolutions` for fix: seed, check must fail, run `solution.sh`, check must pass; also a test that every forbid-shortcut variant fails.
-- [ ] Troubleshooting topic: CrashLoopBackOff, ImagePullBackOff, Pending (resources, taints, PVC), broken selectors, failing probes, quota exceeded, RBAC denied, DNS/NetworkPolicy blocking; a multi-fault capstone (the prototype's 19 may live here).
+- [x] Mode plumbing: `setup.yaml` seeding, the ownership label on the namespace, progress storage in `.k8slings.json`, never seeding by itself, `verify` and check-all never seed. Not built: `setup.sh` and cluster-scoped objects with cleanup by label (no exercise needs them yet).
+- [x] `watch` behaviour for fix: re-check every two seconds while current (also while a hint is open), turn green on pass, no marker, the "seeded, now fix it" hand-over screen. Verified in a real terminal.
+- [x] `reset` re-seeds; `solution` prints `solution.sh`; the `unchanged` step (UID unchanged: deleting and recreating is refused) and ordinary `now: true` assertions for the rest (image, replicas). (Instead of a separate `forbid:` syntax.)
+- [x] `TestFixSolutions`: seed, fail for the declared reason, `solution.sh` repairs it and it holds, every `shortcut-*.sh` refused. One shared cluster with the other proofs.
+- [x] Troubleshooting topic, first exercise: `troubleshooting1` (CrashLoopBackOff).
+- [ ] More troubleshooting exercises: ImagePullBackOff, Pending (resources, taints, PVC), broken selectors, failing probes, quota exceeded, RBAC denied, DNS/NetworkPolicy blocking; a multi-fault capstone (the prototype's 19 may live here).
 - [ ] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons

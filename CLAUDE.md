@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: usable and proven; two pieces are still to build.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), 26 exercises in 14 topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. Sections marked *(target)* describe what is not built yet: **fix mode** (Phase 4) and the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
+> **Status: usable and proven; two pieces are still to build or to grow.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), 26 exercises in 14 topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. **Fix mode** (Phase 4) has its engine and its first exercise; more exercises, and cluster-scoped setups, are next. Sections marked *(target)* describe what is not built yet: the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
 
 ## What this project is
 
@@ -82,12 +82,13 @@ All modes: `README.md` (what to learn, a few lines), and a `hint` + `docs` in `i
 ```
 exercises/<topic>/<name>/
   README.md            learner-facing lesson
-  exercise.yaml        manifest + cluster modes: the broken manifest(s), may be multi-document
+  exercise.yaml        manifest + cluster modes: the broken manifest(s), may be multi-document (a fix exercise has none)
   check.yaml           embedded only, not written by init
-  setup.yaml, ...      fix mode only: see below
+  setup.yaml           fix mode only: the broken state, embedded only like check.yaml
 solutions/<topic>/<name>/
   exercise.yaml        working version, no marker, no TODO     (manifest + cluster)
-  solution.sh          kubectl script                           (fix)
+  solution.sh          kubectl script that repairs it           (fix)
+  shortcut-*.sh        ways to cheat that the check must refuse (fix)
 ```
 
 ### Schemas
@@ -158,16 +159,18 @@ Why declarative and not a Go `Check` func per exercise (as the first prototype d
 
 All checks are **read-only and idempotent**: they are polled repeatedly. They must never mutate the cluster. A step that fails reports the first failing step with expected-versus-actual, not a dump.
 
-### fix — troubleshooting with live state *(target)*
+### fix — troubleshooting with live state
 
-CKA-style practice. The tool brings the cluster to a broken state; the learner repairs it with `kubectl` (through `k8slings kubectl` or their own kubectl with the k8slings kubeconfig); the check asserts the end state. There is **no file to edit**, so the file-based mechanics change:
+CKA-style practice. The tool brings the cluster to a broken state; the learner repairs it with `kubectl` (through `k8slings kubectl`); the check looks at the result. There is **no file to edit**, so the mechanics differ from the other modes:
 
-- Files: `README.md` (the symptom as a ticket: "the web app returns 503, fix it, do not delete the Deployment"), `setup.yaml` (the broken state, multi-document), optional `setup.sh` for things that are not plain manifests (a `kubectl taint`, a scale), `check.yaml` (as cluster mode, plus optional `forbid:` rules), and in `solutions/` a `solution.sh`.
-- No marker. The "done" signal is the check passing: in `watch` a fix exercise is polled every 2 s while it is current, and when the check passes it turns green and `n` moves on. Outside watch, `k8slings verify <name>` or `run <name>` runs the check once. Completion is stored in the progress file (`.k8slings.json` in the workspace), because there is no file to mutate.
-- `reset <name>` deletes the namespace and re-runs the seed. `run` on a fix exercise never reseeds by itself (it would wipe the learner's work); the first `run`/`watch` on a pending exercise seeds it, and the TUI says "seeded, now fix it".
-- "Solution" means `solution.sh`: a kubectl script, run with `KUBECONFIG` and `NS` set. `solution <name>` prints it (hidden while pending). It is the CI proof, see below.
-- Shortcuts are blocked by `forbid:` assertions in `check.yaml`, such as "the Deployment UID must be unchanged" or "the image must still be nginx:1.27", so deleting and recreating things does not pass. The check must pass for the legitimate end state and fail for the shortcut.
-- Safety: fix exercises only touch their own namespace, plus cluster-scoped objects that the seed creates and `reset`/cleanup removes by label (`k8slings.io/exercise=<name>`). A fix exercise that taints a node must untaint it in cleanup; those need `requires = ["multinode"]` so the control plane is never the victim.
+- **Files.** `exercises/<topic>/<name>/` has `README.md` (the ticket: the symptom, the rules, where to start; it is the only file `init` gives the learner), `setup.yaml` (the broken state, applied to the exercise's namespace) and `check.yaml` (the steps, `shipped:`). The last two stay in the binary, like every `check.yaml`, because they would give the cause away. `solutions/<topic>/<name>/` has `solution.sh` (a kubectl script; it calls plain `kubectl -n "$NS" ...`, and the test prelude makes that kubectl the k8slings one) and one or more `shortcut-*.sh`.
+- **State.** Completion is kept in `.k8slings.json` next to `info.toml` (there is no marker line to delete), together with the UIDs of the seeded objects. It is written atomically, and a damaged file means "no progress", never a crash. **Done is sticky**: once the check has passed, the exercise stays done even if the learner breaks the cluster again later.
+- **Seeding.** The first `run` or `watch` on a pending exercise seeds it: empty the namespace, label it `k8slings.io/exercise=<name>`, apply `setup.yaml`, record the UIDs of the objects the check names with `unchanged`. It is reported as a hand-over ("the cluster is now broken on purpose"), not as a failure, and **nothing ever seeds again by itself**: that would wipe the learner's repair. A namespace that is labelled but that this workspace did not seed (another folder, or a lost progress file) is seeded fresh, because without the recorded UIDs it cannot be judged. `verify` and check-all run with `exercises.NoSeed(ctx)` and skip an exercise that was not started: checking everything must not break the cluster behind the learner's back.
+- **Checking.** One look at the cluster, not a wait with a timeout: the learner is working in it. `watch` looks again every two seconds while the exercise is not repaired (it keeps going while the learner reads a hint), and turns green by itself; `run` checks once. **A repair must hold**: a check that passes is repeated after three seconds (`Env.Settle`) and only then counts, because a crash-looping container is briefly Running and Ready before it exits, and one look that lands there would call a broken cluster fixed (seen for real while building the first exercise).
+- **`unchanged: deployment/web`** is a step: the live object must be the one that was seeded. Deleting a Deployment and creating a new one with the same name changes its UID and is refused. If the UIDs were not recorded, the step says so instead of passing.
+- **`reset <name>`** breaks the cluster again (seed again) and forgets that it was done; the full-screen view asks first.
+- **Shortcuts are proven refused.** Each `shortcut-*.sh` starts with `# rejected: "text"`, and `TestFixSolutions` seeds the exercise, runs the script, and requires the check to keep failing with that text, and the exercise not to be recorded as done. Every fix exercise needs at least one shortcut and at least one `unchanged` step (an offline test requires both). Other ways to cheat are blocked with ordinary steps marked `now: true` (keep the image, keep the replica count).
+- **Safety.** A fix exercise only touches its own namespace. Cluster-scoped changes (a taint, a ClusterRole) and a `setup.sh` for things that are not plain manifests are **not built yet**; exercises that need them wait for that, and a fix exercise that taints a node would need `requires = ["multinode"]` and a cleanup.
 
 ## Cluster handling and safety
 
@@ -216,7 +219,7 @@ Cluster exercises must check quickly. Rules: reuse one cluster; one namespace pe
 Workflows in `.github/workflows/`:
 
 - **`test.yml` (every PR, no cluster):** formatting, `go vet`, all unit tests and `TestSolutions` for every **manifest** exercise (unsolved fails, solution passes; no solution without an exercise; no exercise without a solution), plus the manifest consistency tests and the docs-counts test. Go 1.26, 1.27 and stable on Linux, and the tests and the `go install` smoke test on Windows, since offline mode must work there.
-- **`cluster.yml` (kind in GitHub Actions):** installs kind at the pinned minimum, raises the inotify limits, and runs `make cluster-test`: `TestRealCluster` (the safety rules, images on every node) and `TestClusterSolutions` (each cluster exercise must fail as shipped, by its own check and within a short timeout, and pass with its solution). It runs on every PR that touches exercises, solutions, the cluster, check, exercises or cmd packages, `go.mod` or the workflow itself; on every push to `main`; weekly; and on demand. Measured on GitHub's `ubuntu-latest`: about 4 minutes with two cluster exercises and **about 6 minutes with ten**, within the budget of about 10 minutes for running on every PR. Re-measure as exercises are added; if it ever exceeds about 15 minutes, shard it by exercise, or move it to `main` plus weekly plus a PR label, and record that in ROADMAP.
+- **`cluster.yml` (kind in GitHub Actions):** installs kind at the pinned minimum, raises the inotify limits, and runs `make cluster-test`: `TestRealCluster` (the safety rules, images on every node) and `TestClusterSolutions` (each cluster exercise must fail as shipped, for the reason its `shipped:` line names, and pass with its solution) and `TestFixSolutions` (each fix exercise: seed, fail for its reason, the solution script repairs it and it holds, every shortcut refused), all on one shared cluster. It runs on every PR that touches exercises, solutions, the cluster, check, exercises or cmd packages, `go.mod` or the workflow itself; on every push to `main`; weekly; and on demand. Measured on GitHub's `ubuntu-latest`: about 4 minutes with two cluster exercises and **about 6 minutes with ten**, within the budget of about 10 minutes for running on every PR. Re-measure as exercises are added; if it ever exceeds about 15 minutes, shard it by exercise, or move it to `main` plus weekly plus a PR label, and record that in ROADMAP.
 - **`macos-smoke.yml`:** the `go install` smoke test on macOS, weekly and on demand, not on pull requests (GitHub's macOS runners are often unavailable, and a PR must not wait for them).
 - **`release.yml`:** on a `v*` tag, GoReleaser builds the archives and the release body is the CHANGELOG section (see CONTRIBUTING.md, "Releasing").
 - **`version-watch.yml`:** weekly, opens an issue for a newer kind or Kubernetes node image.

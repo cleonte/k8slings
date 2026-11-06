@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io/fs"
 	"slices"
+	"time"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
@@ -113,6 +114,17 @@ type runDoneMsg struct {
 	err    error
 }
 
+// fixTickMsg asks for another look at a fix exercise: there is no file whose
+// save would trigger one, because the learner works in the cluster.
+type fixTickMsg struct{ id int }
+
+// reseedDoneMsg says that a fix exercise was broken again by a reset.
+type reseedDoneMsg struct{ err error }
+
+// fixRecheckEvery is how often a fix exercise that is not repaired yet is
+// checked. It is a variable so that the tests do not have to wait for it.
+var fixRecheckEvery = 2 * time.Second
+
 type checkDoneMsg struct {
 	id    int
 	index int
@@ -172,7 +184,26 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case runDoneMsg:
 		if msg.id == m.runID {
 			m.status, m.result, m.runErr = statusFinished, msg.result, msg.err
+			return m, m.scheduleFixRecheck()
 		}
+
+	case fixTickMsg:
+		if msg.id != m.runID || m.status != statusFinished {
+			return m, nil // an old tick, or something else is going on
+		}
+		if m.mode != modeResult {
+			return m, m.scheduleFixRecheck() // reading the hint: look again when back
+		}
+		return m, m.startRun()
+
+	case reseedDoneMsg:
+		if msg.err != nil {
+			m.notice = "Reset failed: " + msg.err.Error()
+			return m, nil
+		}
+		cmd := m.startRun()
+		m.notice = "Reset " + m.exercise.Name + ": the cluster is broken again."
+		return m, cmd
 
 	default:
 		// What the list asks for itself, e.g. the matches of a filter.
@@ -296,15 +327,30 @@ func (m *Model) showSolution() {
 func (m *Model) askToReset() {
 	switch {
 	case !m.hasExercise():
-	case m.cfg.Source == nil:
+	case m.cfg.Source == nil && m.exercise.Mode != exercises.ModeFix:
 		m.notice = "Reset is not available here."
 	default:
 		m.mode, m.scroll = modeConfirmReset, 0
 	}
 }
 
-// reset puts the original exercise back and runs it again.
+// scheduleFixRecheck asks for another look at a fix exercise that is not
+// repaired yet. Every other exercise is checked when its file is saved.
+func (m *Model) scheduleFixRecheck() tea.Cmd {
+	if m.exercise.Mode != exercises.ModeFix || m.runErr == nil || exercises.IsSkipped(m.runErr) {
+		return nil
+	}
+	id := m.runID
+	return tea.Tick(fixRecheckEvery, func(time.Time) tea.Msg { return fixTickMsg{id: id} })
+}
+
+// reset puts the original exercise back and runs it again. For a fix exercise
+// that means breaking the cluster again.
 func (m *Model) reset() tea.Cmd {
+	if m.exercise.Mode == exercises.ModeFix {
+		ex, env := m.exercise, m.cfg.Env
+		return func() tea.Msg { return reseedDoneMsg{err: ex.Reseed(context.Background(), env)} }
+	}
 	root := m.cfg.Root
 	if root == "" {
 		root = "."

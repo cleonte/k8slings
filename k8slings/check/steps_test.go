@@ -50,7 +50,7 @@ func steps(t *testing.T, yaml string) *Compiled {
 }
 
 func run(c *Compiled, k *fakeKube) string {
-	return c.RunSteps(context.Background(), k, "ns1").Message
+	return c.RunSteps(context.Background(), k, "ns1", nil).Message
 }
 
 const deployJSON = `{"metadata":{"generation":2},"spec":{"replicas":3},"status":{"observedGeneration":%OBS%,"replicas":3,"updatedReplicas":%UPD%,"availableReplicas":%AVAIL%}}`
@@ -254,7 +254,7 @@ func TestLogs(t *testing.T) {
 func TestNowOnAnyStep(t *testing.T) {
 	c := steps(t, "  - can_i: {as: reader, verb: list, resource: pods}\n    now: true\n")
 	k := &fakeKube{rules: []rule{{words: []string{"auth can-i list pods"}, out: "no"}}}
-	if p := c.RunSteps(context.Background(), k, "ns1"); !p.Final || !strings.Contains(p.Message, "cannot list pods") {
+	if p := c.RunSteps(context.Background(), k, "ns1", nil); !p.Final || !strings.Contains(p.Message, "cannot list pods") {
 		t.Fatalf("now on a can_i step should be final: %+v", p)
 	}
 }
@@ -283,11 +283,53 @@ func TestNowAssertionsEndTheRunAtOnce(t *testing.T) {
   - assert: {resource: deployment/api, expr: "object.status.ready == 3", message: "three ready"}
 `)
 	k := &fakeKube{rules: []rule{{words: []string{"deployment/api"}, out: `{"spec":{"replicas":1},"status":{"ready":0}}`}}}
-	if p := c.RunSteps(context.Background(), k, "ns1"); p.Message != "three replicas" || !p.Final {
+	if p := c.RunSteps(context.Background(), k, "ns1", nil); p.Message != "three replicas" || !p.Final {
 		t.Fatalf("an assertion about the spec should be final: %+v", p)
 	}
 	k.rules[0].out = `{"spec":{"replicas":3},"status":{"ready":0}}`
-	if p := c.RunSteps(context.Background(), k, "ns1"); p.Message != "three ready" || p.Final {
+	if p := c.RunSteps(context.Background(), k, "ns1", nil); p.Message != "three ready" || p.Final {
 		t.Fatalf("an assertion about the status is worth waiting for: %+v", p)
+	}
+}
+
+type fakeSeeds map[string]string
+
+func (f fakeSeeds) UID(resource string) (string, bool) { u, ok := f[resource]; return u, ok }
+
+func TestUnchangedTellsTheSeededObjectFromANewOne(t *testing.T) {
+	c := steps(t, "  - unchanged: deployment/web\n")
+	k := &fakeKube{rules: []rule{{words: []string{"get deployment/web -n ns1", "jsonpath={.metadata.uid}"}, out: "uid-1"}}}
+	run := func(seeds Seeds) string { return c.RunSteps(context.Background(), k, "ns1", seeds).Message }
+
+	if got := run(fakeSeeds{"deployment/web": "uid-1"}); got != "" {
+		t.Fatalf("the same object passes, got %q", got)
+	}
+	if got := run(fakeSeeds{"deployment/web": "uid-0"}); !strings.Contains(got, "deleted and created again") {
+		t.Fatalf("a new object with the same name is not a repair, got %q", got)
+	}
+	// If k8slings cannot tell, it says so instead of waving it through.
+	if got := run(fakeSeeds{}); !strings.Contains(got, "reset the exercise") {
+		t.Fatalf("no recorded UID: %q", got)
+	}
+	if got := run(nil); !strings.Contains(got, "not been seeded") {
+		t.Fatalf("no seeds at all: %q", got)
+	}
+	k.rules[0].err, k.rules[0].out = true, `Error from server (NotFound): deployments.apps "web" not found`
+	if got := run(fakeSeeds{"deployment/web": "uid-1"}); !strings.Contains(got, "deployment/web: Error from server (NotFound)") {
+		t.Fatalf("a missing object: %q", got)
+	}
+}
+
+func TestUnchangedResourcesAreListedForTheSeeding(t *testing.T) {
+	c := steps(t, "  - unchanged: deployment/web\n  - unchanged: service/web\n  - logs: {pod: a, contains: b}\n")
+	got := c.UnchangedResources()
+	if len(got) != 2 || got[0] != "deployment/web" || got[1] != "service/web" {
+		t.Fatalf("got %v", got)
+	}
+}
+
+func TestLoadRejectsABadUnchanged(t *testing.T) {
+	if _, err := Load([]byte("schema: \"off\"\nsteps:\n  - unchanged: web\n")); err == nil {
+		t.Fatal("unchanged wants kind/name")
 	}
 }

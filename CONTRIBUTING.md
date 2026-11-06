@@ -38,6 +38,18 @@ Use `mode = "cluster"` only when the lesson is runtime behaviour (a rollout, end
 - In a check, use fully qualified names (`web-0.web.k8slings-<name>.svc.cluster.local`), not short ones: a short name falls back to public DNS after the cluster's search domains.
 - Prove it with `make cluster-test` (needs Docker, kind and kubectl): the unsolved exercise must fail for the reason in `shipped`, and the solution must pass. Then run the unsolved exercise once with the real CLI and its real timeout and read why it fails.
 
+## Adding a fix exercise
+
+A fix exercise has no file to edit: k8slings breaks the cluster, and the learner repairs it with `kubectl`. Use it for troubleshooting, where the skill is to look and diagnose. In `exercises/<topic>/<name>/`:
+
+- `README.md`: the ticket (the symptom, the rules, where to start). It is the only file the learner is given.
+- `setup.yaml`: the broken state. Do not set `metadata.namespace`. It stays in the binary, because it would give the cause away.
+- `check.yaml`: `shipped: "..."` (what the first problem says), and `steps`. It must have an `unchanged: kind/name` step, so that deleting the object and creating a new one does not count as a repair, and `now: true` assertions for the other ways to cheat (keep the image, keep the replicas).
+- `solutions/<topic>/<name>/solution.sh`: a kubectl script. Write plain `kubectl -n "$NS" ...`; the tests make that kubectl the k8slings one.
+- `solutions/<topic>/<name>/shortcut-*.sh`: at least one way to cheat. The first line is `# rejected: "text the check must say"`. `make cluster-test` runs it and requires the check to keep failing with that text.
+
+A fix exercise that has a crashing or flapping Pod needs nothing special: a repair has to hold for three seconds before it counts. Images must be in `cluster.PreloadImages`, as for cluster exercises.
+
 ## Tests
 
 ```sh

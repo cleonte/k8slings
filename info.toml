@@ -326,3 +326,12 @@ hint = """
 Go outside-in: Pod state, then logs and events, then the Service's endpoints, then a request from client. There are four faults."""
 docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
 
+[[exercises]]
+name = "troubleshooting1"
+path = "exercises/troubleshooting/troubleshooting1"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+Look at the Pods' state, then at what the container prints before it exits (kubectl logs). The message names what is missing. You can add it to the live Deployment with kubectl set env."""
+docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
+
