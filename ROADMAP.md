@@ -1,12 +1,12 @@
 # ROADMAP — k8slings
 
-k8slings is a Rustlings-style course for Kubernetes, built the way [golings](https://github.com/cleonte/golings) is built. This file is the plan; `CLAUDE.md` is the architecture. Both are **design documents awaiting review**: no code changes until they are approved. Phase 0 is where the open decisions are made; the checkboxes in Phase 0 are mostly "decision recorded" rather than "code written".
+k8slings is a Rustlings-style course for Kubernetes, built the way [golings](https://github.com/cleonte/golings) is built. This file is the plan; `CLAUDE.md` is the architecture. Phase 0 is where the open decisions were made; its checkboxes are mostly "decision recorded" rather than "code written".
 
 Counts in this file are planning numbers. Once the consistency test exists (Phase 1), real counts live only between `<!-- count:... -->` markers and the test keeps them equal to `info.toml`.
 
 ## Where things stand
 
-Phases 0 to 3 are done: manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, and the exercises of 14 topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: fix mode and troubleshooting (Phase 4), add-ons and their topics (Phase 5), and the release (Phase 6).
+Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->18<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
 
 ## Facts checked while writing this design (2026-11-04)
 
