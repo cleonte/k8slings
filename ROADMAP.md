@@ -85,12 +85,12 @@ Every exercise of the first prototype has been migrated, with its check re-revie
 
 ## Phase 0 — Decisions (this document)
 
-- [ ] Review and approve CLAUDE.md and ROADMAP.md.
+- [x] Review and approve CLAUDE.md and ROADMAP.md.
 - [x] Decisions recorded under "Decided"; no open questions remain.
-- [ ] **Modes** recorded: manifest, cluster, fix (CLAUDE.md "Exercise modes").
-- [ ] **Assertion format** recorded: `check.yaml` with CEL; cluster steps vocabulary; named-Go-check escape hatch.
-- [ ] **Cluster handling** recorded: owned kubeconfig, context pinning, container cross-check, topology, runtime support matrix.
-- [ ] **Versions** recorded: Kubernetes 1.37, kind ≥ v0.33.0, node image digest, Go floor 1.26.
+- [x] **Modes** recorded: manifest, cluster, fix (CLAUDE.md "Exercise modes").
+- [x] **Assertion format** recorded: `check.yaml` with CEL; cluster steps vocabulary. (The named-Go-check escape hatch is designed, not built: nothing has needed it.)
+- [x] **Cluster handling** recorded: owned kubeconfig, context pinning, container cross-check, topology, runtime support matrix.
+- [x] **Versions** recorded: Kubernetes 1.37, kind ≥ v0.33.0, node image digest, Go floor 1.26.
 - [x] **License** decided: Apache-2.0 (see Decided).
 - [x] Spike (throwaway branch, results written here): evaluate 3 representative CEL assertions with `cel-go` against a parsed Deployment, including `all`, `has` and a cross-object `exists`; measure the binary-size cost.
 - [x] Spike: strict schema validation of the same Deployment with `santhosh-tekuri/jsonschema` versus kubeconform as a library; confirm `contianers:` is rejected and error messages are learner-friendly; measure embedded schema size for the kinds in the topic list. Record which is chosen.
@@ -145,14 +145,16 @@ Branch `phase-3-cluster`.
 - [x] `cluster` package: kind wrapper with pinned image, owned kubeconfig, context pinning, the single kubectl builder, container cross-check, refusal rules, and a test that no other code path execs kubectl (`TestOnlyExecGoRunsPrograms`: only `cluster/exec.go` may import `os/exec`).
 - [x] `cluster up | down | status`, `kubectl` pass-through, `--single`; `up` preflights the inotify limit, verifies every node Ready and kube-proxy Running, and retries a failed cold create once. Proven against a real kind cluster on Lima (`make cluster-test`).
 - [x] Image preload during `cluster up` (nginx, busybox) so no exercise depends on a registry pull. Pulls inside each node with `crictl`: `kind load docker-image` failed on this Docker (containerd image store).
-- [ ] Add-on registry skeleton (`requires` handling, skip messages, `list` locks); `multinode` topology.
+- [x] `requires` handling and skip messages; `multinode` topology. (The add-on registry itself is in Phase 5.)
 - [x] `doctor` cluster part: runtime detection (Docker Desktop, Colima, Lima, Rancher Desktop, Podman, Linux), kind/kubectl versions and skew, inotify limits with the fix for the runtime, node and core-pod health. Verified on a real cluster, including a stopped worker.
 - [x] Declarative cluster `check.yaml` steps (`rollout`, `ready`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`). The named-Go-check escape hatch is not built: no exercise needs it yet.
 - [x] Cluster-mode runner (namespace reset, apply, poll, diagnostics, per-exercise timeouts, `now` assertions that fail at once). A global ceiling is not built.
 - [x] `TestClusterSolutions` behind `-tags cluster`; `make cluster-test` (unsolved fails by the exercise's own check, solution passes, on a real cluster).
 - [x] Migrate the prototype's cluster-destined exercises and remove `prototype/`. All 19 are migrated; see the table above.
-- [ ] Topics: deployments and rollouts, services, probes (runtime), resources and quota, jobs and CronJobs, volumes and PVCs, StatefulSets, DaemonSets, scheduling.
-- [ ] Remaining offline topics from the table (ConfigMaps/Secrets, Kustomize, security contexts, RBAC, network policies shape).
+- [x] Topics with exercises: deployments and rollouts, services, probes, resources and quota, jobs, volumes and PVCs, scheduling.
+- [ ] Topics still to do: StatefulSets, DaemonSets, CronJobs, and more exercises per topic (most have one or two; the table plans three to six).
+- [x] ConfigMaps and Secrets, RBAC and network policies (the last two as cluster exercises).
+- [ ] Still to do: Kustomize, security contexts and Pod Security.
 - [x] Cluster CI job on every PR that touches exercises, solutions or the cluster code (path-filtered), on `main` and weekly. First run: 3 min 52 s, inside the budget. It found a real bug (the inotify preflight was skipped when the node image had to be pulled first).
 
 ## Phase 4 — Fix mode and troubleshooting
@@ -168,6 +170,7 @@ Branch `phase-4-fix`.
 
 ## Phase 5 — Advanced topics and add-ons
 
+- [ ] The add-on registry: pinned manifests in `addons/`, readiness checks, `cluster up --addons` and `cluster addon install|list`, `list` showing what is locked (see CLAUDE.md, "Add-ons").
 Branch per add-on.
 
 - [ ] `metrics-server` add-on (pinned, `--kubelet-insecure-tls`); HPA exercises.
