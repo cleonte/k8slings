@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-06
+
 ### Security
 
 - `k8slings kubectl` now refuses `-s` with its value attached (`-shttps://other:6443`), which slipped past the check for flags that choose the cluster.
@@ -88,7 +90,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/cleonte/k8slings/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/cleonte/k8slings/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/cleonte/k8slings/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/cleonte/k8slings/compare/v0.1.0...v0.2.0
