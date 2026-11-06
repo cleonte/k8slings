@@ -6,33 +6,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Added
+## [0.1.0] - 2026-11-06
 
-- The first Go version of the CLI, built like golings: `init`, `run`, `hint`, `list`, `verify`, `reset` and `solution`, with the exercises and solutions embedded in the binary.
-- Manifest mode: exercises are checked offline, against the embedded Kubernetes 1.37 JSON schemas (unknown fields are errors) and CEL assertions from a `check.yaml` that stays inside the binary.
-- 15 exercises: pods, labels and selectors, namespaces, deployments, config (ConfigMap and Secret references), probes and jobs; six of them migrated from the prototype with their runtime checks turned into manifest checks.
-- `TestSolutions`: every exercise must fail as shipped and pass with its solution.
-- `k8slings watch`: a full-screen view (Bubble Tea v2) that checks the next exercise whenever you save a file. Keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `n` next, `l` list with filter, `c` check all, `f` full output, `q` quit. `--plain` prints lines instead and is used automatically when input or output is not a terminal.
+The first release: a Rustlings-style course for Kubernetes, built like [golings](https://github.com/cleonte/golings). 26 exercises in 14 topics, in two modes.
 
-- `k8slings doctor`: two halves. Offline mode: the manifest, that every exercise file is in place, the embedded Kubernetes schema version. Cluster mode: the container runtime (Docker Desktop, Colima, Lima, Linux, ...), kind, kubectl, the Docker host's inotify limits with the fix for your runtime, and the health of the cluster (nodes, CoreDNS, kube-proxy, kindnet, storage, version skew). Missing tools and a missing cluster are warnings, since manifest exercises do not need them; a broken cluster is a failure.
-- README demo GIFs, recorded with vhs from `demo.tape` and `demo-tui.tape`.
-- A weekly macOS smoke test (`go install`, then the first commands a learner types).
+### Learning
 
-- `k8slings cluster up|down|status`: one kind cluster of its own (one control plane and two workers, `--single` for one node) on a Kubernetes 1.37 node image pinned by digest. It has its own kubeconfig, so `~/.kube/config` and your current context are never touched. `up` checks the Docker host's inotify limit first and prints the fix for Lima, Colima or Linux, waits until every node is Ready and kube-proxy is Running, and retries a failed first start once.
-- `k8slings kubectl ...`: kubectl pinned to the k8slings cluster; flags that choose a cluster, user or credentials are refused.
-- Before cluster exercises run, the kubeconfig is checked against the control-plane container's published API server port, and anything else is refused.
+- `k8slings init` writes the exercises into a folder; `k8slings watch` is a full-screen view (Bubble Tea v2) that checks the next exercise every time you save a file. Keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `n` next, `l` list with filter, `c` check all, `f` full output, `q` quit. `--plain` prints lines instead, and is used automatically when input or output is not a terminal.
+- Also `run`, `hint`, `list`, `verify`, `reset` and `solution`, as in golings. Each exercise has a lesson (`README.md`), a `# TODO:` at the fix site, a hint and a link to the Kubernetes docs. Delete the `# I AM NOT DONE` line when you are done.
+- `k8slings doctor` checks the workspace and what it needs, in two halves, and says whether offline mode and cluster mode are ready.
 
-- Cluster exercises. `check.yaml` can have `steps` that are polled against the live cluster (`rollout`, `ready`, `assert`, `endpoints`, `http`, `exec`, `can_i`, `logs`). A cluster exercise is applied to its own namespace, `k8slings-<name>`, which is emptied on every run; typos in the manifest are reported before anything is applied, and a mistake the cluster cannot fix (`now: true`) ends the run at once. When it does not work in time, the failure shows the problem and the Pods and warnings of the namespace.
-- Without a cluster, cluster exercises are skipped with `run \`k8slings cluster up\``, and `watch` and `run next` carry on with the manifest exercises.
-- `cluster up` pulls the images the exercises use (nginx, busybox) into every node.
-- 26 exercises in 14 topics, which includes the last of the prototype's: `resources1` (requests and limits, offline), and the cluster exercises `resources2` (a namespace quota), `networkpolicies1` (real requests that must, and must not, get through) and `capstone1` (a broken stack with four faults).
-- `quantity()` in CEL, so assertions can compare `64Gi` with `64Mi` or `500m` with `1`.
-- Earlier: seven cluster exercises: `volumes1` (a claim that never binds) and `scheduling1` (constraints that match no node; needs the multi-node cluster) join `deployments2` (rolling update), `services1` (a Service whose targetPort is wrong), `pods6` (an init container and a shared volume), and `rbac1` and `rbac2` (what a ServiceAccount may really do, asked of the API server).
-- `now: true` works on every check step, not only `assert`.
-- A cluster run after a failed one can no longer be refused by a stale ResourceQuota count: the namespace is emptied controllers first, then Pods, and verified to have no Pods left.
-- The diagnosis of a failed cluster exercise shows only this run's warnings (events of earlier runs are cleared) and groups the same message from several Pods into one line.
-- `make cluster-test`: creates real clusters and proves the safety rules and every cluster exercise.
+### Manifest exercises (offline, no cluster)
 
-### Changed
+- 16 of the exercises run with nothing but the binary. Your YAML is validated against the embedded Kubernetes 1.37 JSON schemas (unknown fields are errors, so a misspelled `contianers:` is caught) and checked with CEL assertions. The assertions live inside the binary, so they are not a spoiler.
+- `quantity()` in CEL compares resources such as `64Gi` with `64Mi`, or `500m` with `1`.
 
-- The earlier prototype (a cluster-only version with 19 exercises) has been replaced: every exercise was migrated and its check re-reviewed, and the prototype code was removed.
+### Cluster exercises
+
+- 10 exercises run against a local [kind](https://kind.sigs.k8s.io/) cluster of their own: rollouts, a Service that finds Pods but the wrong port, an init container, a claim that never binds, scheduling constraints, RBAC as the API server sees it (including pod logs), a namespace quota, network policies that must let one Pod in and keep another out, and a broken stack with four faults.
+- `k8slings cluster up|down|status` creates one control plane and two workers (`--single` for one node) on a Kubernetes 1.37 node image pinned by digest, and pulls the images the exercises use into every node. `up` checks the Docker host's inotify limit first and prints the fix for your runtime (Lima, Colima, Linux), waits until every node is Ready and kube-proxy is Running, and retries a failed first start once.
+- Each exercise is applied to its own namespace, `k8slings-<name>`, which is emptied on every run. The checks are read-only and polled: rollouts, readiness, endpoints, requests through the API server's service proxy, commands in Pods, `kubectl auth can-i`, logs. A failure shows the problem, and the Pods and warnings of the namespace.
+- Without a cluster, these exercises are skipped with the command to run (`k8slings cluster up`), and `watch` and `run next` carry on with the manifest exercises.
+
+### Safety
+
+- k8slings only ever talks to its own cluster. It has its own kubeconfig file, so `~/.kube/config` and your current context are never touched. Every kubectl call names that file and the context and runs without `$KUBECONFIG`; flags that choose a cluster, user or credentials (`--context`, `--server`, ...) are refused; and before cluster exercises run, the kubeconfig is checked against the API server port that Docker publishes for the control-plane container.
+- `k8slings kubectl ...` is kubectl pinned to that cluster.
+
+### Quality
+
+- `TestSolutions`: every exercise must fail as shipped and pass with its solution. Cluster exercises are proven the same way on a real kind cluster (`make cluster-test`), which also runs in CI on every pull request that touches them.
+- CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
+- A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
+
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/cleonte/k8slings/releases/tag/v0.1.0

@@ -177,10 +177,10 @@ Branch per add-on.
 
 ## Phase 6 — CI, release and v1.0
 
-- [ ] CI matrix finished: offline on every PR (Linux, Windows; Go 1.26/1.27/stable), cluster on every PR if within budget (else `main` + weekly + label), add-on job, macOS smoke weekly.
-- [ ] Scheduled version-watch job (new kind release or node image).
-- [ ] GoReleaser v2 config (linux, windows, darwin; amd64, arm64), release workflow on `v*` tags using the CHANGELOG section as release notes, `scripts/release-notes.sh`.
-- [ ] README with install, quick start for offline-only and for cluster, the modes explained, demo GIFs; CONTRIBUTING finalized; issue templates finalized.
+- [x] CI matrix: offline on every PR (Linux and Windows; Go 1.26/1.27/stable), the cluster job on every PR that touches what it covers (about 6 minutes, within budget), and macOS smoke weekly. The add-on job comes with the add-ons (Phase 5).
+- [x] Scheduled version-watch job (new kind release or node image): `scripts/version-watch.sh`, weekly, opens one issue when there is news.
+- [x] GoReleaser v2 config (linux, windows, darwin; amd64, arm64), release workflow on `v*` tags using the CHANGELOG section as release notes, `scripts/release-notes.sh`. Verified with a local snapshot build: all six targets, the archives, and the stamped version.
+- [x] README with install, requirements, quick start for offline-only and for cluster, the modes explained, demo GIFs; CONTRIBUTING finalized (releasing); issue templates in place.
 - [ ] Homebrew tap (optional; decide at the time).
 - [ ] Docs consistency test green; every exercise proven in CI; v1.0.0 tag.
 
