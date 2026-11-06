@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -74,7 +75,8 @@ func failingRun(context.Context, exercises.Exercise) (exercises.Result, error) {
 
 func TestSeededScreenHandsOverToTheLearner(t *testing.T) {
 	m, _ := fixModel(t, seededRun)
-	want(t, m, "the cluster is now broken on purpose", "exercises/t/f1/README.md",
+	// The path is shown the way the platform writes it: backslashes on Windows.
+	want(t, m, "the cluster is now broken on purpose", filepath.FromSlash("exercises/t/f1/README.md"),
 		"k8slings kubectl -n k8slings-f1 get pods", "every couple of seconds")
 	if strings.Contains(screen(m), "not solved yet") {
 		t.Fatal("being seeded is not a failure")
