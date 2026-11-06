@@ -1,0 +1,31 @@
+# TEMPORARY: reproduces an intermittent failure of resources2 on GitHub's
+# runners. Delete this file before merging.
+name: flake hunt
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [1, 2, 3]
+    steps:
+    - uses: actions/checkout@v7
+    - uses: actions/setup-go@v7
+      with:
+        go-version: "1.26"
+        cache: true
+    - name: Install kind
+      run: |
+        curl -fsSLo kind "https://kind.sigs.k8s.io/dl/v0.33.0/kind-linux-amd64"
+        sudo install -m 0755 kind /usr/local/bin/kind
+    - run: sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288
+    - name: resources2, again and again
+      run: go test -tags cluster -run 'TestClusterSolutions/resources2' -count=15 -timeout 35m -v ./k8slings/exercises/ 2>&1 | tee hunt.log
+    - name: Summary
+      if: always()
+      run: grep -E "solution passes|must pass|Pods:|Warnings:|exceeded|quota|  [A-Z][a-zA-Z]+/" hunt.log | sed 's/.*cluster_solutions_test.go:[0-9]*: //' | head -60
