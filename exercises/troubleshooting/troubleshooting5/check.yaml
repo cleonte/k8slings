@@ -11,4 +11,9 @@ steps:
       expr: "object.spec.template.spec.containers.all(c, has(c.readinessProbe))"
       message: "Keep the readiness probe: it is what keeps broken Pods away from users."
     now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers.all(c, has(c.readinessProbe.httpGet))"
+      message: "Keep it an HTTP probe: the point is to ask the application, not to see an open port."
+    now: true
   - rollout: deployment/web

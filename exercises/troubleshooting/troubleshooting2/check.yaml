@@ -6,4 +6,9 @@ steps:
       expr: "object.spec.replicas == 2"
       message: "Keep two replicas: scaling down is not a repair."
     now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].image in ['nginx:1.27', 'ngnix:1.27']"
+      message: "The ticket says nginx 1.27: run that image, not another one."
+    now: true
   - rollout: deployment/web

@@ -191,9 +191,10 @@ func TestModesAndImages(t *testing.T) {
 	}
 }
 
-// brokenOnPurpose are images that a fix exercise gets wrong deliberately (a
-// typo in the registry name): nothing can pull them, which is the lesson.
-var brokenOnPurpose = map[string]bool{"ngnix:1.27": true}
+// brokenOnPurpose are images a fix exercise may name although they are not
+// preloaded: a typo nothing can pull (the lesson), and an image that only a
+// shortcut tries, which the check refuses before anything is pulled.
+var brokenOnPurpose = map[string]bool{"ngnix:1.27": true, "httpd:2.4": true}
 
 var rejectedRe = regexp.MustCompile(`^# rejected: "(.+)"$`)
 
