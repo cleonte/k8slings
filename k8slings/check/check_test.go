@@ -108,3 +108,54 @@ func TestLoadRejectsAuthoringMistakes(t *testing.T) {
 		}
 	}
 }
+
+func TestQuantityFunction(t *testing.T) {
+	c, err := Load([]byte(`
+schema: "off"
+objects:
+  - select: {kind: Pod}
+    assert:
+      - {expr: "quantity('64Mi') == 67108864.0", message: "binary suffix"}
+      - {expr: "quantity('500m') < quantity('1')", message: "milli-cores"}
+      - {expr: "quantity('9Mi') < quantity('10Mi')", message: "numbers, not strings"}
+      - {expr: "quantity('1Gi') > quantity('1G')", message: "binary is bigger than decimal"}
+      - {expr: "quantity('64Gi') > quantity('64Mi')", message: "the broken exercise asked for far too much"}
+      - {expr: "quantity(object.spec.containers[0].resources.limits.memory) <= quantity('1Gi')", message: "reads a value from the object"}
+      - {expr: "quantity('2') == 2.0 && quantity('1500m') == 1.5 && quantity('1e3') == 1000.0", message: "plain, fractional and exponent"}
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pod := `{"kind":"Pod","spec":{"containers":[{"resources":{"limits":{"memory":"256Mi"}}}]}}`
+	var obj map[string]any
+	if err := yaml.Unmarshal([]byte(pod), &obj); err != nil {
+		t.Fatal(err)
+	}
+	if f := c.Run([]map[string]any{obj}); len(f) != 0 {
+		t.Fatalf("failures: %v", f)
+	}
+}
+
+func TestQuantityOfNonsenseIsAFailedAssertion(t *testing.T) {
+	c, err := Load([]byte("schema: \"off\"\nobjects:\n  - select: {kind: Pod}\n    assert:\n      - {expr: \"quantity('lots') > quantity('1')\", message: \"not a quantity\"}\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f := c.Run([]map[string]any{{"kind": "Pod"}}); len(f) != 1 || f[0] != "not a quantity" {
+		t.Fatalf("got %v", f)
+	}
+}
+
+func TestParseQuantity(t *testing.T) {
+	for in, want := range map[string]float64{"1": 1, "100m": 0.1, "2k": 2000, "1Ki": 1024, "1.5Gi": 1.5 * (1 << 30), "0": 0, "3e2": 300} {
+		got, err := ParseQuantity(in)
+		if err != nil || got != want {
+			t.Errorf("ParseQuantity(%q) = %v, %v, want %v", in, got, err, want)
+		}
+	}
+	for _, in := range []string{"", "Mi", "12XB", "abc"} {
+		if _, err := ParseQuantity(in); err == nil {
+			t.Errorf("ParseQuantity(%q) should fail", in)
+		}
+	}
+}

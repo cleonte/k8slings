@@ -1,0 +1,9 @@
+steps:
+  - assert:
+      resource: deployment/site
+      expr: "has(object.spec.template.spec.containers[0].readinessProbe) && has(object.spec.template.spec.containers[0].resources.limits.memory) && object.spec.template.spec.volumes.exists(v, has(v.configMap))"
+      message: "Keep the readiness probe, the memory limit and the ConfigMap volume: fix them, do not delete them."
+    now: true
+  - rollout: deployment/site
+  - ready: {pod: client}
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://site"], contains: "k8slings stack ok"}

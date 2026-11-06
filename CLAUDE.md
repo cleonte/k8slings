@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: Phase 1 in progress.** The CLI skeleton, manifest mode (schema validation and CEL checks), `init run hint list verify reset solution`, `watch` (full-screen and `--plain`), `doctor` (offline checks), the `cluster` package (`cluster up|down|status`, `kubectl`), and the first exercises are built. Everything marked *(target)* is still design: fix mode, and the rest of the cluster exercises, `cluster` commands and add-ons. The earlier prototype lives in `prototype/` (its own Go module) until its exercises are migrated. See ROADMAP.md for what is done.
+> **Status: Phases 0 to 3 are done; Phase 4 (fix mode) and Phase 5 (add-ons) are next.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), and the exercises of the first topics are built and proven in CI, including on a real kind cluster. Sections marked *(target)* describe what is still to build: fix mode, add-ons, and releases. The very first prototype (a cluster-only version) is gone; it lives in the git history before the commit that removed `prototype/`.
 
 ## What this project is
 
@@ -12,7 +12,7 @@ Source material for new exercises: `../learn/k8s-2-weeks/` (day-01 to day-10, `e
 
 ## Architecture *(target)*
 
-A Go CLI, module `github.com/cleonte/k8slings`, Go floor 1.26 (same as golings), built on cobra and the Bubble Tea v2 / Lip Gloss v2 / Bubbles v2 stack. The prototype was "stdlib only"; that rule is dropped on purpose, because the manifest mode needs a YAML parser, a JSON Schema validator and a CEL evaluator that nobody should write by hand. Every new dependency still needs a one-line justification in the PR that adds it.
+A Go CLI, module `github.com/cleonte/k8slings`, Go floor 1.26 (same as golings), built on cobra and the Bubble Tea v2 / Lip Gloss v2 / Bubbles v2 stack. The first prototype was "stdlib only"; that rule was dropped on purpose, because the manifest mode needs a YAML parser, a JSON Schema validator and a CEL evaluator that nobody should write by hand. Every new dependency still needs a one-line justification in the PR that adds it.
 
 ```
 k8slings/                      Go module root
@@ -130,7 +130,7 @@ Rules:
 
 The runner applies `exercise.yaml` to a fresh namespace in the k8slings cluster, waits for real conditions, asserts, and cleans up. Use this mode only when the thing being taught is runtime behaviour: rollouts, probes actually gating traffic, a Service getting endpoints, a Job completing, PVC binding, scheduling, NetworkPolicy blocking traffic, RBAC `can-i`, quota admission.
 
-Flow, inherited from the prototype: marker gate, cluster reachable, wipe and recreate the namespace `k8slings-<name>`, `kubectl apply -n <ns>`, then poll the check every 2 s until it passes or the timeout expires, then print diagnostics (pod states, events, last logs) if it did not. Exercise YAML never sets `metadata.namespace`.
+Flow: marker gate, cluster reachable, wipe and recreate the namespace `k8slings-<name>`, `kubectl apply -n <ns>`, then poll the check every 2 s until it passes or the timeout expires, then print diagnostics (pod states, events, last logs) if it did not. Exercise YAML never sets `metadata.namespace`.
 
 `check.yaml` for cluster mode is declarative too, using the same CEL against **live** objects, with a small step vocabulary. The static part of the file (`schema`, `objects`) runs first, on the manifest alone, so a typo is reported in milliseconds without touching the cluster. (YAML reads an unquoted `off` as `false`; `schema: off` is accepted anyway.)
 
@@ -153,7 +153,7 @@ steps:
 
 Steps are evaluated in order and the first one that does not hold is reported; the runner polls the whole list every 2 s until it passes or the exercise's timeout (default 60 s) is up, then shows the problem and what the namespace looks like (Pods and the last warnings). A step marked `now: true` (any step type) ends the run immediately when it fails, because waiting cannot fix a mistake in what the learner wrote, or an answer an apply decides at once such as RBAC. Note that `kubectl auth can-i get pods/log` means "the Pod called log", so `can_i` passes a subresource as `--subresource`. An `exec` step first requires its Pod to be Running, so a Pod that has not started cannot count as "blocked". `http` goes through the API-server service proxy (`kubectl get --raw /api/v1/namespaces/<ns>/services/<name>:<port>/proxy/`), so no port-forward process, no host port, no firewall prompt, and it works the same on Colima, Lima and Docker Desktop. Traffic-policy questions (NetworkPolicy) must not use it, because the proxy bypasses pod-to-pod policy; those use `exec` from a client pod inside the namespace. Ingress/Gateway exercises are the one place that needs host reachability; see Add-ons.
 
-Why declarative and not a Go `Check` func per exercise (as in the prototype's `registry`): a declarative file is reviewable without reading Go, shares one evaluator and one set of timeouts, produces uniform failure output, and lets the same file drive fix mode. The cost is a fixed vocabulary. The escape hatch is a **named Go check**: `check.yaml` may contain `go: <name>`, resolved in a registry in `k8slings/check/named.go`. It is reserved for checks the vocabulary cannot express (parsing log content, arithmetic on quota status) and every use needs a sentence in the PR on why the vocabulary was not enough. Named checks follow the same purity rules.
+Why declarative and not a Go `Check` func per exercise (as the first prototype did, with a `registry` of Go `Check` funcs): a declarative file is reviewable without reading Go, shares one evaluator and one set of timeouts, produces uniform failure output, and lets the same file drive fix mode. The cost is a fixed vocabulary. The escape hatch is a **named Go check**: `check.yaml` may contain `go: <name>`, resolved in a registry in `k8slings/check/named.go`. It is reserved for checks the vocabulary cannot express (parsing log content, arithmetic on quota status) and every use needs a sentence in the PR on why the vocabulary was not enough. Named checks follow the same purity rules.
 
 All checks are **read-only and idempotent**: they are polled repeatedly. They must never mutate the cluster. A step that fails reports the first failing step with expected-versus-actual, not a dump.
 
@@ -168,7 +168,7 @@ CKA-style practice. The tool brings the cluster to a broken state; the learner r
 - Shortcuts are blocked by `forbid:` assertions in `check.yaml`, such as "the Deployment UID must be unchanged" or "the image must still be nginx:1.27", so deleting and recreating things does not pass. The check must pass for the legitimate end state and fail for the shortcut.
 - Safety: fix exercises only touch their own namespace, plus cluster-scoped objects that the seed creates and `reset`/cleanup removes by label (`k8slings.io/exercise=<name>`). A fix exercise that taints a node must untaint it in cleanup; those need `requires = ["multinode"]` so the control plane is never the victim.
 
-## Cluster handling and safety *(target; the prototype only partly does this)*
+## Cluster handling and safety
 
 Hard rule: **k8slings only ever talks to its own cluster, and never to the user's current context.**
 
@@ -238,22 +238,20 @@ make smoke           # installs into a temp dir, runs init, list, doctor, run on
 make watch / make run
 ```
 
-## The prototype (what is in the repo now)
+## Lessons kept from the prototype
 
-The current code is a working single-package `package main` (about 1,000 lines, stdlib only, `go 1.22`, module `github.com/cleonte/k8slings`) with 19 cluster-style exercises, `scripts/e2e.sh`, and a registry of Go `Check` funcs in `exercises.go`. It will be migrated, not discarded: the engine moves into the package layout above, the 19 exercises move to the `exercises/<topic>/<name>/` tree and `info.toml`, and each becomes manifest or cluster mode by what it actually tests (Phase 1 and 3 in ROADMAP.md). `scripts/e2e.sh` stays as a development convenience until `TestSolutions` replaces it. Facts worth keeping while it is migrated:
+The first version of k8slings (a cluster-only prototype with 19 exercises, removed from the tree once every exercise was migrated; see the git history) taught things that are still true:
 
-- Per-exercise namespace is `k8slings-<id>`. Before each check every namespaced resource type from `kubectl api-resources` is deleted (no kind list to maintain) and `run` waits for `sa/default` to reappear, because bare Pods are rejected until then.
-- The "still broken" e2e case uses a short timeout (`BROKEN_TIMEOUT`, default 20 s) rather than the exercise's; the solution run uses the real one.
-- Exercises 03 and 10 are broken at apply time (API rejection); `Run` returns the apply error, so the "still broken" case fails fast. These are natural manifest-mode exercises, but note that the rejection comes from the API server's semantic validation, not from the OpenAPI schema, so it must be reproduced with a CEL assertion in `check.yaml` (a Deployment selector must match its template labels; a Job's `restartPolicy` must be `OnFailure` or `Never`). The schema alone catches only type and unknown-field errors.
-- Exercise 06 reads EndpointSlices with the jsonpath filter `?(@.conditions.ready==true)`; this depends on the kind node image, so re-prove it on every Kubernetes bump.
-- Exercises 01 and 08 pull `nginx`; the first run is slow and timeouts may need tuning (the image preload in `cluster up` addresses this).
-- Exercises 02 and 07 read pod logs right after Running; a race is possible and polling must absorb it.
-- `Check` functions and namespace cleanup in `runner.go` are the likeliest sources of bugs.
-- **Docker VM inotify limits** (Colima/Lima): if kube-proxy, coredns or local-path-provisioner crash with "too many open files", run `colima ssh -- sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288` and restart those pods. Symptoms: DNS "bad address" in the exercises that use Service DNS (16, 19), PVC stuck Pending (13). `doctor` must detect and print this.
+- A namespace is emptied by deleting every namespaced resource type from `kubectl api-resources` (no kind list to maintain), then waiting for `serviceaccount/default` to reappear, because Pods are rejected until it exists. Events are cleared too, or the diagnosis of a failed run shows the warnings of earlier runs.
+- Some mistakes are rejected by the API server's *semantic* validation, not by the OpenAPI schema (a Deployment selector that does not match its template labels, a Job with `restartPolicy: Always`). In manifest mode they must be reproduced with a CEL assertion; in cluster mode the rejected apply is reported as the mistake.
+- `kubectl auth can-i get pods/log` asks about the Pod called `log`, not the log subresource. The prototype's RBAC check never verified pod logs because of it; `can_i` now passes `--subresource`.
+- The scheduling exercise cannot target the control-plane node: in a multi-node cluster it keeps its `NoSchedule` taint.
+- Reading EndpointSlices with `?(@.conditions.ready==true)` depends on the node image, so re-prove the services exercises on every Kubernetes bump.
+- **Docker VM inotify limits** (Colima/Lima): a 3-node cluster needs `fs.inotify.max_user_instances` of at least 512 (stock Lima has 128), or `kind create` reports success while the workers never join and kube-proxy crashes with "too many open files". `cluster up` and `doctor` check this and print the fix for the runtime.
 
 ## Licensing and attribution
 
-Code copied or adapted from golings stays under golings' **Apache-2.0** license, with a `NOTICE` that credits both golings (Cristian Leonte) and the original mauricioabreu/golings, and `LICENSE` kept intact. k8slings' own new code and exercise content are also **Apache-2.0** (decided 2026-11-04), so the repository has a single license. `LICENSE` and `NOTICE` are written in Phase 1. Text and manifests adapted from `../learn/k8s-2-weeks` (MIT code, CC BY 4.0 text) need attribution in `NOTICE`.
+Code copied or adapted from golings stays under golings' **Apache-2.0** license, with a `NOTICE` that credits both golings (Cristian Leonte) and the original mauricioabreu/golings, and `LICENSE` kept intact. k8slings' own new code and exercise content are also **Apache-2.0** (decided 2026-11-04), so the repository has a single license. `LICENSE` and `NOTICE` are in the repository root. Text and manifests adapted from `../learn/k8s-2-weeks` (MIT code, CC BY 4.0 text) need attribution in `NOTICE`.
 
 ## Working style
 

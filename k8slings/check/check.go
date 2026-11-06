@@ -89,6 +89,7 @@ func Load(data []byte) (*Compiled, error) {
 	env, err := cel.NewEnv(
 		cel.Variable("object", cel.DynType),
 		cel.Variable("objects", cel.ListType(cel.DynType)),
+		quantityFunction(),
 	)
 	if err != nil {
 		return nil, err

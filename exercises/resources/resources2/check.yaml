@@ -1,0 +1,12 @@
+steps:
+  - assert:
+      resource: resourcequota/team-quota
+      expr: "quantity(object.spec.hard['requests.cpu']) == quantity('500m') && quantity(object.spec.hard['requests.memory']) == quantity('512Mi') && quantity(object.spec.hard.pods) == 4.0"
+      message: "Do not change the quota: fix the Deployment."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 3"
+      message: "Keep 3 replicas: the Deployment should still ask for three."
+    now: true
+  - rollout: deployment/web

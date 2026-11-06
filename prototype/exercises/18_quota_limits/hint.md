@@ -1,4 +1,0 @@
-- `kubectl -n k8slings-18-quota-limits get deploy,rs,pods` then `describe rs`: look for `exceeded quota`.
-- `kubectl -n k8slings-18-quota-limits describe quota team-quota` shows used vs hard.
-- The LimitRange gives every container 200m CPU by default. 3 x 200m is more than the 500m quota.
-- Set an explicit, smaller `resources.requests` on the container so all 3 fit.

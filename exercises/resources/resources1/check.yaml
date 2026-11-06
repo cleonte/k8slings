@@ -1,0 +1,15 @@
+objects:
+  - select: {kind: Pod, name: worker}
+    assert:
+      - expr: "has(object.spec.containers[0].resources.limits) && has(object.spec.containers[0].resources.limits.memory)"
+        message: "Keep a memory limit: fix the resources, do not delete them."
+      - expr: "has(object.spec.containers[0].resources.requests)"
+        message: "Keep the requests: fix them, do not delete them."
+      - expr: "quantity(object.spec.containers[0].resources.requests.memory) <= quantity(object.spec.containers[0].resources.limits.memory)"
+        message: "The memory request must not be larger than the memory limit."
+      - expr: "!has(object.spec.containers[0].resources.limits.cpu) || quantity(object.spec.containers[0].resources.requests.cpu) <= quantity(object.spec.containers[0].resources.limits.cpu)"
+        message: "The CPU request must not be larger than the CPU limit."
+      - expr: "quantity(object.spec.containers[0].resources.requests.cpu) < quantity('1') && quantity(object.spec.containers[0].resources.requests.memory) < quantity('1Gi')"
+        message: "A small cluster has no node with that much to give: a container that only sleeps needs well under one CPU and one GiB."
+      - expr: "quantity(object.spec.containers[0].resources.limits.memory) < quantity('1Gi')"
+        message: "The memory limit is far more than a sleeping container needs: keep it under one GiB."
