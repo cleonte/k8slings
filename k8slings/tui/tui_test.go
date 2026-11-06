@@ -1,11 +1,13 @@
 package tui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/cleonte/k8slings"
@@ -42,7 +44,10 @@ func settle(t *testing.T, m *Model, cmd tea.Cmd) {
 		if cmd == nil {
 			return
 		}
-		msg := cmd()
+		msg, ok := runCmd(cmd)
+		if !ok || isTimer(msg) {
+			return // a timer: nothing to wait for, a real program leaves it to fire on its own
+		}
 		if batch, ok := msg.(tea.BatchMsg); ok {
 			for _, c := range batch {
 				settle(t, m, c)
@@ -52,6 +57,26 @@ func settle(t *testing.T, m *Model, cmd tea.Cmd) {
 		_, cmd = m.Update(msg)
 	}
 	t.Fatal("settle: commands never ended")
+}
+
+// isTimer recognises the message of the cursor blink of a text input. It
+// schedules itself again for ever, so feeding it back would never end.
+func isTimer(msg tea.Msg) bool {
+	return strings.Contains(strings.ToLower(fmt.Sprintf("%T", msg)), "blink")
+}
+
+// runCmd runs a command and returns its message. A command that has not
+// answered after a long while is given up on, so that a mistake cannot hang
+// the tests.
+func runCmd(cmd tea.Cmd) (tea.Msg, bool) {
+	done := make(chan tea.Msg, 1)
+	go func() { done <- cmd() }()
+	select {
+	case msg := <-done:
+		return msg, true
+	case <-time.After(15 * time.Second):
+		return nil, false
+	}
 }
 
 func press(t *testing.T, m *Model, key string) {
