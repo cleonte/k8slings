@@ -1,0 +1,17 @@
+shipped: "has 0 ready endpoints"
+steps:
+  - unchanged: service/web
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.metadata.labels.app == 'web' && object.spec.replicas == 2"
+      message: "The Deployment is fine: do not change it. The fault is somewhere else."
+    now: true
+  - assert:
+      resources: pods
+      selector: app=webapp
+      expr: "objects.size() == 0"
+      message: "Pods carry the labels their Deployment gives them: relabelling them by hand is not a repair."
+    now: true
+  - endpoints: {service: web, min: 2, port: 80}
+  - http: {service: web, port: 80, path: /, body_contains: nginx}

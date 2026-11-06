@@ -1,0 +1,9 @@
+shipped: "ServiceAccount reader cannot get pods"
+steps:
+  - unchanged: rolebinding/read-pods
+  - can_i: {as: reader, verb: delete, resource: pods, ok: false}
+    now: true
+  - can_i: {as: reader, verb: get, resource: secrets, ok: false}
+    now: true
+  - can_i: {as: reader, verb: get, resource: pods}
+  - can_i: {as: reader, verb: list, resource: pods}
