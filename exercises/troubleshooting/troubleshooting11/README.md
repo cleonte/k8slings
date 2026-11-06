@@ -8,7 +8,7 @@ Rules:
 
 - **Repair the Deployment that is there.** Deleting it and creating a new one does not count.
 - **Keep the placement rule.** The Pod stays tied to a node by its affinity: removing the rule, or bypassing the scheduler with `nodeName`, is not a repair.
-- **Leave the nodes alone.** The cluster is shared with the other exercises.
+- **Leave the nodes alone.** The cluster is shared with the other exercises. If you changed a node's hostname label, a reset will not undo it: `k8slings kubectl label node <name> kubernetes.io/hostname=<name> --overwrite`.
 
 ```sh
 k8slings kubectl -n k8slings-troubleshooting11 get pods

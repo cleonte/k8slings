@@ -10,6 +10,8 @@ Rules:
 - **Leave the ResourceQuota alone.** It is the team's budget for this namespace: changing or deleting it is not a repair.
 - **Keep two replicas.**
 
+Two repairs are accepted: requests on the Deployment, or a LimitRange in the namespace that gives every container default requests.
+
 ```sh
 k8slings kubectl -n k8slings-troubleshooting7 get deployment web
 k8slings kubectl -n k8slings-troubleshooting7 describe replicaset

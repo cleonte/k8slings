@@ -8,6 +8,7 @@ Rules:
 
 - **Keep the Deployment as it is.** It is configured the way the team wants: the volume stays a PersistentVolumeClaim called `data`.
 - **Keep a claim called `data`.** It has to end up Bound.
+- **Fix the claim, not the cluster.** Do not create the StorageClass it asks for. (If you did, `k8slings kubectl delete storageclass fast-ssd` puts the cluster back: a reset does not touch cluster-wide objects.)
 
 ```sh
 k8slings kubectl -n k8slings-troubleshooting10 get pods,pvc

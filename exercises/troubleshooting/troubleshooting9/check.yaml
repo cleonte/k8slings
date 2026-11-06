@@ -27,3 +27,4 @@ steps:
       selector: app=web
       expr: "objects.size() == 1 && objects.all(p, p.status.containerStatuses.all(c, c.restartCount == 0 && !has(c.lastState.terminated)))"
       message: "The container is still being restarted."
+  - logs: {pod: deployment/web, contains: "loaded 80000000 bytes"}

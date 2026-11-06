@@ -6,6 +6,11 @@ steps:
       expr: "object.spec.template.spec.volumes.exists(v, v.name == 'data' && has(v.persistentVolumeClaim) && v.persistentVolumeClaim.claimName == 'data')"
       message: "The Deployment keeps its data on the claim called data: do not swap the volume for something else."
     now: true
+  - assert:
+      resources: storageclasses
+      expr: "!objects.exists(s, s.metadata.name == 'fast-ssd')"
+      message: "Do not create the StorageClass the claim asks for: the claim is what is wrong. Delete the class you made."
+    now: true
   - rollout: deployment/web
   - assert:
       resource: pvc/data
