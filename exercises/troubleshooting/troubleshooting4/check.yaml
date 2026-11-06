@@ -16,4 +16,9 @@ steps:
       expr: "!has(object.spec.template.spec.nodeName)"
       message: "Do not pin the Pod to a node: let the scheduler place it."
     now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers.all(c, has(c.resources.requests) && 'cpu' in c.resources.requests)"
+      message: "Keep a CPU request: ask for less, but do not stop asking."
+    now: true
   - rollout: deployment/web

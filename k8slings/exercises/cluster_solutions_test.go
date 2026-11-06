@@ -240,6 +240,15 @@ func TestFixSolutions(t *testing.T) {
 					first, _, _ := strings.Cut(string(data), "\n")
 					want := rejectedRe.FindStringSubmatch(first)[1]
 
+					// A shortcut that changes something outside the namespace (a node
+					// label) leaves a cleanup.sh next to it, run when the shortcut is done.
+					if cleanup, err := fs.ReadFile(k8slings.Solutions, path.Join(path.Dir(f), "cleanup.sh")); err == nil {
+						t.Cleanup(func() {
+							if out, err := cl.RunScript(ctx, ex.Namespace(), cleanup); err != nil {
+								t.Errorf("cleanup.sh failed: %v\n%s", err, out)
+							}
+						})
+					}
 					if err := ex.Reseed(ctx, env); err != nil {
 						t.Fatal(err)
 					}
@@ -257,6 +266,15 @@ func TestFixSolutions(t *testing.T) {
 					})
 					if passed {
 						t.Fatal("the shortcut was accepted as a repair")
+					}
+					// Refused once is not refused: keep looking, as for the
+					// unrepaired state, so that a check which passes a moment
+					// later (a delayed Ready) is caught.
+					for i := 0; i < 5; i++ {
+						time.Sleep(2 * time.Second)
+						if _, err := ex.Run(ctx, env); err == nil {
+							t.Fatal("the shortcut was refused at first, and accepted a moment later")
+						}
 					}
 					if ex.State() != exercises.Pending {
 						t.Fatal("a shortcut must not be recorded as done")

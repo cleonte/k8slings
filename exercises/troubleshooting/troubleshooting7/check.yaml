@@ -1,0 +1,15 @@
+shipped: "0 of 2 replicas updated"
+steps:
+  - unchanged: deployment/web
+  - unchanged: resourcequota/compute
+  - assert:
+      resource: resourcequota/compute
+      expr: "object.spec.hard['requests.cpu'] == '1' && object.spec.hard['requests.memory'] == '1Gi'"
+      message: "Leave the quota alone: it is the budget, not the fault."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2"
+      message: "Keep two replicas: scaling down is not a repair."
+    now: true
+  - rollout: deployment/web
