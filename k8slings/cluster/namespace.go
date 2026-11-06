@@ -47,11 +47,26 @@ func (c *Cluster) namespacedKinds(ctx context.Context) string {
 	return joined
 }
 
+// NamespacePrefix starts the name of every namespace k8slings owns. Emptying
+// or seeding a namespace is refused for any other name, so a bug can never wipe
+// default or kube-system.
+const NamespacePrefix = "k8slings-"
+
+func checkOwned(ns string) error {
+	if !strings.HasPrefix(ns, NamespacePrefix) || len(ns) == len(NamespacePrefix) {
+		return fmt.Errorf("refusing to touch namespace %q: k8slings only manages namespaces named %s<exercise>", ns, NamespacePrefix)
+	}
+	return nil
+}
+
 // ResetNamespace makes ns exist and be empty, so that each run starts from the
 // manifest alone and objects the learner renamed cannot linger. It keeps the
 // namespace and deletes what is in it, which is much faster than deleting the
 // namespace and waiting for it to disappear.
 func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
+	if err := checkOwned(ns); err != nil {
+		return err
+	}
 	_, _ = c.Kubectl(ctx, "create", "namespace", ns) // AlreadyExists is fine
 
 	// Controllers go first, and without touching their Pods (--cascade=orphan):

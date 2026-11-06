@@ -11,10 +11,12 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/pelletier/go-toml/v2"
 )
 
-// Modes an exercise can run in. Only manifest is implemented so far.
+// Modes an exercise can run in: manifest needs no cluster, cluster applies the
+// exercise to one, fix breaks the cluster for the learner to repair.
 const (
 	ModeManifest = "manifest"
 	ModeCluster  = "cluster"
@@ -120,7 +122,7 @@ func NextPending(infoFile string, av Availability) (Exercise, error) {
 
 // Namespace is the namespace a cluster exercise runs in: one per exercise, so
 // that cleaning up is trivial and exercises cannot disturb each other.
-func (e Exercise) Namespace() string { return "k8slings-" + e.Name }
+func (e Exercise) Namespace() string { return cluster.NamespacePrefix + e.Name }
 
 // File is the path, on disk, of the file the learner edits. A fix exercise has
 // no such file: the learner works on the cluster, and the file that matters is

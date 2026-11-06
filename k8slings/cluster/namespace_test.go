@@ -271,3 +271,18 @@ func TestPreloadFailureIsReportedNotFatalAndStopsAtTheFirstNode(t *testing.T) {
 		t.Errorf("after a failure on n1 the other nodes should be skipped, n2 was tried %d times", n)
 	}
 }
+
+func TestOnlyNamespacesOfK8slingsAreEmptiedOrSeeded(t *testing.T) {
+	for _, ns := range []string{"default", "kube-system", "kube-public", "", "k8slings-", "prod-k8slings-x"} {
+		c, f := newCluster(t, func(Cmd) (string, error) { return "", nil })
+		if err := c.ResetNamespace(context.Background(), ns); err == nil {
+			t.Errorf("ResetNamespace(%q) must be refused", ns)
+		}
+		if err := c.Seed(context.Background(), ns, "x", []byte("kind: ConfigMap")); err == nil {
+			t.Errorf("Seed(%q) must be refused", ns)
+		}
+		if n := len(f.calls); n != 0 {
+			t.Errorf("%q: %d programs ran for a refused namespace", ns, n)
+		}
+	}
+}

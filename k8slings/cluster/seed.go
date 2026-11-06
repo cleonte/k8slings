@@ -16,6 +16,9 @@ const ExerciseLabel = "k8slings.io/exercise"
 // Seed brings the namespace of a fix exercise to its broken state: it empties
 // the namespace, labels it, and applies the setup manifest.
 func (c *Cluster) Seed(ctx context.Context, ns, name string, setup []byte) error {
+	if err := checkOwned(ns); err != nil {
+		return err
+	}
 	if err := c.ResetNamespace(ctx, ns); err != nil {
 		return err
 	}
