@@ -12,3 +12,4 @@ steps:
       message: "Keep two replicas: scaling down is not a repair."
     now: true
   - rollout: deployment/web
+  - logs: {pod: deployment/web, contains: "running in production mode"}
