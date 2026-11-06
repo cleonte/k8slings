@@ -1,0 +1,29 @@
+shipped: "0 of 1 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 1"
+      message: "Keep one replica: scaling down is not a repair."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].command.size() == 3 && object.spec.template.spec.containers[0].command[2].contains('/dev/zero')"
+      message: "Keep the program as it is: it needs the memory it needs."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "has(object.spec.template.spec.containers[0].resources.limits) && 'memory' in object.spec.template.spec.containers[0].resources.limits"
+      message: "Keep a memory limit: without one a single Pod can take the whole node."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "quantity(object.spec.template.spec.containers[0].resources.limits.memory) <= quantity('256Mi')"
+      message: "That limit is more than this workload should ever be given: 256Mi at most."
+    now: true
+  - rollout: deployment/web
+  - assert:
+      resources: pods
+      selector: app=web
+      expr: "objects.size() == 1 && objects.all(p, p.status.containerStatuses.all(c, c.restartCount == 0 && !has(c.lastState.terminated)))"
+      message: "The container is still being restarted."

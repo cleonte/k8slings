@@ -1,0 +1,13 @@
+shipped: "0 of 1 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.volumes.exists(v, v.name == 'data' && has(v.persistentVolumeClaim) && v.persistentVolumeClaim.claimName == 'data')"
+      message: "The Deployment keeps its data on the claim called data: do not swap the volume for something else."
+    now: true
+  - rollout: deployment/web
+  - assert:
+      resource: pvc/data
+      expr: "object.status.phase == 'Bound'"
+      message: "The claim data is not Bound."

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: app
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              data=$(head -c 80000000 /dev/zero | tr '\0' a)
+              echo "loaded ${#data} bytes"
+              sleep 3600
+          resources:
+            limits:
+              memory: 64Mi

@@ -240,6 +240,15 @@ func TestFixSolutions(t *testing.T) {
 					first, _, _ := strings.Cut(string(data), "\n")
 					want := rejectedRe.FindStringSubmatch(first)[1]
 
+					// A shortcut that changes something outside the namespace (a node
+					// label) leaves a cleanup.sh next to it, run when the shortcut is done.
+					if cleanup, err := fs.ReadFile(k8slings.Solutions, path.Join(path.Dir(f), "cleanup.sh")); err == nil {
+						t.Cleanup(func() {
+							if out, err := cl.RunScript(ctx, ex.Namespace(), cleanup); err != nil {
+								t.Errorf("cleanup.sh failed: %v\n%s", err, out)
+							}
+						})
+					}
 					if err := ex.Reseed(ctx, env); err != nil {
 						t.Fatal(err)
 					}

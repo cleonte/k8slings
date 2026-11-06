@@ -169,7 +169,8 @@ Branch `phase-4-fix`.
 - [x] `TestFixSolutions`: seed, fail for the declared reason, `solution.sh` repairs it and it holds, every `shortcut-*.sh` refused. One shared cluster with the other proofs.
 - [x] Troubleshooting topic, first exercise: `troubleshooting1` (CrashLoopBackOff).
 - [x] `troubleshooting2` to `troubleshooting6`: ImagePullBackOff, broken Service selector, Pending (CPU request), failing readiness probe, RBAC denied.
-- [ ] More troubleshooting exercises: Pending from taints or a PVC, quota exceeded, DNS/NetworkPolicy blocking; a multi-fault capstone (the prototype's 19 may live here).
+- [x] `troubleshooting7` to `troubleshooting11`: quota, NetworkPolicy and DNS, OOMKilled, PVC with a missing StorageClass, node affinity.
+- [ ] More troubleshooting exercises: taints, DNS faults; a multi-fault capstone (the prototype's 19 may live here).
 - [ ] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons

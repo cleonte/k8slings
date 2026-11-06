@@ -1,0 +1,24 @@
+shipped: "0 of 1 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "!has(object.spec.template.spec.nodeName)"
+      message: "Do not pin the Pod to a node with nodeName: the scheduler has to place it."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.nodeAffinity)"
+      message: "Keep the placement rule: the Pod stays tied to a node by its affinity."
+    now: true
+  - assert:
+      resources: nodes
+      expr: "objects.all(n, n.metadata.labels['kubernetes.io/hostname'] == n.metadata.name)"
+      message: "A node's hostname label must be its name: leave the nodes alone and fix the rule."
+    now: true
+  - rollout: deployment/web
+  - assert:
+      resources: pods
+      selector: app=web
+      expr: "objects.size() == 1 && objects.all(p, !p.spec.nodeName.endsWith('control-plane'))"
+      message: "The Pod must run on a worker node."

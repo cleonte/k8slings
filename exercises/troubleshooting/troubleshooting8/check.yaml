@@ -1,0 +1,8 @@
+shipped: "wget -qO- http://web.k8slings-troubleshooting8"
+steps:
+  - unchanged: networkpolicy/client-egress
+  - rollout: deployment/web
+  - rollout: deployment/other
+  - ready: {pod: client}
+  - exec: {pod: client, args: [timeout, "3", wget, -qO-, http://web.k8slings-troubleshooting8.svc.cluster.local], contains: nginx}
+  - exec: {pod: client, args: [timeout, "3", wget, -qO-, http://other.k8slings-troubleshooting8.svc.cluster.local], ok: false}

@@ -379,3 +379,49 @@ mode = "fix"
 hint = """
 kubectl auth can-i --as system:serviceaccount:<namespace>:<name> asks what an identity may do. Then read the RoleBinding's subjects with care: names must match exactly."""
 docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/"
+
+[[exercises]]
+name = "troubleshooting7"
+path = "exercises/troubleshooting/troubleshooting7"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+No Pods at all: describe the ReplicaSet, not a Pod. Its events say what the quota requires of every Pod. kubectl set resources adds requests to a live Deployment."""
+docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+[[exercises]]
+name = "troubleshooting8"
+path = "exercises/troubleshooting/troubleshooting8"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+Name resolution is traffic too: a Pod asks the cluster DNS (kube-dns, in kube-system, port 53 over UDP and TCP) before it connects. With a policy that selects egress, only what is listed is allowed."""
+docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+
+[[exercises]]
+name = "troubleshooting9"
+path = "exercises/troubleshooting/troubleshooting9"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+Look at the last state of the container in kubectl describe pod: the reason says who ended it. The limit is a ceiling the kernel enforces; kubectl set resources changes it."""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/assign-memory-resource/"
+
+[[exercises]]
+name = "troubleshooting10"
+path = "exercises/troubleshooting/troubleshooting10"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+storageClassName cannot be changed on an existing claim. kubectl get storageclass lists what exists; a claim nothing has written to can be deleted and created again."""
+docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/"
+
+[[exercises]]
+name = "troubleshooting11"
+path = "exercises/troubleshooting/troubleshooting11"
+topic = "troubleshooting"
+mode = "fix"
+requires = ["multinode"]
+hint = """
+The scheduling event lists, per node, why it was rejected. kubectl get nodes shows the real names. Fix the value in the rule with kubectl patch or kubectl edit."""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/"
