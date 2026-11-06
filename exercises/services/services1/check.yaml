@@ -1,3 +1,4 @@
+shipped: "does not forward to port 80"
 steps:
   - rollout: deployment/web
   - endpoints: {service: web, min: 2, port: 80}

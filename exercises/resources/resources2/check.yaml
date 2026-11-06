@@ -1,3 +1,4 @@
+shipped: "rolling out"
 steps:
   - assert:
       resource: resourcequota/team-quota

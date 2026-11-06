@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Nine exercises, which makes 35 in 17 topics: `jobs2` and `jobs3` (a CronJob's cron schedule, overlapping runs and kept history), `statefulsets1` (one volume per replica with `volumeClaimTemplates`), `statefulsets2` (a stable DNS name per Pod through a headless Service, on the cluster), `daemonsets1` (a DaemonSet that must tolerate the control-plane taint to run on every node, on the multi-node cluster), and `security1` to `security4` (running as non-root, a read-only root filesystem with a writable scratch volume, least-privilege capabilities, and the "restricted" Pod Security Standard, checked control by control).
+- Nine exercises, which makes 35 in 17 topics: `jobs2` and `jobs3` (a CronJob's cron schedule, overlapping runs and kept history), `statefulsets1` (one volume per replica with `volumeClaimTemplates`), `statefulsets2` (a StatefulSet whose `serviceName` names no Service, so its Pods get no DNS name; on the cluster), `daemonsets1` (a DaemonSet that must tolerate the control-plane taint to run on every node, on the multi-node cluster), and `security1` to `security4` (running as non-root, a read-only root filesystem with a writable scratch volume, least-privilege capabilities, and the "restricted" Pod Security Standard, checked control by control).
 - A note in the README on why macOS may block a binary downloaded in a browser, and how to get past it.
 
 ## [0.1.0] - 2026-11-06

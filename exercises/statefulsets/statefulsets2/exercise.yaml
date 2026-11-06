@@ -5,7 +5,9 @@ kind: StatefulSet
 metadata:
   name: web
 spec:
-  serviceName: web
+  # TODO: no Service has this name.
+  serviceName: web-svc
+  podManagementPolicy: Parallel
   replicas: 2
   selector:
     matchLabels:
@@ -19,12 +21,12 @@ spec:
         - name: nginx
           image: nginx:1.27
 ---
-# TODO: web-0.web does not resolve: this Service gives out one address, not one per Pod.
 apiVersion: v1
 kind: Service
 metadata:
   name: web
 spec:
+  clusterIP: None
   selector:
     app: web
   ports:

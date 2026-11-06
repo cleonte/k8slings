@@ -34,7 +34,9 @@ Use `mode = "cluster"` only when the lesson is runtime behaviour (a rollout, end
 - Use `now: true` on a step that is about what the learner wrote (a field of the spec) or that an apply decides at once (RBAC with `can_i`). Without it, a mistake that waiting cannot fix is reported only after the timeout.
 - Set a `timeout` that the solution passes in with room to spare; remember that an unsolved exercise waits for all of it unless a `now` assertion fails first.
 - Images must be listed in `cluster.PreloadImages` (a test checks it), so that no exercise depends on a registry.
-- Prove it with `make cluster-test` (needs Docker, kind and kubectl): the unsolved exercise must fail by its own check, and the solution must pass.
+- Say why the unsolved exercise fails: `shipped: "text"` at the top of `check.yaml` is a part of the first problem it reports, and `make cluster-test` requires it. Failing is not enough, because a slow cluster fails every exercise; one exercise passed its own checks on CI because its premise was wrong, and only this line makes that visible.
+- In a check, use fully qualified names (`web-0.web.k8slings-<name>.svc.cluster.local`), not short ones: a short name falls back to public DNS after the cluster's search domains.
+- Prove it with `make cluster-test` (needs Docker, kind and kubectl): the unsolved exercise must fail for the reason in `shipped`, and the solution must pass. Then run the unsolved exercise once with the real CLI and its real timeout and read why it fails.
 
 ## Tests
 

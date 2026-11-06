@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/cleonte/k8slings"
+	"github.com/cleonte/k8slings/k8slings/check"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/schema"
@@ -61,6 +62,22 @@ func TestClusterSolutions(t *testing.T) {
 				t.Fatalf("the unsolved exercise must fail with a FailedError, got %v", err)
 			}
 			t.Logf("fails as intended: %s", failed.Lines[0])
+			// It must fail for the reason it teaches, not just fail: a slow cluster
+			// fails every exercise. check.yaml says what the first problem is.
+			raw, err := fs.ReadFile(k8slings.FS, ex.CheckPath())
+			if err != nil {
+				t.Fatal(err)
+			}
+			compiled, err := check.Load(raw)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if compiled.Shipped == "" {
+				t.Fatalf("%s needs a `shipped:` line in its check.yaml: what the first problem of the unsolved exercise says", ex.Name)
+			}
+			if !strings.Contains(failed.Lines[0], compiled.Shipped) {
+				t.Fatalf("the unsolved exercise fails, but not for the reason it teaches:\n  got:  %s\n  want: ...%s...", failed.Lines[0], compiled.Shipped)
+			}
 
 			sol, err := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
 			if err != nil {

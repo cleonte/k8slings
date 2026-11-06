@@ -1,3 +1,4 @@
+shipped: "The strategy should be RollingUpdate"
 steps:
   - assert:
       resource: deployment/shop

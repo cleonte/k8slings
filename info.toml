@@ -226,8 +226,8 @@ topic = "statefulsets"
 mode = "cluster"
 timeout = "60s"
 hint = """
-Per-Pod DNS names come from a headless Service. How do you make a Service headless?"""
-docs = "https://kubernetes.io/docs/concepts/services-networking/service/#headless-services"
+Each Pod's subdomain is the StatefulSet's serviceName. Does a Service with that name exist?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
 
 [[exercises]]
 name = "daemonsets1"

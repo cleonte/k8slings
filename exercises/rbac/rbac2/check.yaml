@@ -1,3 +1,4 @@
+shipped: "Expected a Role"
 objects:
   - select: {kind: Role}
     many: true
