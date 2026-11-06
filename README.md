@@ -32,6 +32,8 @@ go install github.com/cleonte/k8slings/k8slings@latest
 
 `k8slings doctor` checks all of it, says whether each half is ready, and prints the exact fix for anything that is not. One thing to know about Colima and Lima: their VMs allow too few inotify instances for a 3-node cluster by default, and `k8slings cluster up` tells you the one command that fixes it.
 
+**On macOS**, the binaries are not signed or notarized. If you download an archive in a browser, macOS may refuse the first run ("cannot be opened because the developer cannot be verified"). Either download it with `curl`, install with `go install`, or remove the quarantine flag once: `xattr -d com.apple.quarantine k8slings`.
+
 ## Doing exercises
 
 ```sh
