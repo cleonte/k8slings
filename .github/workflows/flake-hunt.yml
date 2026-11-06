@@ -2,7 +2,9 @@
 # runners. Delete this file before merging.
 name: flake hunt
 on:
-  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/flake-hunt.yml"
 permissions:
   contents: read
 jobs:
