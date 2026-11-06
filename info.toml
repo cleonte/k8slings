@@ -335,3 +335,47 @@ hint = """
 Look at the Pods' state, then at what the container prints before it exits (kubectl logs). The message names what is missing. You can add it to the live Deployment with kubectl set env."""
 docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/"
 
+[[exercises]]
+name = "troubleshooting2"
+path = "exercises/troubleshooting/troubleshooting2"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+The Pods never start a container. Read the events at the bottom of kubectl describe pod: they name the image and why it cannot be pulled. Fix it on the live Deployment with kubectl set image."""
+docs = "https://kubernetes.io/docs/concepts/containers/images/"
+
+[[exercises]]
+name = "troubleshooting3"
+path = "exercises/troubleshooting/troubleshooting3"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+Compare what the Service selects with the labels the Pods really have (kubectl get pods --show-labels), and look at the EndpointSlices of the Service. kubectl patch changes the Service in place."""
+docs = "https://kubernetes.io/docs/tasks/access-application-cluster/connecting-frontend-backend/"
+
+[[exercises]]
+name = "troubleshooting4"
+path = "exercises/troubleshooting/troubleshooting4"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+The Pod is Pending: read the event on it (kubectl describe pod). It says what the nodes cannot give. kubectl set resources changes the requests of a live Deployment."""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/"
+
+[[exercises]]
+name = "troubleshooting5"
+path = "exercises/troubleshooting/troubleshooting5"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+Running is not Ready. The event on the Pod shows what the readiness probe got back; compare it with what nginx really serves. Change the probe, do not remove it."""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+
+[[exercises]]
+name = "troubleshooting6"
+path = "exercises/troubleshooting/troubleshooting6"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+kubectl auth can-i --as system:serviceaccount:<namespace>:<name> asks what an identity may do. Then read the RoleBinding's subjects with care: names must match exactly."""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/"

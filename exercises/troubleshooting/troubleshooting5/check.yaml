@@ -1,0 +1,14 @@
+shipped: "0 of 2 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2 && object.spec.template.spec.containers[0].image == 'nginx:1.27'"
+      message: "Keep two replicas and the image: the fault is somewhere else."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers.all(c, has(c.readinessProbe))"
+      message: "Keep the readiness probe: it is what keeps broken Pods away from users."
+    now: true
+  - rollout: deployment/web

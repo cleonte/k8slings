@@ -182,7 +182,7 @@ func TestModesAndImages(t *testing.T) {
 			}
 			for _, src := range sources {
 				for _, m := range imageRe.FindAllSubmatch(src, -1) {
-					if !preloaded[string(m[1])] {
+					if !preloaded[string(m[1])] && !brokenOnPurpose[string(m[1])] {
 						t.Errorf("%s uses the image %s, which cluster.PreloadImages does not list", ex.Name, m[1])
 					}
 				}
@@ -190,6 +190,10 @@ func TestModesAndImages(t *testing.T) {
 		}
 	}
 }
+
+// brokenOnPurpose are images that a fix exercise gets wrong deliberately (a
+// typo in the registry name): nothing can pull them, which is the lesson.
+var brokenOnPurpose = map[string]bool{"ngnix:1.27": true}
 
 var rejectedRe = regexp.MustCompile(`^# rejected: "(.+)"$`)
 

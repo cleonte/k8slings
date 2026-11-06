@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Five more troubleshooting exercises (fix mode): `troubleshooting2` (ImagePullBackOff from a typo in the image name), `troubleshooting3` (a Service whose selector matches no Pod), `troubleshooting4` (a Pod stuck Pending because it asks for more CPU than any node has), `troubleshooting5` (Running but never Ready: a readiness probe on a path that does not exist), `troubleshooting6` (Forbidden: a RoleBinding that names the wrong ServiceAccount). Each one refuses the usual shortcuts (recreate the object, scale to zero, remove the probe, widen the Role, pin the Pod to a node, relabel the Pods by hand), and the proof on a real cluster requires it.
+
 ## [0.3.0] - 2026-11-06
 
 ### Added
