@@ -59,10 +59,13 @@ func settle(t *testing.T, m *Model, cmd tea.Cmd) {
 	t.Fatal("settle: commands never ended")
 }
 
-// isTimer recognises the message of the cursor blink of a text input. It
-// schedules itself again for ever, so feeding it back would never end.
+// isTimer recognises the messages that schedule themselves again for ever:
+// the cursor blink of a text input, and the recheck of a fix exercise. Feeding
+// them back would never end; a real program leaves them to fire on their own,
+// and the tests that care call Update with them by hand.
 func isTimer(msg tea.Msg) bool {
-	return strings.Contains(strings.ToLower(fmt.Sprintf("%T", msg)), "blink")
+	name := strings.ToLower(fmt.Sprintf("%T", msg))
+	return strings.Contains(name, "blink") || strings.Contains(name, "fixtick")
 }
 
 // runCmd runs a command and returns its message. A command that has not

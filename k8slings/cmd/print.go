@@ -25,6 +25,20 @@ func printFailure(ex exercises.Exercise, err error) {
 			fmt.Println(line)
 		}
 	}
-	color.White("\nEdit %s", ex.File())
+	if ex.Mode == exercises.ModeFix {
+		color.White("\nRepair it with: k8slings kubectl -n %s ...", ex.Namespace())
+		color.White("The ticket is in %s", ex.File())
+	} else {
+		color.White("\nEdit %s", ex.File())
+	}
 	color.White("Need a nudge? k8slings hint %s", ex.Name)
+}
+
+// printSeeded tells the learner that the cluster was just broken on purpose.
+func printSeeded(ex exercises.Exercise) {
+	color.Yellow("🧰 %s: the cluster is now broken on purpose.\n", ex.Name)
+	color.White("Read the ticket:  %s", ex.File())
+	color.White("Look around:      k8slings kubectl -n %s get pods", ex.Namespace())
+	color.White("Repair it, then run `k8slings run %s` again to check.", ex.Name)
+	color.White("(Starting over: k8slings reset %s)", ex.Name)
 }

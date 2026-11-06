@@ -1,0 +1,14 @@
+shipped: "0 of 2 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].image == 'busybox:1.37'"
+      message: "The image is fine: do not change it. The fault is somewhere else."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2"
+      message: "Keep two replicas: scaling down is not a repair."
+    now: true
+  - rollout: deployment/web

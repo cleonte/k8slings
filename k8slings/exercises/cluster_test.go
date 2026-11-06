@@ -21,6 +21,25 @@ type fakeKube struct {
 	calls      []string
 	reads      atomic.Int32
 	readyAfter int32 // the pod reports Running from this read on
+
+	// fix exercises
+	seeded    bool
+	seedCalls int
+	seedSetup string
+	liveUID   string // what the cluster says the UID of an object is
+	flap      bool   // the pod is Running on odd reads and Pending on even ones
+}
+
+func (f *fakeKube) Seed(_ context.Context, ns, name string, setup []byte) error {
+	f.calls = append(f.calls, "seed "+ns+" "+name)
+	f.seedCalls++
+	f.seedSetup = string(setup)
+	f.seeded = true
+	return nil
+}
+func (f *fakeKube) Seeded(context.Context, string, string) bool { return f.seeded }
+func (f *fakeKube) UID(_ context.Context, _, resource string) (string, error) {
+	return "uid-" + resource, nil
 }
 
 func (f *fakeKube) Verify(context.Context) error { return f.verifyErr }
@@ -43,7 +62,20 @@ func (f *fakeKube) Diagnose(context.Context, string) []string {
 }
 func (f *fakeKube) Kubectl(_ context.Context, args ...string) (string, error) {
 	f.calls = append(f.calls, strings.Join(args, " "))
-	if f.reads.Add(1) >= f.readyAfter {
+	if strings.Contains(strings.Join(args, " "), "jsonpath={.metadata.uid}") {
+		if f.liveUID != "" {
+			return f.liveUID, nil
+		}
+		return "uid-pod/web", nil
+	}
+	n := f.reads.Add(1)
+	if f.flap {
+		if n%2 == 1 {
+			return `{"status":{"phase":"Running"}}`, nil
+		}
+		return `{"status":{"phase":"Pending"}}`, nil
+	}
+	if n >= f.readyAfter {
 		return `{"status":{"phase":"Running"}}`, nil
 	}
 	return `{"status":{"phase":"Pending"}}`, nil

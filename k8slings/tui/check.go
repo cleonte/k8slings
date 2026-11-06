@@ -74,7 +74,9 @@ func (m *Model) startNextCheck() tea.Cmd {
 	m.checkItems[index].status = checkRunning
 	m.checkActive++
 
-	exercise, id, run, ctx := m.checkItems[index].exercise, m.checkID, m.cfg.Run, m.checkCtx
+	// Checking every exercise must not break the cluster for fix exercises that
+	// have not been started.
+	exercise, id, run, ctx := m.checkItems[index].exercise, m.checkID, m.cfg.Run, exercises.NoSeed(m.checkCtx)
 	return func() tea.Msg {
 		_, err := run(ctx, exercise)
 		return checkDoneMsg{id: id, index: index, err: err}

@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-06
+
+### Added
+
+- **Fix mode**, the third kind of exercise: k8slings breaks the cluster on purpose and hands you a ticket, as in a real incident, and you repair it with `kubectl` (`k8slings kubectl ...`). There is no file to edit. The first `run` or `watch` seeds the broken state and says so; after that nothing ever seeds it again by itself, so your repair is never wiped. `watch` looks at the cluster every couple of seconds and turns green on its own. A repair has to hold for a few seconds before it counts (a crash-looping container is briefly Ready), deleting an object and creating a new one with the same name is refused, and `reset` breaks the cluster again. Completion is kept in `.k8slings.json`.
+- `troubleshooting1`: a Deployment whose Pods keep restarting (CrashLoopBackOff). Its proof tries three ways to cheat (recreate the Deployment, swap the image, scale it to zero) and requires each to be refused.
+- `verify` and check-all never break the cluster for a fix exercise you have not started.
+
+### Quality
+
+- `TestFixSolutions` proves each fix exercise on a real cluster: seed, fail for the declared reason, the solution script repairs it and it holds, every shortcut refused. It shares one cluster with the other proofs, so CI does not pay for a second one.
+
 ## [0.2.1] - 2026-11-06
 
 ### Changed
@@ -63,7 +75,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/cleonte/k8slings/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/cleonte/k8slings/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/cleonte/k8slings/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cleonte/k8slings/releases/tag/v0.1.0

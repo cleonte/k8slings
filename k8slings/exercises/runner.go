@@ -25,6 +25,11 @@ type Kube interface {
 	Apply(ctx context.Context, ns string, manifest []byte) (string, error)
 	Nodes(ctx context.Context) (int, error)
 	Diagnose(ctx context.Context, ns string) []string
+	// For fix exercises: bring a namespace to its broken state, say whether it
+	// is in it, and tell the identity of an object.
+	Seed(ctx context.Context, ns, name string, setup []byte) error
+	Seeded(ctx context.Context, ns, name string) bool
+	UID(ctx context.Context, ns, resource string) (string, error)
 }
 
 // Env is what running an exercise needs: the embedded exercise tree (for the
@@ -40,6 +45,21 @@ type Env struct {
 	// Timeout, when set, replaces the timeout of every cluster exercise. The
 	// proof that an unsolved exercise fails uses a short one.
 	Timeout time.Duration
+	// Settle is how long a repaired fix exercise must keep passing before it
+	// counts; default 3 seconds, and a negative value means no wait. A crashing
+	// container is briefly Running and Ready before it exits, so one look that
+	// happens to land there would call a broken cluster fixed.
+	Settle time.Duration
+}
+
+func (e *Env) settle() time.Duration {
+	switch {
+	case e.Settle < 0:
+		return 0
+	case e.Settle == 0:
+		return 3 * time.Second
+	}
+	return e.Settle
 }
 
 // DefaultTimeout is how long a cluster exercise has to start working.
@@ -71,6 +91,35 @@ type FailedError struct {
 
 func (e *FailedError) Error() string { return strings.Join(e.Lines, "\n") }
 
+// SeededError is not a failure: it says that the cluster has just been brought
+// to the broken state of a fix exercise, and that it is now the learner's turn.
+type SeededError struct {
+	Exercise  Exercise
+	Namespace string
+}
+
+func (e *SeededError) Error() string {
+	return fmt.Sprintf("%s: the cluster is now broken on purpose, in the namespace %s", e.Exercise.Name, e.Namespace)
+}
+
+// IsSeeded reports whether err says that an exercise was just seeded.
+func IsSeeded(err error) bool {
+	var s *SeededError
+	return errors.As(err, &s)
+}
+
+type noSeedKey struct{}
+
+// NoSeed marks a context: running a fix exercise with it only looks at the
+// cluster, and never brings it to the broken state. Checking everything
+// (`verify`, check-all) must not break the cluster for exercises the learner
+// has not started.
+func NoSeed(ctx context.Context) context.Context {
+	return context.WithValue(ctx, noSeedKey{}, true)
+}
+
+func noSeed(ctx context.Context) bool { v, _ := ctx.Value(noSeedKey{}).(bool); return v }
+
 // SkippedError means the exercise cannot run here, and says why.
 type SkippedError struct{ Reason string }
 
@@ -85,6 +134,9 @@ func IsSkipped(err error) bool {
 // "I AM NOT DONE" marker; callers decide what a pending-but-passing exercise
 // means.
 func (e Exercise) Run(ctx context.Context, env *Env) (Result, error) {
+	if e.Mode == ModeFix {
+		return e.RunSource(ctx, env, nil) // there is no file to read
+	}
 	src, err := os.ReadFile(e.File())
 	if err != nil {
 		return Result{}, fmt.Errorf("cannot read %s: %w", e.File(), err)
@@ -94,10 +146,7 @@ func (e Exercise) Run(ctx context.Context, env *Env) (Result, error) {
 
 // RunSource checks src as if it were the content of the exercise file.
 func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, error) {
-	if e.Mode == ModeFix {
-		return Result{}, &SkippedError{fmt.Sprintf("%s: %s", e.Name, e.SkipReason(Availability{}))}
-	}
-	if e.Mode == ModeCluster {
+	if e.Mode == ModeCluster || e.Mode == ModeFix {
 		if reason := e.SkipReason(env.Availability(ctx)); reason != "" {
 			return Result{}, &SkippedError{fmt.Sprintf("%s %s", e.Name, reason)}
 		}
@@ -109,6 +158,9 @@ func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, 
 	c, err := check.Load(raw)
 	if err != nil {
 		return Result{}, fmt.Errorf("%s: %w", e.Name, err)
+	}
+	if e.Mode == ModeFix {
+		return e.runFix(ctx, env, c)
 	}
 	objs, err := ParseObjects(src)
 	if err != nil {
@@ -144,6 +196,103 @@ func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, 
 	return Result{Exercise: e, Objects: len(objs)}, nil
 }
 
+// runFix looks at the cluster and says whether the learner has repaired it. The
+// first time, the cluster is brought to its broken state, which is reported as
+// a SeededError and not as a failure. After that nothing is ever seeded again by
+// itself: that would wipe the repair. The check is a single look, not a wait:
+// the learner is working in the cluster and the full-screen view looks again
+// every couple of seconds.
+func (e Exercise) runFix(ctx context.Context, env *Env, c *check.Compiled) (Result, error) {
+	ns := e.Namespace()
+	// The cluster counts as seeded only if this workspace seeded it. A namespace
+	// left over from another folder, or from before the progress file was lost,
+	// cannot be judged (nobody knows which objects were the original ones), so the
+	// exercise starts fresh instead of leaving the learner stuck.
+	if !env.Kube.Seeded(ctx, ns, e.Name) || !hasSeed(e.Name) {
+		if noSeed(ctx) {
+			return Result{}, &SkippedError{fmt.Sprintf("%s has not been started: run it to break the cluster on purpose", e.Name)}
+		}
+		if err := e.seed(ctx, env, c); err != nil {
+			return Result{}, err
+		}
+		return Result{}, &SeededError{Exercise: e, Namespace: ns}
+	}
+
+	problem := c.RunSteps(ctx, env.Kube, ns, fixSeeds{e.Name})
+	if problem.Message != "" {
+		failed := &FailedError{Lines: []string{problem.Message}}
+		if ctx.Err() == nil {
+			failed.Details = env.Kube.Diagnose(ctx, ns)
+		}
+		return Result{}, failed
+	}
+
+	// A repair must hold. Look again after a moment, and only then call it fixed.
+	select {
+	case <-ctx.Done():
+		return Result{}, ctx.Err()
+	case <-time.After(env.settle()):
+	}
+	if again := c.RunSteps(ctx, env.Kube, ns, fixSeeds{e.Name}); again.Message != "" {
+		failed := &FailedError{Lines: []string{again.Message + " (it looked fine a moment ago, but it did not hold)"}}
+		if ctx.Err() == nil {
+			failed.Details = env.Kube.Diagnose(ctx, ns)
+		}
+		return Result{}, failed
+	}
+	if err := markFixDone(e.Name); err != nil {
+		return Result{}, fmt.Errorf("fixed, but cannot save your progress in %s: %w", ProgressFile, err)
+	}
+	return Result{Exercise: e}, nil
+}
+
+// Reseed puts a fix exercise back into its broken state, and forgets that it
+// was fixed. It is what `reset` does for exercises that have no file.
+func (e Exercise) Reseed(ctx context.Context, env *Env) error {
+	if e.Mode != ModeFix {
+		return fmt.Errorf("%s is not a fix exercise", e.Name)
+	}
+	raw, err := fs.ReadFile(env.Embedded, e.CheckPath())
+	if err != nil {
+		return err
+	}
+	c, err := check.Load(raw)
+	if err != nil {
+		return err
+	}
+	if env.Kube == nil || env.Kube.Verify(ctx) != nil {
+		return &SkippedError{fmt.Sprintf("%s needs the cluster: run `k8slings cluster up`", e.Name)}
+	}
+	return e.seed(ctx, env, c)
+}
+
+func (e Exercise) seed(ctx context.Context, env *Env, c *check.Compiled) error {
+	setup, err := fs.ReadFile(env.Embedded, e.SetupPath())
+	if err != nil {
+		return fmt.Errorf("%s has no %s: %w", e.Name, SetupFile, err)
+	}
+	ns := e.Namespace()
+	if err := env.Kube.Seed(ctx, ns, e.Name, setup); err != nil {
+		return err
+	}
+	// Remember which objects were there, so that deleting one and creating it
+	// again cannot pass for a repair.
+	uids := map[string]string{}
+	for _, res := range c.UnchangedResources() {
+		uid, err := env.Kube.UID(ctx, ns, res)
+		if err != nil {
+			return fmt.Errorf("%s was not created by the setup: %w", res, err)
+		}
+		uids[res] = uid
+	}
+	return recordSeed(e.Name, uids)
+}
+
+// fixSeeds reads the UIDs recorded when an exercise was seeded.
+type fixSeeds struct{ name string }
+
+func (f fixSeeds) UID(resource string) (string, bool) { return seedUID(f.name, resource) }
+
 // timeout is how long the cluster has to make the exercise work.
 func (e Exercise) timeout(env *Env) time.Duration {
 	if env.Timeout > 0 {
@@ -175,7 +324,7 @@ func (e Exercise) runCluster(ctx context.Context, env *Env, c *check.Compiled, s
 	}
 	deadline := time.Now().Add(e.timeout(env))
 	for {
-		problem := c.RunSteps(ctx, env.Kube, ns)
+		problem := c.RunSteps(ctx, env.Kube, ns, nil)
 		if problem.Message == "" {
 			return nil
 		}

@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: app
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - |
+              echo "starting app"
+              if [ -z "$APP_MODE" ]; then
+                echo "fatal: APP_MODE is not set" >&2
+                exit 1
+              fi
+              echo "running in $APP_MODE mode"
+              sleep 3600

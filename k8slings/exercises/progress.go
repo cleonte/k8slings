@@ -13,9 +13,7 @@ type Availability struct {
 // it can. Manifest exercises always run.
 func (e Exercise) SkipReason(av Availability) string {
 	switch e.Mode {
-	case ModeFix:
-		return "fix exercises are not available yet"
-	case ModeCluster:
+	case ModeCluster, ModeFix:
 		if !av.Cluster {
 			return "needs the cluster: run `k8slings cluster up`"
 		}

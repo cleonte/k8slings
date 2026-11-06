@@ -40,7 +40,8 @@ func write(src fs.FS, dest string) error {
 		if d.IsDir() {
 			return os.MkdirAll(target, 0o755)
 		}
-		if d.Name() == exercises.CheckFile {
+		// check.yaml and setup.yaml stay in the binary: they would give the answer away.
+		if d.Name() == exercises.CheckFile || d.Name() == exercises.SetupFile {
 			return nil
 		}
 		data, err := fs.ReadFile(src, name)

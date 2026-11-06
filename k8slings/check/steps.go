@@ -26,6 +26,10 @@ type Step struct {
 	Exec      *ExecStep      `json:"exec"`
 	CanI      *CanIStep      `json:"can_i"`
 	Logs      *LogsStep      `json:"logs"`
+	// Unchanged is "kind/name" of an object of a fix exercise that must still be
+	// the one that was seeded: deleting it and creating a new one with the same
+	// name does not count as a repair.
+	Unchanged string `json:"unchanged"`
 	// Now marks a step whose answer waiting cannot change: when it fails, the
 	// run ends at once instead of polling until the timeout. Use it for what the
 	// learner wrote (a field of the spec) and for what an apply decides at once
@@ -106,7 +110,7 @@ type compiledStep struct {
 
 func (s Step) kinds() int {
 	n := 0
-	for _, set := range []bool{s.Rollout != "", s.Ready != nil, s.Assert != nil, s.Endpoints != nil, s.HTTP != nil, s.Exec != nil, s.CanI != nil, s.Logs != nil} {
+	for _, set := range []bool{s.Rollout != "", s.Ready != nil, s.Assert != nil, s.Endpoints != nil, s.HTTP != nil, s.Exec != nil, s.CanI != nil, s.Logs != nil, s.Unchanged != ""} {
 		if set {
 			n++
 		}
@@ -172,6 +176,10 @@ func (c *Compiled) compileSteps() error {
 			if s.Logs.Pod == "" || s.Logs.Contains == "" {
 				return bad("logs needs a pod and contains")
 			}
+		case s.Unchanged != "":
+			if kind, name, ok := strings.Cut(s.Unchanged, "/"); !ok || kind == "" || name == "" {
+				return bad("unchanged wants kind/name, such as deployment/web")
+			}
 		}
 		c.steps = append(c.steps, cs)
 	}
@@ -188,19 +196,38 @@ type Problem struct {
 	Final bool
 }
 
+// Seeds tells what a fix exercise looked like when it was seeded.
+type Seeds interface {
+	// UID is the UID of the object "kind/name" at the time it was seeded.
+	UID(resource string) (string, bool)
+}
+
+// UnchangedResources lists the objects whose identity the steps check, so that
+// whoever seeds the exercise knows which UIDs to record.
+func (c *Compiled) UnchangedResources() []string {
+	var out []string
+	for _, s := range c.steps {
+		if s.Unchanged != "" {
+			out = append(out, s.Unchanged)
+		}
+	}
+	return out
+}
+
 // RunSteps evaluates the steps in order in the namespace ns and returns the
 // problem of the first one that does not hold, or the zero Problem when all of
-// them do. It only reads from the cluster.
-func (c *Compiled) RunSteps(ctx context.Context, kube Kube, ns string) Problem {
+// them do. It only reads from the cluster. seeds is only needed by
+// `unchanged` steps, which are for fix exercises; it may be nil otherwise.
+func (c *Compiled) RunSteps(ctx context.Context, kube Kube, ns string, seeds Seeds) Problem {
 	for _, s := range c.steps {
-		if msg := s.run(ctx, kube, ns); msg != "" {
+		if msg := s.run(ctx, kube, ns, seeds); msg != "" {
 			return Problem{Message: msg, Final: s.Now || (s.Assert != nil && s.Assert.Now)}
 		}
 	}
 	return Problem{}
 }
 
-func (s compiledStep) run(ctx context.Context, kube Kube, ns string) string {
+func (s compiledStep) run(ctx context.Context, kube Kube, ns string, seeds Seeds) string {
 	switch {
 	case s.Rollout != "":
 		return stepRollout(ctx, kube, ns, s.Rollout)
@@ -218,6 +245,26 @@ func (s compiledStep) run(ctx context.Context, kube Kube, ns string) string {
 		return stepCanI(ctx, kube, ns, *s.CanI)
 	case s.Logs != nil:
 		return stepLogs(ctx, kube, ns, *s.Logs)
+	case s.Unchanged != "":
+		return stepUnchanged(ctx, kube, ns, s.Unchanged, seeds)
+	}
+	return ""
+}
+
+func stepUnchanged(ctx context.Context, kube Kube, ns, res string, seeds Seeds) string {
+	if seeds == nil {
+		return fmt.Sprintf("Cannot tell whether %s is the original: this exercise has not been seeded.", res)
+	}
+	recorded, ok := seeds.UID(res)
+	if !ok {
+		return fmt.Sprintf("Cannot tell whether %s is the original object: reset the exercise to start it over.", res)
+	}
+	live, err := kube.Kubectl(ctx, "get", res, "-n", ns, "-o", "jsonpath={.metadata.uid}")
+	if err != nil {
+		return fmt.Sprintf("%s: %s", res, firstLine(live))
+	}
+	if strings.TrimSpace(live) != recorded {
+		return fmt.Sprintf("%s was deleted and created again. Repair the existing one: that is the point of the exercise.", res)
 	}
 	return ""
 }

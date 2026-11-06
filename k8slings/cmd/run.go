@@ -52,9 +52,17 @@ func runExercise(ctx context.Context, env *exercises.Env, ex exercises.Exercise)
 		color.Yellow(err.Error())
 		return err
 	}
+	if exercises.IsSeeded(err) {
+		printSeeded(ex)
+		return nil
+	}
 	if err != nil {
 		printFailure(ex, err)
 		return err
+	}
+	if ex.Mode == exercises.ModeFix {
+		color.Green("✅ %s is repaired. Well done.\n", ex.Name)
+		return nil
 	}
 	color.Green("✅ %s passes (%d objects checked).\n", result.Exercise.Name, result.Objects)
 	if ex.State() == exercises.Pending {

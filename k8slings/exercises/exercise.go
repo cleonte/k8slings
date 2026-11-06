@@ -25,6 +25,12 @@ const (
 const (
 	ExerciseFile = "exercise.yaml"
 	CheckFile    = "check.yaml"
+	// SetupFile is the broken state of a fix exercise. Like check.yaml it stays
+	// in the binary: it would give away what is wrong.
+	SetupFile  = "setup.yaml"
+	ReadmeFile = "README.md"
+	// ScriptFile is the solution of a fix exercise: a kubectl script.
+	ScriptFile = "solution.sh"
 )
 
 var notDoneRegex = regexp.MustCompile(`(?m)^\s*#\s*I\s+AM\s+NOT\s+DONE`)
@@ -116,8 +122,18 @@ func NextPending(infoFile string, av Availability) (Exercise, error) {
 // that cleaning up is trivial and exercises cannot disturb each other.
 func (e Exercise) Namespace() string { return "k8slings-" + e.Name }
 
-// File is the path, on disk, of the file the learner edits.
-func (e Exercise) File() string { return filepath.FromSlash(path.Join(e.Path, ExerciseFile)) }
+// File is the path, on disk, of the file the learner edits. A fix exercise has
+// no such file: the learner works on the cluster, and the file that matters is
+// the README.md with the ticket.
+func (e Exercise) File() string {
+	if e.Mode == ModeFix {
+		return filepath.FromSlash(path.Join(e.Path, ReadmeFile))
+	}
+	return filepath.FromSlash(path.Join(e.Path, ExerciseFile))
+}
+
+// SetupPath is the broken state of a fix exercise, in the embedded tree.
+func (e Exercise) SetupPath() string { return path.Join(e.Path, SetupFile) }
 
 // Embedded names inside the embedded exercise tree (always forward slashes).
 func (e Exercise) CheckPath() string { return path.Join(e.Path, CheckFile) }
@@ -125,6 +141,9 @@ func (e Exercise) Source() string    { return path.Join(e.Path, ExerciseFile) }
 
 // SolutionPath is where the solution lives in the embedded solutions tree.
 func (e Exercise) SolutionPath() string {
+	if e.Mode == ModeFix {
+		return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), ScriptFile)
+	}
 	return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), ExerciseFile)
 }
 
@@ -139,6 +158,12 @@ func (s State) String() string { return [...]string{"Pending", "Done"}[s-1] }
 
 // State is Pending while the exercise file has the marker (or is missing).
 func (e Exercise) State() State {
+	if e.Mode == ModeFix {
+		if fixDone(e.Name) {
+			return Done
+		}
+		return Pending
+	}
 	data, err := os.ReadFile(e.File())
 	if err != nil || notDoneRegex.Match(data) {
 		return Pending
@@ -148,6 +173,9 @@ func (e Exercise) State() State {
 
 // MarkDone removes the marker line, which is what a learner does by hand.
 func (e Exercise) MarkDone() error {
+	if e.Mode == ModeFix {
+		return nil // a fix exercise is done when its check passes, which records it
+	}
 	info, err := os.Stat(e.File())
 	if err != nil {
 		return err
