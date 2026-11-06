@@ -1,0 +1,24 @@
+# Opens an issue when a newer kind release, or a newer default Kubernetes node
+# image, than the pinned ones is out. Dependabot cannot see them: they are
+# constants in the code. See scripts/version-watch.sh.
+name: version watch
+
+on:
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Look for newer versions
+      env:
+        GH_TOKEN: ${{ github.token }}
+        OPEN_ISSUE: "1"
+      run: scripts/version-watch.sh

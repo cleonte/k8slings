@@ -63,4 +63,10 @@ vhs demo.tape       # misc/demo.gif: `k8slings run`
 
 ## Releasing
 
-Not set up yet (Phase 6 in the roadmap).
+Pushing a tag `vX.Y.Z` runs the release workflow, which builds the archives (Linux, macOS and Windows, on amd64 and arm64) with [GoReleaser](https://goreleaser.com) and publishes the release. The body of the release is the section of `CHANGELOG.md` for that version (`scripts/release-notes.sh vX.Y.Z` prints it, and fails when there is none, in which case GoReleaser writes the notes from the commits).
+
+So before tagging:
+
+1. Move what is under "Unreleased" in `CHANGELOG.md` into a section `## [X.Y.Z] - date`, and update the two links at the bottom.
+2. Check the release locally: `goreleaser check`, then `goreleaser release --snapshot --clean --skip=publish` builds every archive into `dist/` without publishing anything.
+3. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.

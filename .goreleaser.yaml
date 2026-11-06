@@ -1,0 +1,57 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - main: ./k8slings
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    # main.version, main.commit and main.date are set by GoReleaser's default
+    # ldflags; they are what `k8slings --version` prints.
+archives:
+  - name_template: >-
+      {{- .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end -}}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE*
+      - NOTICE*
+      - README*
+      - CHANGELOG*
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+# The body of a release is its section of CHANGELOG.md (the release workflow
+# passes it with --release-notes). The generated changelog below is only what a
+# tag without a section gets.
+release:
+  footer: |
+    ## Install
+
+    `go install github.com/cleonte/k8slings/k8slings@{{ .Tag }}`, or download the archive for your system below and put `k8slings` on your PATH. Then run `k8slings init` and `k8slings watch`.
+
+    Manifest exercises need nothing else. Cluster exercises need Docker (or Colima, Lima, ...), [kind](https://kind.sigs.k8s.io/) and kubectl: run `k8slings doctor` to check, and `k8slings cluster up` to create the cluster.
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
