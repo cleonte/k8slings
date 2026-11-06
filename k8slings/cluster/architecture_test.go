@@ -20,7 +20,7 @@ func TestOnlyExecGoRunsPrograms(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if name := d.Name(); name == "prototype" || name == ".git" || name == "bin" {
+			if name := d.Name(); name == ".git" || name == "bin" {
 				return filepath.SkipDir
 			}
 			return nil

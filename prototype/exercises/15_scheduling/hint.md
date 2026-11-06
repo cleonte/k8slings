@@ -1,3 +1,0 @@
-- `kubectl -n k8slings-15-scheduling describe pod -l app=batch` ends with `0/1 nodes are available: ...` and names what failed.
-- `kubectl get nodes --show-labels`: compare the labels the Deployment asks for with the labels the node has.
-- Several constraints can fail at once; the event message lists each reason.

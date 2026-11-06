@@ -1,0 +1,19 @@
+# I AM NOT DONE
+# resources1: a sleeping worker that asks for far too much.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: worker
+spec:
+  containers:
+    - name: main
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      # TODO: no node has this much to give.
+      resources:
+        requests:
+          cpu: "64"
+          memory: 64Gi
+        limits:
+          cpu: "64"
+          memory: 64Gi

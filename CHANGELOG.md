@@ -25,11 +25,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Cluster exercises. `check.yaml` can have `steps` that are polled against the live cluster (`rollout`, `ready`, `assert`, `endpoints`, `http`, `exec`, `can_i`, `logs`). A cluster exercise is applied to its own namespace, `k8slings-<name>`, which is emptied on every run; typos in the manifest are reported before anything is applied, and a mistake the cluster cannot fix (`now: true`) ends the run at once. When it does not work in time, the failure shows the problem and the Pods and warnings of the namespace.
 - Without a cluster, cluster exercises are skipped with `run \`k8slings cluster up\``, and `watch` and `run next` carry on with the manifest exercises.
 - `cluster up` pulls the images the exercises use (nginx, busybox) into every node.
-- Seven cluster exercises: `volumes1` (a claim that never binds) and `scheduling1` (constraints that match no node; needs the multi-node cluster) join `deployments2` (rolling update), `services1` (a Service whose targetPort is wrong), `pods6` (an init container and a shared volume), and `rbac1` and `rbac2` (what a ServiceAccount may really do, asked of the API server).
+- 26 exercises in 14 topics, which includes the last of the prototype's: `resources1` (requests and limits, offline), and the cluster exercises `resources2` (a namespace quota), `networkpolicies1` (real requests that must, and must not, get through) and `capstone1` (a broken stack with four faults).
+- `quantity()` in CEL, so assertions can compare `64Gi` with `64Mi` or `500m` with `1`.
+- Earlier: seven cluster exercises: `volumes1` (a claim that never binds) and `scheduling1` (constraints that match no node; needs the multi-node cluster) join `deployments2` (rolling update), `services1` (a Service whose targetPort is wrong), `pods6` (an init container and a shared volume), and `rbac1` and `rbac2` (what a ServiceAccount may really do, asked of the API server).
 - `now: true` works on every check step, not only `assert`.
+- A cluster run after a failed one can no longer be refused by a stale ResourceQuota count: the namespace is emptied controllers first, then Pods, and verified to have no Pods left.
 - The diagnosis of a failed cluster exercise shows only this run's warnings (events of earlier runs are cleared) and groups the same message from several Pods into one line.
 - `make cluster-test`: creates real clusters and proves the safety rules and every cluster exercise.
 
 ### Changed
 
-- The earlier prototype (a cluster-only version with 19 exercises) moved to `prototype/` until its exercises are migrated.
+- The earlier prototype (a cluster-only version with 19 exercises) has been replaced: every exercise was migrated and its check re-reviewed, and the prototype code was removed.

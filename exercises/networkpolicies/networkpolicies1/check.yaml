@@ -1,0 +1,11 @@
+steps:
+  - assert:
+      resource: networkpolicy/default-deny
+      expr: "size(object.spec.podSelector) == 0 && 'Ingress' in object.spec.policyTypes"
+      message: "Keep the default-deny policy as it is: fix allow-client instead."
+    now: true
+  - ready: {pod: server}
+  # The client must get through first. That also proves the server really
+  # answers, so that a failure of the intruder below cannot be the server's fault.
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://server"], contains: nginx}
+  - exec: {pod: intruder, args: [wget, -qO-, -T, "3", "http://server"], ok: false}

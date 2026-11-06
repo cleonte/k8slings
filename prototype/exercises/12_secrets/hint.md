@@ -1,2 +1,0 @@
-- `kubectl -n k8slings-12-secrets describe pod app` shows `CreateContainerConfigError` and which secret/key is missing.
-- The pod references a Secret name and a key. Compare both with what the Secret in this file actually defines.

@@ -6,7 +6,7 @@ Counts in this file are planning numbers. Once the consistency test exists (Phas
 
 ## Where things stand
 
-A working prototype exists (single `package main`, stdlib only, `go 1.22`, 19 exercises numbered 01–19, an e2e script that proves each exercise: untouched run is blocked by the marker, marker removed but still broken fails, solution passes). It applies manifests to a kind cluster and polls Go check functions. What it lacks compared with golings: a manifest (`info.toml`), topic structure, the TUI, `solution`, `doctor`, `verify` semantics, a solutions-tree test in `go test`, releases, docs, and CI. What it lacks for Kubernetes specifically: an offline mode, kubeconfig isolation (today it passes `--context` but `kind create cluster` still rewrites the user's kubeconfig and current-context), add-on handling, and a fix mode.
+Phases 0 to 3 are done: manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, and the exercises of 14 topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: fix mode and troubleshooting (Phase 4), add-ons and their topics (Phase 5), and the release (Phase 6).
 
 ## Facts checked while writing this design (2026-11-04)
 
@@ -57,31 +57,31 @@ Order is learning order, which is not the order in the brief: namespaces move fo
 
 That is about 90 exercises in the long run; **v1.0 does not need all of them** (see Decided, item 3). The brief puts Ingress/Gateway and HPA among the later topics; this table keeps them last but before the capstone-style troubleshooting, because troubleshooting exercises can then use any earlier topic as the broken component.
 
-### The 19 prototype exercises
+### Where the 19 prototype exercises went
 
-Proposed destination for each. This is based on titles and what I remember the checks doing; **confirm each one by reading its check in Phase 1** before moving it, and never weaken a check in the move.
+Every exercise of the first prototype has been migrated, with its check re-reviewed (never weakened). The prototype itself is in the git history.
 
-| Prototype | Proposed mode | Reason |
+| Prototype | Now | Notes |
 |---|---|---|
-| 01 pod basics | manifest | spec fields; keep a cluster variant out of scope |
-| 02 env vars | manifest | prototype reads logs; assert the env instead, which removes a race |
-| 03 labels/selectors | manifest | already an apply-time rejection, the schema/CEL step reproduces it |
-| 04 scale and image | manifest | replicas and image tag |
-| 05 rolling update | cluster | the rollout is the lesson |
-| 06 service selector | cluster | endpoints are the lesson; keep the EndpointSlice readiness caveat |
-| 07 configmap | manifest | prototype reads logs; assert volume/env wiring |
-| 08 probes | manifest | probe fields (a cluster follow-up covers gating traffic) |
-| 09 resources | manifest | requests/limits values |
-| 10 job | manifest | apply-time rejection |
-| 11 rbac (read) | cluster | `can-i` needs the API server |
-| 12 secrets | manifest | wiring and types |
-| 13 pvc storage | cluster | binding needs the provisioner; inotify caveat |
-| 14 init container | cluster | ordering is runtime |
-| 15 scheduling | cluster, `multinode` | needs real nodes |
-| 16 networkpolicy | cluster | real blocked traffic |
-| 17 rbac (write) | cluster | `can-i` |
-| 18 quota/limits | cluster | admission behaviour |
-| 19 broken stack | cluster | multi-fault capstone; may move to the end or into the fix track |
+| 01 pod basics | pods1 (manifest) | |
+| 02 env vars | pods3 (manifest) | asserts the env instead of reading logs, which removes a race |
+| 03 labels/selectors | labels1 (manifest) | the API server's rejection is reproduced with CEL |
+| 04 scale and image | deployments1 (manifest) | |
+| 05 rolling update | deployments2 (cluster) | |
+| 06 service selector | labels2 (manifest) and services1 (cluster) | split: the selector half and the targetPort half |
+| 07 configmap | config1 (manifest) | |
+| 08 probes | probes1 (manifest) | |
+| 09 resources | resources1 (manifest) | needed `quantity()` in CEL |
+| 10 job | jobs1 (manifest) | |
+| 11 rbac (read) | rbac1 (cluster) | |
+| 12 secrets | config2 (manifest) | |
+| 13 pvc storage | volumes1 (cluster) | |
+| 14 init container | pods6 (cluster) | |
+| 15 scheduling | scheduling1 (cluster, multinode) | redesigned: the old answer targeted the tainted control plane |
+| 16 networkpolicy | networkpolicies1 (cluster) | |
+| 17 rbac (write) | rbac2 (cluster) | the old check never verified `pods/log` |
+| 18 quota/limits | resources2 (cluster) | |
+| 19 broken stack | capstone1 (cluster) | |
 
 ## Phase 0 — Decisions (this document)
 
@@ -150,7 +150,7 @@ Branch `phase-3-cluster`.
 - [x] Declarative cluster `check.yaml` steps (`rollout`, `ready`, `assert`, `endpoints`, `http` via API-server proxy, `exec`, `can_i`, `logs`). The named-Go-check escape hatch is not built: no exercise needs it yet.
 - [x] Cluster-mode runner (namespace reset, apply, poll, diagnostics, per-exercise timeouts, `now` assertions that fail at once). A global ceiling is not built.
 - [x] `TestClusterSolutions` behind `-tags cluster`; `make cluster-test` (unsolved fails by the exercise's own check, solution passes, on a real cluster).
-- [ ] Migrate the prototype's cluster-destined exercises; retire `prototype/` once `TestClusterSolutions` covers them. Done: 05 → deployments2, 06 → services1 (the selector half of 06 is labels2; services1 is the targetPort half), 11 → rbac1, 13 → volumes1, 14 → pods6, 15 → scheduling1 (redesigned: the prototype answer targeted the control plane, which is tainted in a multi-node cluster; it now needs `requires = ["multinode"]`), 17 → rbac2. To do: 16, 18, 19.
+- [x] Migrate the prototype's cluster-destined exercises and remove `prototype/`. All 19 are migrated; see the table above.
 - [ ] Topics: deployments and rollouts, services, probes (runtime), resources and quota, jobs and CronJobs, volumes and PVCs, StatefulSets, DaemonSets, scheduling.
 - [ ] Remaining offline topics from the table (ConfigMaps/Secrets, Kustomize, security contexts, RBAC, network policies shape).
 - [x] Cluster CI job on every PR that touches exercises, solutions or the cluster code (path-filtered), on `main` and weekly. First run: 3 min 52 s, inside the budget. It found a real bug (the inotify preflight was skipped when the node image had to be pulled first).
