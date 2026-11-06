@@ -35,8 +35,8 @@ func TestResetNamespaceEmptiesItAndWaitsForTheDefaultServiceAccount(t *testing.T
 	del := f.called("kubectl --kubeconfig")
 	var deleteArgs []string
 	for _, call := range del {
-		if slices.Contains(call.Args, "delete") {
-			deleteArgs = call.Args
+		if slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "--wait=true") {
+			deleteArgs = call.Args // the one that lists the kinds
 		}
 	}
 	joined := strings.Join(deleteArgs, " ")
@@ -110,6 +110,52 @@ func TestDiagnoseListsPodsAndTheLastWarnings(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("diagnosis lacks %q:\n%s", want, got)
 		}
+	}
+}
+
+func TestGroupWarningsCollapsesTheSameMessageOnManyObjects(t *testing.T) {
+	got := groupWarnings([]string{
+		"Pod/batch-a: 0/3 nodes are available: 3 node(s) didn't match Pod's node affinity",
+		"Pod/batch-b: 0/3 nodes are available: 3 node(s) didn't match Pod's node affinity",
+		"PersistentVolumeClaim/notes: storageclass \"fast\" not found",
+		"Pod/batch-c: 0/3 nodes are available: 3 node(s) didn't match Pod's node affinity",
+	}, 5)
+	want := []string{
+		"Pod/batch-a: 0/3 nodes are available: 3 node(s) didn't match Pod's node affinity (3 times)",
+		"PersistentVolumeClaim/notes: storageclass \"fast\" not found",
+	}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("got:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
+	}
+}
+
+func TestGroupWarningsKeepsTheNewestDistinctMessages(t *testing.T) {
+	var in []string
+	for _, m := range []string{"a", "b", "c", "d", "e", "f", "g"} {
+		in = append(in, "Pod/x: "+m)
+	}
+	got := groupWarnings(in, 3)
+	if len(got) != 3 || got[0] != "Pod/x: e" || got[2] != "Pod/x: g" {
+		t.Fatalf("got %v", got)
+	}
+}
+
+func TestResetNamespaceAlsoClearsOldEvents(t *testing.T) {
+	c, f := newCluster(t, namespaceFake(1))
+	if err := c.ResetNamespace(context.Background(), "k8slings-x"); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(f.called("kubectl --kubeconfig")); n == 0 {
+		t.Fatal("no calls")
+	}
+	found := false
+	for _, call := range f.called("kubectl") {
+		if slices.Contains(call.Args, "events") && slices.Contains(call.Args, "delete") && slices.Contains(call.Args, "k8slings-x") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("events of earlier runs must be deleted, or they show up in this run's diagnosis")
 	}
 }
 

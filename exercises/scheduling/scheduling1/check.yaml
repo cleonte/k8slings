@@ -1,0 +1,12 @@
+steps:
+  - assert:
+      resource: deployment/batch
+      expr: "has(object.spec.template.spec.nodeSelector) && size(object.spec.template.spec.nodeSelector) > 0"
+      message: "Keep a nodeSelector: fix it instead of deleting it."
+    now: true
+  - assert:
+      resource: deployment/batch
+      expr: "has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.nodeAffinity) && has(object.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution)"
+      message: "Keep the required nodeAffinity: fix it instead of deleting it."
+    now: true
+  - rollout: deployment/batch

@@ -56,6 +56,10 @@ func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 	if out, err := c.Kubectl(ctx, "delete", c.namespacedKinds(ctx), "--all", "-n", ns, "--now", "--wait=true", "--timeout=60s"); err != nil {
 		return fmt.Errorf("cannot empty namespace %s: %s", ns, firstLine(out))
 	}
+	// Events of earlier runs would show up in the diagnosis of this one (a Pod
+	// of the previous attempt, a claim "being deleted"), so they go too. They
+	// are not in the list of kinds deleted above, because controllers own them.
+	_, _ = c.Kubectl(ctx, "delete", "events", "--all", "-n", ns)
 	// Deleting serviceaccounts removes "default", and Pods are rejected until
 	// the controller creates it again.
 	for range 60 {
@@ -101,14 +105,52 @@ func (c *Cluster) Diagnose(ctx context.Context, ns string) []string {
 	events, err := c.Kubectl(ctx, "get", "events", "-n", ns, "--field-selector", "type=Warning", "--sort-by=.lastTimestamp",
 		"-o", `jsonpath={range .items[*]}{.involvedObject.kind}/{.involvedObject.name}{": "}{.message}{"\n"}{end}`)
 	if err == nil && strings.TrimSpace(events) != "" {
-		all := strings.Split(strings.TrimSpace(events), "\n")
-		if len(all) > 5 {
-			all = all[len(all)-5:]
-		}
 		lines = append(lines, "Warnings:")
-		for _, e := range all {
-			lines = append(lines, "  "+e)
+		for _, w := range groupWarnings(strings.Split(strings.TrimSpace(events), "\n"), 5) {
+			lines = append(lines, "  "+w)
 		}
 	}
 	return lines
+}
+
+// groupWarnings turns "Kind/name: message" lines into at most max distinct
+// messages, the newest last, each naming one object and saying how many others
+// had the same warning: three Pods of a Deployment that cannot be scheduled
+// have one problem, not three.
+func groupWarnings(events []string, max int) []string {
+	type group struct {
+		first string // Kind/name of the first object
+		msg   string
+		n     int
+	}
+	var groups []*group
+	index := map[string]*group{}
+	for _, e := range events {
+		obj, msg, found := strings.Cut(e, ": ")
+		if !found {
+			obj, msg = "", e
+		}
+		g, ok := index[msg]
+		if !ok {
+			g = &group{first: obj, msg: msg}
+			index[msg] = g
+			groups = append(groups, g)
+		}
+		g.n++
+	}
+	if len(groups) > max {
+		groups = groups[len(groups)-max:]
+	}
+	var out []string
+	for _, g := range groups {
+		line := g.msg
+		if g.first != "" {
+			line = g.first + ": " + g.msg
+		}
+		if g.n > 1 {
+			line += fmt.Sprintf(" (%d times)", g.n)
+		}
+		out = append(out, line)
+	}
+	return out
 }
