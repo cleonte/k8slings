@@ -28,7 +28,7 @@ jobs:
     - run: sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288
     - name: resources2, again and again
       run: |
-        go test -tags cluster -run 'TestClusterSolutions/resources2' -count=15 -timeout 35m -v ./k8slings/exercises/ 2>&1 | tee hunt.log
+        K8SLINGS_KEEP=1 go test -tags cluster -run 'TestClusterSolutions/resources2' -count=15 -timeout 35m -v ./k8slings/exercises/ 2>&1 | tee hunt.log
     - name: Summary
       if: always()
       run: |
