@@ -6,10 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-06
+
 ### Added
 
 - Nine exercises, which makes 35 in 17 topics: `jobs2` and `jobs3` (a CronJob's cron schedule, overlapping runs and kept history), `statefulsets1` (one volume per replica with `volumeClaimTemplates`), `statefulsets2` (a StatefulSet whose `serviceName` names no Service, so its Pods get no DNS name; on the cluster), `daemonsets1` (a DaemonSet that must tolerate the control-plane taint to run on every node, on the multi-node cluster), and `security1` to `security4` (running as non-root, a read-only root filesystem with a writable scratch volume, least-privilege capabilities, and the "restricted" Pod Security Standard, checked control by control).
 - A note in the README on why macOS may block a binary downloaded in a browser, and how to get past it.
+
+### Quality
+
+- Every cluster exercise now says why it fails as shipped (`shipped:` in its `check.yaml`), and the real-cluster proof requires the unsolved exercise to fail with exactly that. Failing alone proves little: a slow cluster fails everything. This caught an exercise (`statefulsets2`) whose supposed fault was not a fault.
+- Checks use fully qualified in-cluster names, so a lookup cannot fall back to public DNS.
 
 ## [0.1.0] - 2026-11-06
 
@@ -44,5 +51,6 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/cleonte/k8slings/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cleonte/k8slings/releases/tag/v0.1.0
