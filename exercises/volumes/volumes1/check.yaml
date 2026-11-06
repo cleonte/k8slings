@@ -1,0 +1,7 @@
+steps:
+  - assert:
+      resource: pvc/notes
+      expr: "object.status.phase == 'Bound'"
+      message: "The claim notes is not Bound yet."
+  - ready: {pod: writer}
+  - logs: {pod: writer, contains: saved}
