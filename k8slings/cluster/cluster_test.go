@@ -44,6 +44,8 @@ func TestKubectlRefusesFlagsThatChooseTheCluster(t *testing.T) {
 		{"get", "pods", "--context=prod"},
 		{"--kubeconfig=/other", "get", "pods"},
 		{"-s", "https://prod:6443", "get", "pods"},
+		{"-shttps://prod:6443", "get", "pods"},
+		{"get", "pods", "-sfoo"},
 		{"get", "pods", "--server=https://prod"},
 		{"get", "pods", "--token", "abc"},
 		{"get", "pods", "--user=admin"},
@@ -64,6 +66,14 @@ func TestFlagsAfterDoubleDashBelongToTheContainerCommand(t *testing.T) {
 	c, _ := newCluster(t, func(Cmd) (string, error) { return "", nil })
 	if _, err := c.Kubectl(context.Background(), "exec", "web", "--", "curl", "-s", "http://x"); err != nil {
 		t.Fatalf("-s after -- is curl's flag: %v", err)
+	}
+	for _, args := range [][]string{
+		{"get", "pods", "-n", "web", "--selector", "app=web", "-o", "wide"},
+		{"get", "pods", "--sort-by=.metadata.name", "--show-labels"},
+	} {
+		if _, err := c.Kubectl(context.Background(), args...); err != nil {
+			t.Errorf("%v must be allowed: %v", args, err)
+		}
 	}
 }
 

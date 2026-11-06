@@ -107,6 +107,10 @@ func CheckArgs(args []string) error {
 			break // what follows belongs to the command run in a container
 		}
 		name, _, _ := strings.Cut(a, "=")
+		// -shttps://other:6443 is -s with its value attached.
+		if strings.HasPrefix(a, "-s") {
+			name = "-s"
+		}
 		if slices.Contains(forbiddenFlags, name) {
 			return ErrForbiddenFlag{Flag: name}
 		}
