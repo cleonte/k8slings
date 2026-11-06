@@ -38,16 +38,20 @@ func newModel(t *testing.T) *Model {
 // is nothing left to run.
 func settle(t *testing.T, m *Model, cmd tea.Cmd) {
 	t.Helper()
-	for range 5 {
+	for range 200 {
 		if cmd == nil {
 			return
 		}
 		msg := cmd()
-		if _, ok := msg.(tea.BatchMsg); ok {
+		if batch, ok := msg.(tea.BatchMsg); ok {
+			for _, c := range batch {
+				settle(t, m, c)
+			}
 			return
 		}
 		_, cmd = m.Update(msg)
 	}
+	t.Fatal("settle: commands never ended")
 }
 
 func press(t *testing.T, m *Model, key string) {
@@ -161,7 +165,10 @@ func TestCheckAll(t *testing.T) {
 	m := newModel(t)
 	solve(t, "pods2", false) // done and working
 	press(t, m, "c")
-	want(t, m, "Check all:", "✔ pods2", "✘ pods1")
+	want(t, m, "Checked ", "✔ pods2", "✗ pods1")
+	if m.checking() {
+		t.Fatal("the check should be over")
+	}
 	press(t, m, "esc")
 	want(t, m, "pods1")
 }
@@ -191,3 +198,5 @@ func TestQuit(t *testing.T) {
 		t.Fatal("q should produce a QuitMsg")
 	}
 }
+
+func writeFile(name, content string) error { return os.WriteFile(name, []byte(content), 0o644) }

@@ -94,6 +94,7 @@ func (m *Model) listKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch {
 	case key == "ctrl+c", key == "q" && !m.list.SettingFilter():
 		m.stopRun()
+		m.stopCheck()
 		return m, tea.Quit
 
 	case key == "esc" && !m.list.SettingFilter() && !m.list.IsFiltered():
