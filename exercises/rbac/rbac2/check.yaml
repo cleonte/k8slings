@@ -1,0 +1,31 @@
+objects:
+  - select: {kind: Role}
+    many: true
+    assert:
+      - expr: "object.rules.all(r, !('*' in r.verbs) && !('*' in r.resources) && !('*' in r.apiGroups))"
+        message: "Least privilege: do not use '*' for verbs, resources or API groups."
+steps:
+  - can_i: {as: deployer, verb: get, resource: pods}
+    now: true
+  - can_i: {as: deployer, verb: list, resource: pods}
+    now: true
+  - can_i: {as: deployer, verb: watch, resource: pods}
+    now: true
+  - can_i: {as: deployer, verb: get, resource: pods/log}
+    now: true
+  - can_i: {as: deployer, verb: get, resource: deployments.apps}
+    now: true
+  - can_i: {as: deployer, verb: list, resource: deployments.apps}
+    now: true
+  - can_i: {as: deployer, verb: patch, resource: deployments.apps}
+    now: true
+  - can_i: {as: deployer, verb: create, resource: deployments.apps, ok: false}
+    now: true
+  - can_i: {as: deployer, verb: delete, resource: deployments.apps, ok: false}
+    now: true
+  - can_i: {as: deployer, verb: delete, resource: pods, ok: false}
+    now: true
+  - can_i: {as: deployer, verb: get, resource: secrets, ok: false}
+    now: true
+  - can_i: {as: deployer, verb: list, resource: pods, namespace: kube-system, ok: false}
+    now: true

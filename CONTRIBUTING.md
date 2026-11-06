@@ -31,7 +31,7 @@ If the exercise uses a kind that has no embedded schema, add it to `scripts/gen-
 Use `mode = "cluster"` only when the lesson is runtime behaviour (a rollout, endpoints, traffic). `check.yaml` then has `steps`, see [CLAUDE.md](CLAUDE.md) for the vocabulary. Also:
 
 - Do not set `metadata.namespace`: k8slings applies the manifest to its own namespace for the exercise.
-- Use `now: true` on an `assert` that is about what the learner wrote (a field of the spec). Without it, a mistake that waiting cannot fix is reported only after the timeout.
+- Use `now: true` on a step that is about what the learner wrote (a field of the spec) or that an apply decides at once (RBAC with `can_i`). Without it, a mistake that waiting cannot fix is reported only after the timeout.
 - Set a `timeout` that the solution passes in with room to spare; remember that an unsolved exercise waits for all of it unless a `now` assertion fails first.
 - Images must be listed in `cluster.PreloadImages` (a test checks it), so that no exercise depends on a registry.
 - Prove it with `make cluster-test` (needs Docker, kind and kubectl): the unsolved exercise must fail by its own check, and the solution must pass.

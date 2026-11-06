@@ -1,0 +1,29 @@
+# I AM NOT DONE
+# rbac1: a read-only ServiceAccount for Pods.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reader
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    # TODO: reader can get Pods, but cannot list them yet.
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+subjects:
+  - kind: ServiceAccount
+    # TODO: this is not the ServiceAccount defined above.
+    name: readers
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io

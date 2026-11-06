@@ -26,6 +26,11 @@ type Step struct {
 	Exec      *ExecStep      `json:"exec"`
 	CanI      *CanIStep      `json:"can_i"`
 	Logs      *LogsStep      `json:"logs"`
+	// Now marks a step whose answer waiting cannot change: when it fails, the
+	// run ends at once instead of polling until the timeout. Use it for what the
+	// learner wrote (a field of the spec) and for what an apply decides at once
+	// (RBAC), not for what the cluster has to catch up with.
+	Now bool `json:"now"`
 }
 
 // ReadyStep waits for Pods to be Ready: one by name, or at least Min with a label selector.
@@ -43,9 +48,8 @@ type AssertStep struct {
 	Selector  string `json:"selector"`
 	Expr      string `json:"expr"`
 	Message   string `json:"message"`
-	// Now marks an assertion about what the learner wrote (a field of the spec),
-	// which waiting cannot change: when it fails, the run ends at once instead
-	// of polling until the timeout.
+	// Now is the same as setting now on the step: kept so that
+	// `assert: {..., now: true}` keeps working.
 	Now bool `json:"now"`
 }
 
@@ -78,7 +82,8 @@ type ExecStep struct {
 	Contains  string   `json:"contains"`
 }
 
-// CanIStep asks `kubectl auth can-i` as a ServiceAccount of the exercise namespace.
+// CanIStep asks `kubectl auth can-i` as a ServiceAccount of the exercise
+// namespace. Resource may name a subresource, such as pods/log.
 type CanIStep struct {
 	As        string `json:"as"` // the name of the ServiceAccount
 	Verb      string `json:"verb"`
@@ -189,7 +194,7 @@ type Problem struct {
 func (c *Compiled) RunSteps(ctx context.Context, kube Kube, ns string) Problem {
 	for _, s := range c.steps {
 		if msg := s.run(ctx, kube, ns); msg != "" {
-			return Problem{Message: msg, Final: s.Assert != nil && s.Assert.Now}
+			return Problem{Message: msg, Final: s.Now || (s.Assert != nil && s.Assert.Now)}
 		}
 	}
 	return Problem{}
@@ -480,7 +485,15 @@ func stepCanI(ctx context.Context, kube Kube, ns string, c CanIStep) string {
 		target = ns
 	}
 	who := fmt.Sprintf("system:serviceaccount:%s:%s", ns, c.As)
-	out, _ := kube.Kubectl(ctx, "auth", "can-i", c.Verb, c.Resource, "-n", target, "--as", who)
+	// kubectl reads `pods/log` as "the Pod called log", not as the log
+	// subresource, so a subresource must be given with --subresource. Without
+	// this, a check for pods/log answers "yes" for the wrong thing.
+	resource, subresource, _ := strings.Cut(c.Resource, "/")
+	args := []string{"auth", "can-i", c.Verb, resource, "-n", target, "--as", who}
+	if subresource != "" {
+		args = append(args, "--subresource="+subresource)
+	}
+	out, _ := kube.Kubectl(ctx, args...)
 	got := strings.TrimSpace(out)
 	if got != "yes" && got != "no" {
 		return fmt.Sprintf("cannot ask what %s may do: %s", c.As, firstLine(out))

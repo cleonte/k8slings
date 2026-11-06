@@ -1,0 +1,25 @@
+# I AM NOT DONE
+# pods6: an init container prepares a page that nginx serves.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  initContainers:
+    - name: fetch
+      image: busybox:1.37
+      command: ["sh", "-c", "echo '<h1>hello from init</h1>' > /work/index.html"]
+      volumeMounts:
+        # TODO: this volume name is not the one declared under volumes.
+        - name: share
+          mountPath: /work
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      volumeMounts:
+        - name: shared
+          # TODO: this is not where nginx looks for the files it serves.
+          mountPath: /html
+  volumes:
+    - name: shared
+      emptyDir: {}
