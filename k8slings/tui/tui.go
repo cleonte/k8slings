@@ -84,7 +84,14 @@ type Model struct {
 	pinned string
 	list   list.Model
 
-	checkItems []checkItem
+	// Checking every exercise (the c key). Like runs, the results of a check
+	// that was cancelled carry an older id and are ignored.
+	checkID     int
+	checkCtx    context.Context
+	checkCancel context.CancelFunc
+	checkItems  []checkItem
+	checkNext   int // index of the next exercise to start
+	checkActive int // how many are running now
 
 	// The run in progress. Results of earlier runs carry an older id and are
 	// ignored: a save during a run starts a new one.
@@ -106,7 +113,11 @@ type runDoneMsg struct {
 	err    error
 }
 
-type checkDoneMsg struct{ items []checkItem }
+type checkDoneMsg struct {
+	id    int
+	index int
+	err   error
+}
 
 func New(cfg Config) *Model {
 	if cfg.Run == nil {
@@ -145,9 +156,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(m.startRun(), m.waitForChanges())
 
 	case changesMsg:
-		if m.mode == modeCheck {
-			// A save should not throw away a check on screen; esc leaves it and
-			// runs the exercise again.
+		if m.checking() {
+			// A save should not throw away a check that is half way; leaving the
+			// check with esc runs the exercise again.
 			return m, m.waitForChanges()
 		}
 		return m, tea.Batch(m.startRun(), m.waitForChanges())
@@ -156,7 +167,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// The watcher stopped; whatever is on screen stays, and q still works.
 
 	case checkDoneMsg:
-		m.checkItems = msg.items
+		return m, m.finishCheck(msg)
 
 	case runDoneMsg:
 		if msg.id == m.runID {
@@ -181,6 +192,7 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	key := msg.String()
 	if key == "q" || key == "ctrl+c" {
 		m.stopRun()
+		m.stopCheck()
 		return m, tea.Quit
 	}
 	m.notice = ""
@@ -199,8 +211,9 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		return m, m.reset()
 	}
 
-	// While checking, only leaving and scrolling make sense.
-	if m.mode == modeCheck && !slices.Contains([]string{"esc", "down", "j", "up", "k", "pgdown", "space", "pgup"}, key) {
+	// While checking, only leaving, scrolling and a second c (which says it is
+	// already going) make sense.
+	if m.mode == modeCheck && !slices.Contains([]string{"esc", "c", "down", "j", "up", "k", "pgdown", "space", "pgup"}, key) {
 		return m, nil
 	}
 
@@ -349,6 +362,7 @@ func (m *Model) stopRun() {
 // starts checking it.
 func (m *Model) startRun() tea.Cmd {
 	m.stopRun()
+	m.stopCheck()
 	m.mode, m.scroll = modeResult, 0
 
 	done, total, err := exercises.Progress(m.cfg.InfoFile)

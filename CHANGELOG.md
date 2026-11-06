@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-06
+
+### Changed
+
+- Check all (`c`) in `k8slings watch` no longer freezes the screen. It checks four exercises at a time and shows the state of each as it goes (waiting, running, works, fails, skipped) with a counter, `esc` cancels what is left, a second `c` says it is already checking instead of starting another one, and a save does not throw away a check that is half way. With cluster exercises that matter: a learner who has not done them yet used to wait for every one of them to time out, one after the other, with nothing on screen.
+- The list of results also says when an exercise works but still has its `I AM NOT DONE` line, and flags one that was finished and now fails.
+- The footer no longer offers `f full`, because nothing is ever shortened and the key showed nothing. The header says "N skipped (see k8slings doctor)" when exercises are skipped, so you know where to look.
+
+### Quality
+
+- Many more tests of the full-screen view, run with the race detector: the limit on how many exercises are checked at once, cancelling, saving during a check, skipped exercises, the filter (where `q` is a letter, not a quit key), scrolling, resizing, and the error, all-done and nothing-to-run screens.
+
 ## [0.2.0] - 2026-11-06
 
 ### Added
@@ -51,6 +63,7 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/cleonte/k8slings/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/cleonte/k8slings/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/cleonte/k8slings/releases/tag/v0.1.0

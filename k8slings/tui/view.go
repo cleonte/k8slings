@@ -28,7 +28,7 @@ func (m *Model) header() string {
 		title += "  " + dimStyle.Render(m.topic)
 	}
 	if m.skipped > 0 {
-		title += "  " + warnStyle.Render(fmt.Sprintf("%d skipped", m.skipped))
+		title += "  " + warnStyle.Render(fmt.Sprintf("%d skipped (see k8slings doctor)", m.skipped))
 	}
 
 	current := ""
@@ -179,7 +179,9 @@ func (m *Model) footer() string {
 	case m.mode != modeResult:
 		return dimStyle.Render("esc back   ↑↓ scroll   q quit")
 	case m.hasExercise():
-		keys := []string{"h hint", "s solution", "r reset", "n next", "l list", "c check all", "f full", "q quit"}
+		// "f full" is only offered when there is something it would show. Nothing
+		// is shortened in a k8slings failure today, so the key stays hidden.
+		keys := []string{"h hint", "s solution", "r reset", "n next", "l list", "c check all", "q quit"}
 		withScroll := slices.Insert(slices.Clone(keys), len(keys)-1, "↑↓ scroll")
 		line := strings.Join(withScroll, "   ")
 		if lipgloss.Width(line) > m.width {
