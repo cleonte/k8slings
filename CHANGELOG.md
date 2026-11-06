@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Security
+
+- `k8slings kubectl` now refuses `-s` with its value attached (`-shttps://other:6443`), which slipped past the check for flags that choose the cluster.
+- Emptying or seeding a namespace is refused unless its name starts with `k8slings-`, so no bug can wipe `default` or `kube-system`.
+
+### Fixed
+
+- `troubleshooting1` no longer accepts replacing the container command with `sleep 3600`: the application has to run in production mode, and the proof requires that shortcut to be refused.
+
 ### Added
 
 - Five more troubleshooting exercises (fix mode): `troubleshooting2` (ImagePullBackOff from a typo in the image name), `troubleshooting3` (a Service whose selector matches no Pod), `troubleshooting4` (a Pod stuck Pending because it asks for more CPU than any node has), `troubleshooting5` (Running but never Ready: a readiness probe on a path that does not exist), `troubleshooting6` (Forbidden: a RoleBinding that names the wrong ServiceAccount). Each one refuses the usual shortcuts (recreate the object, scale to zero, remove the probe, widen the Role, pin the Pod to a node, relabel the Pods by hand), and the proof on a real cluster requires it.
