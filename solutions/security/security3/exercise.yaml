@@ -1,0 +1,15 @@
+# security3: a web server that has far more privilege than it needs.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      securityContext:
+        privileged: false
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]
+          add: ["NET_BIND_SERVICE"]

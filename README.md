@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->26<!-- /count --> exercises in <!-- count:topics -->14<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens.
+You get <!-- count:exercises -->35<!-- /count --> exercises in <!-- count:topics -->17<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens.
 
 ![k8slings watch](misc/demo-tui.gif)
 

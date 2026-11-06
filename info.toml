@@ -183,6 +183,24 @@ Which restartPolicy values does a Job allow?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/"
 
 [[exercises]]
+name = "jobs2"
+path = "exercises/jobs/jobs2"
+topic = "jobs"
+mode = "manifest"
+hint = """
+A cron schedule has five fields. How would you write 'every fifth minute' in the first one?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#cron-schedule-syntax"
+
+[[exercises]]
+name = "jobs3"
+path = "exercises/jobs/jobs3"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Which concurrencyPolicy skips a run while the previous one is still going? And how many finished Jobs do you really need to keep?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"
@@ -191,6 +209,36 @@ timeout = "60s"
 hint = """
 Ask the cluster which StorageClasses exist, and read the events of the claim. The class name and the access mode both matter."""
 docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims"
+
+[[exercises]]
+name = "statefulsets1"
+path = "exercises/statefulsets/statefulsets1"
+topic = "statefulsets"
+mode = "manifest"
+hint = """
+A StatefulSet can create a claim per replica. Look for the field that holds claim templates."""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#volume-claim-templates"
+
+[[exercises]]
+name = "statefulsets2"
+path = "exercises/statefulsets/statefulsets2"
+topic = "statefulsets"
+mode = "cluster"
+timeout = "60s"
+hint = """
+Per-Pod DNS names come from a headless Service. How do you make a Service headless?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#headless-services"
+
+[[exercises]]
+name = "daemonsets1"
+path = "exercises/daemonsets/daemonsets1"
+topic = "daemonsets"
+mode = "cluster"
+timeout = "45s"
+requires = ["multinode"]
+hint = """
+Control-plane nodes are tainted. Which toleration lets a Pod run there?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
 
 [[exercises]]
 name = "scheduling1"
@@ -202,6 +250,42 @@ requires = ["multinode"]
 hint = """
 Compare the labels of the nodes (kubectl get nodes --show-labels) with what the Pod asks for. An affinity expression can also say that a label must be absent: DoesNotExist."""
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity"
+
+[[exercises]]
+name = "security1"
+path = "exercises/security/security1"
+topic = "security"
+mode = "manifest"
+hint = """
+Which numeric user is root? Pick any other one."""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/"
+
+[[exercises]]
+name = "security2"
+path = "exercises/security/security2"
+topic = "security"
+mode = "manifest"
+hint = """
+Where does the container write? Mount a writable volume there."""
+docs = "https://kubernetes.io/docs/concepts/storage/volumes/#emptydir"
+
+[[exercises]]
+name = "security3"
+path = "exercises/security/security3"
+topic = "security"
+mode = "manifest"
+hint = """
+Drop every capability, then add back only the one that lets a process bind a port below 1024."""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container"
+
+[[exercises]]
+name = "security4"
+path = "exercises/security/security4"
+topic = "security"
+mode = "manifest"
+hint = """
+Check the four controls of the restricted standard one by one against the Pod."""
+docs = "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted"
 
 [[exercises]]
 name = "rbac1"

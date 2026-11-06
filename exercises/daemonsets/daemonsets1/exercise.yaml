@@ -1,0 +1,20 @@
+# I AM NOT DONE
+# daemonsets1: a node agent that must run on every node.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: agent
+spec:
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      # TODO: this agent does not run on every node of the cluster.
+      containers:
+        - name: agent
+          image: busybox:1.37
+          command: ["sleep", "3600"]

@@ -1,0 +1,19 @@
+# security4: a Pod that would be rejected in a namespace enforcing "restricted".
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: ["ALL"]

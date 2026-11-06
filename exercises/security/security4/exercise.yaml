@@ -1,0 +1,12 @@
+# I AM NOT DONE
+# security4: a Pod that would be rejected in a namespace enforcing "restricted".
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      # TODO: none of the restricted controls are set.

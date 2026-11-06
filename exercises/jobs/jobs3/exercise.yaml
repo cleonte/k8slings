@@ -1,0 +1,22 @@
+# I AM NOT DONE
+# jobs3: a slow sync scheduled far too often.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: sync
+spec:
+  schedule: "* * * * *"
+  # TODO: a run that takes five minutes will be joined by four more.
+  concurrencyPolicy: Allow
+  # TODO: this keeps every finished Job and its Pods.
+  successfulJobsHistoryLimit: 100
+  failedJobsHistoryLimit: 100
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: sync
+              image: busybox:1.37
+              command: ["sh", "-c", "echo syncing; sleep 300"]

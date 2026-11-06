@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: web}
+    assert:
+      - expr: "!has(object.spec.containers[0].securityContext.privileged) || object.spec.containers[0].securityContext.privileged == false"
+        message: "A web server does not need to be privileged."
+      - expr: "has(object.spec.containers[0].securityContext.allowPrivilegeEscalation) && object.spec.containers[0].securityContext.allowPrivilegeEscalation == false"
+        message: "Do not allow the process to gain more privileges than it starts with."
+      - expr: "has(object.spec.containers[0].securityContext.capabilities) && has(object.spec.containers[0].securityContext.capabilities.drop) && 'ALL' in object.spec.containers[0].securityContext.capabilities.drop"
+        message: "Drop all capabilities first, then add back only what is needed."
+      - expr: "!has(object.spec.containers[0].securityContext.capabilities.add) || object.spec.containers[0].securityContext.capabilities.add.all(c, c == 'NET_BIND_SERVICE')"
+        message: "The only capability this server needs back is the one for binding a low port."

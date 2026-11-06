@@ -1,0 +1,5 @@
+steps:
+  - rollout: statefulset/web
+  - ready: {pod: client}
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://web-0.web"], contains: nginx}
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://web-1.web"], contains: nginx}
