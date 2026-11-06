@@ -12,6 +12,7 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/schema"
 )
@@ -36,7 +37,7 @@ func (f *fakeCluster) Seeded(context.Context, string, string) bool {
 func (f *fakeCluster) UID(context.Context, string, string) (string, error) {
 	return "uid", nil
 }
-func (f *fakeCluster) Seed(context.Context, string, string, []byte) error {
+func (f *fakeCluster) Seed(context.Context, string, string, [][]byte) error {
 	f.seeds.Add(1)
 	return nil
 }
@@ -199,5 +200,46 @@ func TestKeysForExercisesWithoutAFileDoNotCrash(t *testing.T) {
 	_, cmd := m.Update(tea.KeyPressMsg{Code: 'q', Text: "q"})
 	if !isQuit(cmd) {
 		t.Fatal("q should still quit")
+	}
+}
+
+// Setting up a fix exercise can take a minute: the screen says which step it is
+// on, and quitting cancels the setup, so that nothing is kept.
+func TestSetupShowsProgressAndQuittingCancelsIt(t *testing.T) {
+	t.Chdir(t.TempDir())
+	if err := os.WriteFile("info.toml", []byte(fixInfo), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	embedded := fstest.MapFS{"exercises/t/f1/setup.yaml": {Data: []byte("kind: Pod\n")}}
+	started, cancelled := make(chan struct{}), make(chan error, 1)
+	m := New(Config{
+		InfoFile: "info.toml",
+		Env:      &exercises.Env{Embedded: embedded, Validator: schema.New(embedded), Kube: &fakeCluster{}},
+		Run: func(ctx context.Context, ex exercises.Exercise) (exercises.Result, error) {
+			cluster.Progress(ctx, "setting up f1: step 1 of 2")
+			close(started)
+			<-ctx.Done()
+			cancelled <- ctx.Err()
+			return exercises.Result{}, ctx.Err()
+		},
+	})
+	m.width, m.height = 100, 30
+	cmd := m.startRun()
+	go cmd()
+	select {
+	case <-started:
+	case <-time.After(5 * time.Second):
+		t.Fatal("the run never started")
+	}
+	want(t, m, "setting up f1: step 1 of 2", "nothing is kept")
+
+	press(t, m, "q")
+	select {
+	case err := <-cancelled:
+		if !errors.Is(err, context.Canceled) {
+			t.Fatalf("the setup was stopped with %v", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("quitting did not cancel the setup")
 	}
 }

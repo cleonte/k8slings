@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 	"testing/fstest"
+
+	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
 var src = fstest.MapFS{
@@ -43,4 +45,44 @@ func TestResetRestoresMarker(t *testing.T) {
 	if string(got) != "# I AM NOT DONE\n" {
 		t.Fatalf("got %q", got)
 	}
+}
+
+var fixSrc = fstest.MapFS{
+	"info.toml":                       {Data: []byte("[[exercises]]\nname='f'\npath='exercises/t/f'\ntopic='t'\nmode='fix'\nhint='h'\n")},
+	"exercises/t/f/README.md":         {Data: []byte("# ticket\n")},
+	"exercises/t/f/setup.yaml":        {Data: []byte("one\n")},
+	"exercises/t/f/setup-2.yaml":      {Data: []byte("two\n")},
+	"exercises/t/f/setup-3.yaml":      {Data: []byte("three\n")},
+	"exercises/t/f/check.yaml":        {Data: []byte("steps: []\n")},
+	"exercises/t/f/solution-note.txt": {Data: []byte("kept\n")},
+}
+
+func TestInitKeepsEverySetupStepOut(t *testing.T) {
+	dest := filepath.Join(t.TempDir(), "ws")
+	if err := Init(fixSrc, dest); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"setup.yaml", "setup-2.yaml", "setup-3.yaml", "check.yaml"} {
+		if _, err := os.Stat(filepath.Join(dest, "exercises", "t", "f", name)); err == nil {
+			t.Errorf("%s must stay inside the binary", name)
+		}
+	}
+	for _, name := range []string{"README.md", "solution-note.txt"} {
+		if _, err := os.Stat(filepath.Join(dest, "exercises", "t", "f", name)); err != nil {
+			t.Errorf("%s should have been written: %v", name, err)
+		}
+	}
+}
+
+// A fix exercise is reset in the cluster (cmd/reset.go), never from files. If a
+// fix exercise ever reached Reset, it must not put the setup steps in the workspace.
+func TestResetNeverWritesSetupFiles(t *testing.T) {
+	root := t.TempDir()
+	_, _ = Reset(fixSrc, root, "f")
+	_ = filepath.WalkDir(root, func(p string, d os.DirEntry, err error) error {
+		if err == nil && !d.IsDir() && exercises.EmbeddedOnly(d.Name()) {
+			t.Errorf("reset wrote %s, which belongs in the binary", p)
+		}
+		return nil
+	})
 }

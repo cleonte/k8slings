@@ -277,3 +277,130 @@ func TestProgressWritesAreAtomicAndSafeToRaceOn(t *testing.T) {
 	}
 	_ = time.Now
 }
+
+func TestFixSeedsEveryStepInOrder(t *testing.T) {
+	ex := fixExercise(t)
+	fsys := fstest.MapFS{
+		"exercises/t/web/setup.yaml":   {Data: []byte("one")},
+		"exercises/t/web/setup-2.yaml": {Data: []byte("two")},
+		"exercises/t/web/check.yaml":   fixFS["exercises/t/web/check.yaml"],
+	}
+	k := &fakeKube{nodes: 3}
+	env := &Env{Embedded: fsys, Validator: schema.New(fsys), Settle: time.Millisecond, Kube: k}
+	if _, err := ex.Run(context.Background(), env); !IsSeeded(err) {
+		t.Fatalf("the first run should seed, got %v", err)
+	}
+	if k.seedSetup != "one|two" {
+		t.Fatalf("the steps must reach Seed in order, got %q", k.seedSetup)
+	}
+}
+
+// A seeding that fails leaves the namespace labelled but records no UIDs, so the
+// next run seeds again from scratch instead of judging a half-built cluster.
+func TestFixFailedSeedingIsStartedOverByTheNextRun(t *testing.T) {
+	ex := fixExercise(t)
+	k := &fakeKube{nodes: 3, seedErr: errors.New("cannot set up web: step 1 of 2 did not finish rolling out")}
+	_, err := ex.Run(context.Background(), fixEnv(k))
+	if err == nil || IsSeeded(err) || !strings.Contains(err.Error(), "step 1 of 2") {
+		t.Fatalf("a failed seeding is an error, not a hand-over: %v", err)
+	}
+	if !k.seeded {
+		t.Fatal("the fake should have kept the label, as the real seeding does")
+	}
+	if hasSeed("web") {
+		t.Fatal("nothing may be recorded for a seeding that failed")
+	}
+
+	k.seedErr = nil
+	if _, err := ex.Run(context.Background(), fixEnv(k)); !IsSeeded(err) {
+		t.Fatalf("the next run should seed again, got %v", err)
+	}
+	if k.seedCalls != 2 {
+		t.Fatalf("seeded %d times, want 2", k.seedCalls)
+	}
+	if !hasSeed("web") {
+		t.Fatal("the second seeding finished and must be recorded")
+	}
+}
+
+// Seeding again over an earlier seeding must not leave the old UIDs behind when
+// it fails: they would make the half-built cluster look seeded.
+func TestFixFailedReseedForgetsTheEarlierSeeding(t *testing.T) {
+	ex := fixExercise(t)
+	k := &fakeKube{nodes: 3}
+	if _, err := ex.Run(context.Background(), fixEnv(k)); !IsSeeded(err) {
+		t.Fatalf("setup: %v", err)
+	}
+	k.seedErr = errors.New("boom")
+	if err := ex.Reseed(context.Background(), fixEnv(k)); err == nil {
+		t.Fatal("the reseed should fail")
+	}
+	if hasSeed("web") {
+		t.Fatal("a failed reseed must not keep the UIDs of the earlier seeding")
+	}
+}
+
+func TestFixCancelledSeedingRecordsNothingAndTheNextRunStartsOver(t *testing.T) {
+	ex := fixExercise(t)
+	k := &fakeKube{nodes: 3, seedBlock: true}
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		cancel()
+	}()
+	_, err := ex.Run(ctx, fixEnv(k))
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancelling mid-seed returns the context error, got %v", err)
+	}
+	if IsSeeded(err) {
+		t.Fatal("a cancelled seeding is not a hand-over")
+	}
+	if hasSeed("web") || ex.State() != Pending {
+		t.Fatal("a cancelled seeding must record nothing")
+	}
+
+	k.seedBlock = false
+	if _, err := ex.Run(context.Background(), fixEnv(k)); !IsSeeded(err) {
+		t.Fatalf("the next run should start over, got %v", err)
+	}
+	if k.seedCalls != 2 {
+		t.Fatalf("seeded %d times, want 2", k.seedCalls)
+	}
+}
+
+func TestEmbeddedOnlyFiles(t *testing.T) {
+	for name, want := range map[string]bool{
+		"check.yaml": true, "setup.yaml": true, "setup-2.yaml": true, "setup-10.yaml": true,
+		"exercises/x/y/setup-3.yaml": true, "README.md": false, "exercise.yaml": false,
+		"setup-x.yaml": false, "mysetup-2.yaml": false, "setup-2.yaml.bak": false,
+	} {
+		if got := EmbeddedOnly(name); got != want {
+			t.Errorf("EmbeddedOnly(%q) = %v, want %v", name, got, want)
+		}
+	}
+}
+
+func TestSetupFilesAreConsecutiveAndCapped(t *testing.T) {
+	mk := func(names ...string) fstest.MapFS {
+		m := fstest.MapFS{}
+		for _, n := range names {
+			m["d/"+n] = &fstest.MapFile{Data: []byte("x")}
+		}
+		return m
+	}
+	if got, err := SetupFiles(mk("setup.yaml", "setup-2.yaml", "setup-3.yaml"), "d"); err != nil || len(got) != 3 || got[2] != "d/setup-3.yaml" {
+		t.Fatalf("got %v, %v", got, err)
+	}
+	if got, err := SetupFiles(mk("setup.yaml"), "d"); err != nil || len(got) != 1 {
+		t.Fatalf("one step: %v, %v", got, err)
+	}
+	for name, fsys := range map[string]fstest.MapFS{
+		"no first step": mk("setup-2.yaml"),
+		"a gap":         mk("setup.yaml", "setup-3.yaml"),
+		"too many":      mk("setup.yaml", "setup-2.yaml", "setup-3.yaml", "setup-4.yaml", "setup-5.yaml", "setup-6.yaml"),
+	} {
+		if _, err := SetupFiles(fsys, "d"); err == nil {
+			t.Errorf("%s: want an error", name)
+		}
+	}
+}

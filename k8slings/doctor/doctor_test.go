@@ -7,6 +7,9 @@ import (
 	"strings"
 	"testing"
 	"testing/fstest"
+
+	"github.com/cleonte/k8slings/k8slings/exercises"
+	ws "github.com/cleonte/k8slings/k8slings/workspace"
 )
 
 var schemas = fstest.MapFS{
@@ -89,5 +92,29 @@ func TestMissingSchemas(t *testing.T) {
 	checks := Run(context.Background(), infoFile, Env{FileExists: func(string) bool { return true }, Schemas: fstest.MapFS{}})
 	if byName(checks, "Kubernetes schemas").Status != Fail {
 		t.Fatalf("got %+v", byName(checks, "Kubernetes schemas"))
+	}
+}
+
+// A workspace made by init has no setup steps, and doctor must not look for them.
+func TestDoctorNeverMissesSetupFilesInTheWorkspace(t *testing.T) {
+	src := fstest.MapFS{
+		"info.toml":                  {Data: []byte("[[exercises]]\nname='f'\npath='exercises/t/f'\ntopic='t'\nmode='fix'\nhint='h'\n")},
+		"exercises/t/f/README.md":    {Data: []byte("# ticket\n")},
+		"exercises/t/f/setup.yaml":   {Data: []byte("one\n")},
+		"exercises/t/f/setup-2.yaml": {Data: []byte("two\n")},
+		"exercises/t/f/check.yaml":   {Data: []byte("steps: []\n")},
+	}
+	dest := filepath.Join(t.TempDir(), "ws")
+	if err := ws.Init(src, dest); err != nil {
+		t.Fatal(err)
+	}
+	t.Chdir(dest)
+	all, err := exercises.List("info.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	env := Env{FileExists: func(p string) bool { _, err := os.Stat(p); return err == nil }}
+	if c := filesCheck(all, env); c.Status != OK {
+		t.Fatalf("a fresh workspace must pass: %v %s", c.Status, c.Detail)
 	}
 }

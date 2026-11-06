@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"io/fs"
 	"slices"
+	"sync/atomic"
 	"time"
 
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/workspace"
 )
@@ -98,6 +100,9 @@ type Model struct {
 	// ignored: a save during a run starts a new one.
 	runID  int
 	cancel context.CancelFunc
+	// setup is what the run in progress says it is doing, such as "setting up
+	// web: step 1 of 2". It is written by the run, from another goroutine.
+	setup  atomic.Pointer[string]
 	result exercises.Result
 	runErr error
 }
@@ -439,6 +444,8 @@ func (m *Model) startRun() tea.Cmd {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
+	m.setup.Store(nil)
+	ctx = cluster.WithProgress(ctx, func(line string) { m.setup.Store(&line) })
 	m.status, m.result, m.runErr = statusRunning, exercises.Result{}, nil
 
 	id, run := m.runID, m.cfg.Run

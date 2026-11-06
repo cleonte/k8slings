@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"strings"
 	"testing"
@@ -32,7 +33,7 @@ func TestSeedEmptiesLabelsAndAppliesInThatOrder(t *testing.T) {
 		}
 		return "", nil
 	})
-	if err := c.Seed(context.Background(), "k8slings-fix1", "fix1", []byte("kind: Deployment\n")); err != nil {
+	if err := c.Seed(context.Background(), "k8slings-fix1", "fix1", [][]byte{[]byte("kind: Deployment\n")}); err != nil {
 		t.Fatal(err)
 	}
 
@@ -122,5 +123,113 @@ func TestRunScriptPinsKubectlToOurClusterAndGivesTheNamespace(t *testing.T) {
 		if strings.HasPrefix(strings.ToUpper(kv), "KUBECONFIG=") {
 			t.Fatalf("KUBECONFIG leaked into the script's environment: %s", kv)
 		}
+	}
+}
+
+// seedSteps answers a multi-step seed: apply prints what it made, and rollout
+// status is answered by rollout.
+func seedSteps(rollout func(args []string) (string, error)) func(Cmd) (string, error) {
+	return func(cmd Cmd) (string, error) {
+		args := strings.Join(cmd.Args, " ")
+		switch {
+		case strings.Contains(args, "api-resources"):
+			return "pods\nserviceaccounts\n", nil
+		case strings.Contains(args, "get pods"):
+			return "No resources found in ns namespace.", nil
+		case strings.Contains(args, "get serviceaccount default"):
+			return "default", nil
+		case slices.Contains(cmd.Args, "apply"):
+			return "service/web configured\ndeployment.apps/web configured\n", nil
+		case slices.Contains(cmd.Args, "rollout"):
+			return rollout(cmd.Args)
+		}
+		return "", nil
+	}
+}
+
+func TestSeedWaitsForEveryStepButTheLast(t *testing.T) {
+	c, f := newCluster(t, seedSteps(func([]string) (string, error) { return "successfully rolled out", nil }))
+	var said []string
+	ctx := WithProgress(context.Background(), func(s string) { said = append(said, s) })
+
+	if err := c.Seed(ctx, "k8slings-fix1", "fix1", [][]byte{[]byte("a: 1"), []byte("b: 2"), []byte("c: 3")}); err != nil {
+		t.Fatal(err)
+	}
+	var order []string
+	for _, call := range f.called("kubectl") {
+		switch {
+		case slices.Contains(call.Args, "apply"):
+			order = append(order, "apply")
+		case slices.Contains(call.Args, "rollout"):
+			if !slices.Contains(call.Args, "deployment.apps/web") || !slices.Contains(call.Args, "--timeout=90s") {
+				t.Errorf("rollout status args: %v", call.Args)
+			}
+			order = append(order, "rollout")
+		}
+	}
+	// The Service is not waited for; the Deployment is, after steps 1 and 2 but not after the last.
+	if got := strings.Join(order, " "); got != "apply rollout apply rollout apply" {
+		t.Fatalf("order = %s", got)
+	}
+	want := "setting up fix1|setting up fix1: step 1 of 3|setting up fix1: step 2 of 3|setting up fix1: step 3 of 3"
+	if got := strings.Join(said, "|"); got != want {
+		t.Fatalf("progress = %q, want %q", got, want)
+	}
+}
+
+func TestSeedWithOneStepWaitsForNothing(t *testing.T) {
+	c, f := newCluster(t, seedSteps(func([]string) (string, error) { return "", nil }))
+	if err := c.Seed(context.Background(), "k8slings-fix1", "fix1", [][]byte{[]byte("a: 1")}); err != nil {
+		t.Fatal(err)
+	}
+	for _, call := range f.called("kubectl") {
+		if slices.Contains(call.Args, "rollout") {
+			t.Fatalf("a single-step setup must not wait: %v", call.Args)
+		}
+	}
+}
+
+func TestSeedStopsAtAStepThatDoesNotRollOut(t *testing.T) {
+	c, f := newCluster(t, seedSteps(func([]string) (string, error) {
+		return "error: timed out waiting for the condition", errors.New("exit status 1")
+	}))
+	err := c.Seed(context.Background(), "k8slings-fix1", "fix1", [][]byte{[]byte("a: 1"), []byte("b: 2")})
+	if err == nil {
+		t.Fatal("a step that does not roll out must fail the seeding")
+	}
+	for _, want := range []string{"fix1", "step 1 of 2", "did not finish rolling out", "deployment.apps/web", "timed out", "k8slings reset fix1"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("the error should mention %q: %v", want, err)
+		}
+	}
+	applies := 0
+	for _, call := range f.called("kubectl") {
+		if slices.Contains(call.Args, "apply") {
+			applies++
+		}
+	}
+	if applies != 1 {
+		t.Fatalf("the second step was applied after the first failed (%d applies)", applies)
+	}
+}
+
+func TestSeedCancelledMidWayStopsCleanly(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	c, f := newCluster(t, seedSteps(func([]string) (string, error) {
+		cancel() // the learner presses a key while the rollout is awaited
+		return "", errors.New("signal: killed")
+	}))
+	err := c.Seed(ctx, "k8slings-fix1", "fix1", [][]byte{[]byte("a: 1"), []byte("b: 2")})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("cancelling must return the context error, got %v", err)
+	}
+	applies := 0
+	for _, call := range f.called("kubectl") {
+		if slices.Contains(call.Args, "apply") {
+			applies++
+		}
+	}
+	if applies != 1 {
+		t.Fatalf("nothing may be applied after the cancel (%d applies)", applies)
 	}
 }
