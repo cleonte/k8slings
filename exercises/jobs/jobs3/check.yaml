@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: CronJob, name: sync}
+    assert:
+      - expr: "has(object.spec.concurrencyPolicy) && object.spec.concurrencyPolicy == 'Forbid'"
+        message: "A run takes longer than the interval, so runs would pile up: do not let them overlap."
+      - expr: "!has(object.spec.successfulJobsHistoryLimit) || object.spec.successfulJobsHistoryLimit <= 5"
+        message: "Keep only a few successful Jobs (five at most), not hundreds."
+      - expr: "!has(object.spec.failedJobsHistoryLimit) || object.spec.failedJobsHistoryLimit <= 5"
+        message: "Keep only a few failed Jobs (five at most), not hundreds."

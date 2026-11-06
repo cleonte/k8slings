@@ -1,3 +1,4 @@
+shipped: "cannot get pods"
 steps:
   - can_i: {as: reader, verb: get, resource: pods}
     now: true

@@ -1,0 +1,18 @@
+# I AM NOT DONE
+# jobs2: a report that should run every five minutes.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report
+spec:
+  # TODO: this is not a valid cron schedule.
+  schedule: "every 5 minutes"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: report
+              image: busybox:1.37
+              command: ["sh", "-c", "echo report"]

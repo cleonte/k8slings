@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: StatefulSet, name: db}
+    assert:
+      - expr: "has(object.spec.volumeClaimTemplates) && size(object.spec.volumeClaimTemplates) > 0"
+        message: "Each replica needs its own volume: a StatefulSet creates one claim per Pod from volumeClaimTemplates."
+      - expr: "!has(object.spec.template.spec.volumes) || !object.spec.template.spec.volumes.exists(v, has(v.persistentVolumeClaim))"
+        message: "The Pods must not all mount one shared claim."
+      - expr: "object.spec.template.spec.containers[0].volumeMounts.all(m, has(object.spec.volumeClaimTemplates) && object.spec.volumeClaimTemplates.exists(t, t.metadata.name == m.name))"
+        message: "The volume the container mounts must come from a claim template of the same name."

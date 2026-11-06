@@ -1,0 +1,7 @@
+shipped: "should run on every node"
+steps:
+  - assert:
+      resource: daemonset/agent
+      expr: "object.status.desiredNumberScheduled == 3"
+      message: "The agent should run on every node of the cluster (three), the control plane included, but it is wanted on fewer."
+  - rollout: daemonset/agent

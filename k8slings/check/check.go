@@ -18,6 +18,11 @@ type File struct {
 	// or "off".
 	Schema  SchemaMode `json:"schema"`
 	Objects []Rule     `json:"objects"`
+	// Shipped is what the first problem of the exercise, as shipped, must say
+	// (a substring). It is only used by the tests, which prove that an unsolved
+	// exercise fails *for the reason it teaches*: failing is not enough, because
+	// a slow cluster fails every exercise. Required for cluster exercises.
+	Shipped string `json:"shipped"`
 	// Steps are the checks against the live cluster (cluster mode). They are
 	// read-only and are polled until all of them pass, see steps.go.
 	Steps []Step `json:"steps"`

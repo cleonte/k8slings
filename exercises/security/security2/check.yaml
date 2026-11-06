@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Pod, name: writer}
+    assert:
+      - expr: "has(object.spec.containers[0].securityContext) && has(object.spec.containers[0].securityContext.readOnlyRootFilesystem) && object.spec.containers[0].securityContext.readOnlyRootFilesystem == true"
+        message: "Keep the root filesystem read-only: give the application a writable place instead."
+      - expr: "has(object.spec.containers[0].volumeMounts) && object.spec.containers[0].volumeMounts.exists(m, m.mountPath == '/tmp' && (!has(m.readOnly) || m.readOnly == false))"
+        message: "The container writes to /tmp, so /tmp needs a writable mount."
+      - expr: "has(object.spec.volumes) && object.spec.containers[0].volumeMounts.exists(m, m.mountPath == '/tmp' && object.spec.volumes.exists(v, v.name == m.name && has(v.emptyDir)))"
+        message: "The writable /tmp should be a scratch volume that lives and dies with the Pod (emptyDir)."

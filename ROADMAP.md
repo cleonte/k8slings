@@ -152,9 +152,11 @@ Branch `phase-3-cluster`.
 - [x] `TestClusterSolutions` behind `-tags cluster`; `make cluster-test` (unsolved fails by the exercise's own check, solution passes, on a real cluster).
 - [x] Migrate the prototype's cluster-destined exercises and remove `prototype/`. All 19 are migrated; see the table above.
 - [x] Topics with exercises: deployments and rollouts, services, probes, resources and quota, jobs, volumes and PVCs, scheduling.
-- [ ] Topics still to do: StatefulSets, DaemonSets, CronJobs, and more exercises per topic (most have one or two; the table plans three to six).
+- [x] StatefulSets, DaemonSets and CronJobs (in the jobs topic) have their first exercises.
+- [ ] More exercises per topic (most have one to three; the table plans three to six).
 - [x] ConfigMaps and Secrets, RBAC and network policies (the last two as cluster exercises).
-- [ ] Still to do: Kustomize, security contexts and Pod Security.
+- [x] Security contexts and Pod Security (four manifest exercises; Pod Security Admission only looks at the Pod spec, so the standard is checked offline).
+- [ ] Kustomize. It needs exercises made of several files (a base and overlays, each with a `kustomization.yaml`), and the engine handles one `exercise.yaml` per exercise, so `init`, `reset`, the embedded copy and the checks all need multi-file support first.
 - [x] Cluster CI job on every PR that touches exercises, solutions or the cluster code (path-filtered), on `main` and weekly. First run: 3 min 52 s, inside the budget. It found a real bug (the inotify preflight was skipped when the node image had to be pulled first).
 
 ## Phase 4 — Fix mode and troubleshooting

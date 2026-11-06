@@ -1,0 +1,15 @@
+# I AM NOT DONE
+# security1: a Pod that insists on not being root.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  securityContext:
+    runAsNonRoot: true
+    # TODO: this contradicts runAsNonRoot.
+    runAsUser: 0
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sleep", "3600"]

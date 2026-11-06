@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "has(object.spec.securityContext) && has(object.spec.securityContext.runAsNonRoot) && object.spec.securityContext.runAsNonRoot == true"
+        message: "Keep runAsNonRoot: true: the point is that the Pod can never run as root."
+      - expr: "!has(object.spec.securityContext.runAsUser) || object.spec.securityContext.runAsUser != 0"
+        message: "User 0 is root: a Pod that must not run as root cannot ask for it."

@@ -1,0 +1,18 @@
+# security2: an app that writes a file in /tmp, with a locked-down root filesystem.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: writer
+spec:
+  containers:
+    - name: writer
+      image: busybox:1.37
+      command: ["sh", "-c", "echo hello > /tmp/out && cat /tmp/out && sleep 3600"]
+      securityContext:
+        readOnlyRootFilesystem: true
+      volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+  volumes:
+    - name: tmp
+      emptyDir: {}

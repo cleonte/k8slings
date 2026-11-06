@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: CronJob, name: report}
+    assert:
+      - expr: "object.spec.schedule.matches('^[^ ]+( [^ ]+){4}$')"
+        message: "A cron schedule has exactly five fields: minute, hour, day of month, month, day of week."
+      - expr: "object.spec.schedule.startsWith('*/5 ') || object.spec.schedule.startsWith('0/5 ')"
+        message: "The report should run every five minutes."

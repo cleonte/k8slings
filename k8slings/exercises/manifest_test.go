@@ -156,6 +156,9 @@ func TestModesAndImages(t *testing.T) {
 				t.Errorf("%s is a manifest exercise, so its check.yaml must not have steps", ex.Name)
 			}
 		case exercises.ModeCluster:
+			if c.Shipped == "" {
+				t.Errorf("%s is a cluster exercise: its check.yaml needs `shipped:`, what the first problem of the unsolved exercise says", ex.Name)
+			}
 			if !c.HasSteps() {
 				t.Errorf("%s is a cluster exercise and needs steps in its check.yaml", ex.Name)
 			}

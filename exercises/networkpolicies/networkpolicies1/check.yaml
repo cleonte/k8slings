@@ -1,3 +1,4 @@
+shipped: "download timed out"
 steps:
   - assert:
       resource: networkpolicy/default-deny

@@ -1,0 +1,16 @@
+# jobs2: a report that should run every five minutes.
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: report
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: report
+              image: busybox:1.37
+              command: ["sh", "-c", "echo report"]

@@ -1,3 +1,4 @@
+shipped: "is not Bound yet"
 steps:
   - assert:
       resource: pvc/notes

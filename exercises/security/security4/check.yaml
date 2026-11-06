@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "(has(object.spec.securityContext) && has(object.spec.securityContext.runAsNonRoot) && object.spec.securityContext.runAsNonRoot == true) || object.spec.containers.all(c, has(c.securityContext) && has(c.securityContext.runAsNonRoot) && c.securityContext.runAsNonRoot == true)"
+        message: "restricted: the Pod must run as a non-root user (runAsNonRoot: true)."
+      - expr: "object.spec.containers.all(c, has(c.securityContext) && has(c.securityContext.allowPrivilegeEscalation) && c.securityContext.allowPrivilegeEscalation == false)"
+        message: "restricted: every container must disallow privilege escalation."
+      - expr: "object.spec.containers.all(c, has(c.securityContext) && has(c.securityContext.capabilities) && has(c.securityContext.capabilities.drop) && 'ALL' in c.securityContext.capabilities.drop)"
+        message: "restricted: every container must drop all capabilities."
+      - expr: "(has(object.spec.securityContext) && has(object.spec.securityContext.seccompProfile) && object.spec.securityContext.seccompProfile.type in ['RuntimeDefault', 'Localhost']) || object.spec.containers.all(c, has(c.securityContext) && has(c.securityContext.seccompProfile) && c.securityContext.seccompProfile.type in ['RuntimeDefault', 'Localhost'])"
+        message: "restricted: the Pod must use a seccomp profile (RuntimeDefault)."
+      - expr: "!has(object.spec.securityContext) || !has(object.spec.securityContext.runAsUser) || object.spec.securityContext.runAsUser != 0"
+        message: "restricted: user 0 is root."

@@ -1,0 +1,13 @@
+shipped: "bad address"
+steps:
+  - assert:
+      resource: service/web
+      expr: "object.spec.clusterIP == 'None'"
+      message: "Keep the Service headless (clusterIP: None): the fault is not in the Service."
+    now: true
+  - rollout: statefulset/web
+  - ready: {pod: client}
+  # Fully qualified, so that the answer can only come from this cluster: a short
+  # name falls back to public DNS after the cluster's search domains.
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://web-0.web.k8slings-statefulsets2.svc.cluster.local"], contains: nginx}
+  - exec: {pod: client, args: [wget, -qO-, -T, "3", "http://web-1.web.k8slings-statefulsets2.svc.cluster.local"], contains: nginx}

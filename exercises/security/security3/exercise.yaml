@@ -1,0 +1,15 @@
+# I AM NOT DONE
+# security3: a web server that has far more privilege than it needs.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      # TODO: this container can do almost anything on the node.
+      securityContext:
+        privileged: true
+        capabilities:
+          add: ["SYS_ADMIN"]
