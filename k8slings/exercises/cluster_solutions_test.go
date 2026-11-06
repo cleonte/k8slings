@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -67,6 +68,11 @@ func TestClusterSolutions(t *testing.T) {
 			}
 			start := time.Now()
 			if _, err := ex.RunSource(ctx, solve, sol); err != nil {
+				// Show what the cluster looked like, not only which step failed.
+				var f *exercises.FailedError
+				if errors.As(err, &f) {
+					t.Fatalf("the solution must pass: %v\n%s", err, strings.Join(f.Details, "\n"))
+				}
 				t.Fatalf("the solution must pass: %v", err)
 			}
 			t.Logf("solution passes in %s", time.Since(start).Round(time.Second))
