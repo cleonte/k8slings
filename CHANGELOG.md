@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `quantity()` in CEL, so assertions can compare `64Gi` with `64Mi` or `500m` with `1`.
 - Earlier: seven cluster exercises: `volumes1` (a claim that never binds) and `scheduling1` (constraints that match no node; needs the multi-node cluster) join `deployments2` (rolling update), `services1` (a Service whose targetPort is wrong), `pods6` (an init container and a shared volume), and `rbac1` and `rbac2` (what a ServiceAccount may really do, asked of the API server).
 - `now: true` works on every check step, not only `assert`.
+- A cluster run after a failed one can no longer be refused by a stale ResourceQuota count: the namespace is emptied controllers first, then Pods, and verified to have no Pods left.
 - The diagnosis of a failed cluster exercise shows only this run's warnings (events of earlier runs are cleared) and groups the same message from several Pods into one line.
 - `make cluster-test`: creates real clusters and proves the safety rules and every cluster exercise.
 
