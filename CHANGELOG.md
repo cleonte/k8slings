@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- **Setups with several steps** for fix exercises: `setup.yaml`, then `setup-2.yaml` and so on (up to five). Each step except the last has to finish rolling out before the next is applied, so an exercise can start from a cluster with history. Seeding shows "setting up <name>: step 1 of 2" in `run`, `watch --plain` and the full-screen view, and cancelling (`q`, ctrl+c) stops it with nothing recorded, so the next run starts over. A seeding that fails leaves no recorded state either. `init`, `reset` and `doctor` all decide which files stay in the binary with one function, so no setup step is ever written to your folder.
+- `troubleshooting12`: a bad rollout. Revision 1 works, revision 2 asks for an image tag that does not exist, and the ticket is "get it back to what was running yesterday" (`kubectl rollout history`, `kubectl rollout undo`). Setting the old image by hand is accepted too: the check cannot tell it from an undo.
+- `capstone2`: three unrelated faults in one namespace (a misspelled image, a Service selector that matches no Pod, a ConfigMap key that is not the one the Pod asks for), and a ticket that only describes the symptoms. The check always names the first fault that is left, and every object has to be repaired in place.
+
+### Added
+
 - Five more troubleshooting exercises: `troubleshooting7` (a ResourceQuota that rejects Pods without requests), `troubleshooting8` (a NetworkPolicy that forgets DNS), `troubleshooting9` (OOMKilled), `troubleshooting10` (a PersistentVolumeClaim with a StorageClass that does not exist), and `troubleshooting11` (node affinity with a mistyped node name; needs the default three-node cluster). The proofs refuse the shortcuts: raising or deleting the quota, allowing all egress, removing or inflating the memory limit, swapping the volume for `emptyDir`, removing the affinity, `nodeName`, and relabelling a node.
 
 ### Changed
