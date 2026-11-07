@@ -1027,7 +1027,7 @@ path = "exercises/troubleshooting/troubleshooting19"
 topic = "troubleshooting"
 mode = "fix"
 hint = """
-There is no shell to exec into, and no tool to look around with. How do you get one next to the container, in the same Pod?"""
+There is no shell to exec into. What does the application say about itself, and, if that is not enough, how do you get a shell next to the container, in the same Pod?"""
 docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container"
 
 [[exercises]]

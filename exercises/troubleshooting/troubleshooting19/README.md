@@ -14,7 +14,13 @@ k8slings kubectl -n k8slings-troubleshooting19 get pods,service,endpoints
 k8slings kubectl -n k8slings-troubleshooting19 exec deploy/web -- sh
 ```
 
-That last command fails: there is nothing in the image to run. A **debug container** next to it shares the Pod's network and, with `--target`, its processes:
+That last command fails: there is nothing in the image to run. Start with what the application says itself:
+
+```sh
+k8slings kubectl -n k8slings-troubleshooting19 logs deploy/web
+```
+
+This particular program prints the address it listens on when it starts, so the logs may already answer the question. Many applications print nothing of the kind, and then the only way to know is to look from inside the Pod. A **debug container** next to it shares the Pod's network and, with `--target`, its processes:
 
 ```sh
 k8slings kubectl -n k8slings-troubleshooting19 debug -it POD --image=busybox:1.37 --target=web -- sh
@@ -22,6 +28,6 @@ k8slings kubectl -n k8slings-troubleshooting19 debug -it POD --image=busybox:1.3
 
 In a terminal that opens a shell. Without one, start a container that waits (`... debug POD --image=busybox:1.37 --target=web --container=dbg -q -- sleep 600`) and run `kubectl exec POD -c dbg -- netstat -ln`.
 
-What is the application really listening on?
+What is the application really listening on? (Whichever way you found out, `check.yaml` only cares that the Service reaches it.)
 
 `k8slings reset troubleshooting19` puts the cluster back as it was.
