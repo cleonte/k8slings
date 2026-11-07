@@ -1,4 +1,5 @@
 shipped: "0 of 1 replicas are available"
+shipped_details: "OOMKilled"
 steps:
   - unchanged: deployment/web
   - assert:

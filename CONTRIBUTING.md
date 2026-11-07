@@ -44,7 +44,7 @@ A fix exercise has no file to edit: k8slings breaks the cluster, and the learner
 
 - `README.md`: the ticket (the symptom, the rules, where to start). It is the only file the learner is given.
 - `setup.yaml`: the broken state. Do not set `metadata.namespace`. It stays in the binary, because it would give the cause away.
-- `check.yaml`: `shipped: "..."` (what the first problem says), and `steps`. It must have an `unchanged: kind/name` step, so that deleting the object and creating a new one does not count as a repair, and `now: true` assertions for the other ways to cheat (keep the image, keep the replicas).
+- `check.yaml`: `shipped: "..."` (what the first problem says), optionally `shipped_details: "..."` (a fragment the diagnosis must show, when the first problem alone does not tell the cause), and `steps`. It must have an `unchanged: kind/name` step, so that deleting the object and creating a new one does not count as a repair, and `now: true` assertions for the other ways to cheat (keep the image, keep the replicas).
 - `solutions/<topic>/<name>/solution.sh`: a kubectl script. Write plain `kubectl -n "$NS" ...`; the tests make that kubectl the k8slings one.
 - `solutions/<topic>/<name>/shortcut-*.sh`: at least one way to cheat. The first line is `# rejected: "text the check must say"`. `make cluster-test` runs it and requires the check to keep failing with that text.
 
