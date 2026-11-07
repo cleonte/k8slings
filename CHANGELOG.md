@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Ten more offline exercises: `config3` (an `env` entry hides the ConfigMap), `config4` (a ConfigMap mounted over a whole directory; `subPath`), `resources3` (make a Pod Guaranteed), `statefulsets3` (a StatefulSet whose headless Service does not exist), `statefulsets4` (a canary with `partition`), `networkpolicies3` (a default deny with an empty rule), `namespaces3` (a LimitRange whose default request is above its default limit), `rbac4` (a ServiceAccount subject without its namespace), `deployments4` (a progress deadline shorter than `minReadySeconds`) and `probes3` (a liveness probe that depends on the database).
 - `troubleshooting13`: the client's Pods use a DNS server that does not exist (`dnsPolicy: None`), so no name resolves although the Service is fine. A hosts entry for the Service does not count.
 
 ## [0.6.0] - 2026-11-07

@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: LimitRange, name: defaults}
+    assert:
+      - expr: "object.spec.limits.exists(l, l.type == 'Container' && has(l.default) && has(l.defaultRequest))"
+        message: "Keep both defaults for containers: the limit and the request."
+      - expr: "object.spec.limits.all(l, l.type != 'Container' || (has(l.default.cpu) && has(l.default.memory) && has(l.defaultRequest.cpu) && has(l.defaultRequest.memory)))"
+        message: "Containers get a default for CPU and for memory."
+      - expr: "object.spec.limits.all(l, l.type != 'Container' || !has(l.default.cpu) || !has(l.defaultRequest.cpu) || quantity(l.defaultRequest.cpu) <= quantity(l.default.cpu))"
+        message: "The default CPU request is larger than the default CPU limit."
+      - expr: "object.spec.limits.all(l, l.type != 'Container' || !has(l.default.memory) || !has(l.defaultRequest.memory) || quantity(l.defaultRequest.memory) <= quantity(l.default.memory))"
+        message: "The default memory request is larger than the default memory limit."

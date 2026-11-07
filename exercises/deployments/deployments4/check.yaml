@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Deployment, name: api}
+    assert:
+      - expr: "has(object.spec.minReadySeconds) && object.spec.minReadySeconds >= 30"
+        message: "Keep the wait: the application needs it to warm up."
+      - expr: "has(object.spec.progressDeadlineSeconds) && object.spec.progressDeadlineSeconds > object.spec.minReadySeconds"
+        message: "The progress deadline has to be longer than the time a Pod must stay Ready."

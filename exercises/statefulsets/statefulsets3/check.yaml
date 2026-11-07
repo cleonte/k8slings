@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: StatefulSet, name: web}
+    assert:
+      - expr: "objects.exists(s, s.kind == 'Service' && s.metadata.name == object.spec.serviceName)"
+        message: "serviceName names a Service that this file does not create."
+      - expr: "objects.exists(s, s.kind == 'Service' && s.metadata.name == object.spec.serviceName && has(s.spec.clusterIP) && s.spec.clusterIP == 'None')"
+        message: "The Service of a StatefulSet has to be headless."
+      - expr: "objects.exists(s, s.kind == 'Service' && s.metadata.name == object.spec.serviceName && s.spec.selector.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == s.spec.selector[k]))"
+        message: "The Service has to select the Pods of the StatefulSet."
+      - expr: "object.spec.replicas == 2"
+        message: "The StatefulSet keeps two replicas."

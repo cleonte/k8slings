@@ -108,6 +108,15 @@ Which objects belong to a namespace, and which of them can reach across to anoth
 docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
 
 [[exercises]]
+name = "namespaces3"
+path = "exercises/namespaces/namespaces3"
+topic = "namespaces"
+mode = "manifest"
+hint = """
+A request above its limit makes no sense. Which of the two values do the defaults of a LimitRange fill in for a container that sets nothing?"""
+docs = "https://kubernetes.io/docs/concepts/policy/limit-range/"
+
+[[exercises]]
 name = "deployments1"
 path = "exercises/deployments/deployments1"
 topic = "deployments"
@@ -134,6 +143,15 @@ mode = "manifest"
 hint = """
 A rollout needs room to move: it may start extra Pods, remove Pods, or both. What does a rollout that may do neither do?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
+
+[[exercises]]
+name = "deployments4"
+path = "exercises/deployments/deployments4"
+topic = "deployments"
+mode = "manifest"
+hint = """
+How long must a Pod be ready to count as available, and how long may a rollout take before it is declared failed? Which is longer?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds"
 
 [[exercises]]
 name = "services1"
@@ -182,6 +200,24 @@ The Pod must name the Secret and the key that the Secret really has."""
 docs = "https://kubernetes.io/docs/concepts/configuration/secret/"
 
 [[exercises]]
+name = "config3"
+path = "exercises/config/config3"
+topic = "config"
+mode = "manifest"
+hint = """
+Which wins when the same variable name comes from two places: env, or envFrom?"""
+docs = "https://kubernetes.io/docs/tasks/inject-data-application/define-environment-variable-container/"
+
+[[exercises]]
+name = "config4"
+path = "exercises/config/config4"
+topic = "config"
+mode = "manifest"
+hint = """
+What happens to the files that were in a directory when something is mounted on top of it?"""
+docs = "https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath"
+
+[[exercises]]
 name = "probes1"
 path = "exercises/probes/probes1"
 topic = "probes"
@@ -198,6 +234,15 @@ mode = "manifest"
 hint = """
 A liveness probe starts counting as soon as the container starts. What lets a slow starter finish starting first?"""
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+
+[[exercises]]
+name = "probes3"
+path = "exercises/probes/probes3"
+topic = "probes"
+mode = "manifest"
+hint = """
+If a Pod's probe depends on something outside the Pod, what do you want to happen when that thing is down: a restart, or no traffic?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes"
 
 [[exercises]]
 name = "resources1"
@@ -217,6 +262,15 @@ timeout = "45s"
 hint = """
 Each container without requests gets the LimitRange default. How many of those fit in the quota's CPU? Give the container smaller requests."""
 docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+[[exercises]]
+name = "resources3"
+path = "exercises/resources/resources3"
+topic = "resources"
+mode = "manifest"
+hint = """
+Which QoS class does a Pod get when requests and limits are equal for every resource of every container?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/"
 
 [[exercises]]
 name = "jobs1"
@@ -282,6 +336,24 @@ timeout = "60s"
 hint = """
 Each Pod's subdomain is the StatefulSet's serviceName. Does a Service with that name exist?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
+
+[[exercises]]
+name = "statefulsets3"
+path = "exercises/statefulsets/statefulsets3"
+topic = "statefulsets"
+mode = "manifest"
+hint = """
+A StatefulSet names a Service that gives its Pods their DNS names. Does that name exist, and is the Service headless?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
+
+[[exercises]]
+name = "statefulsets4"
+path = "exercises/statefulsets/statefulsets4"
+topic = "statefulsets"
+mode = "manifest"
+hint = """
+A rolling update goes from the highest ordinal down. What makes it stop before it reaches the lower ones?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#partitions"
 
 [[exercises]]
 name = "daemonsets1"
@@ -398,6 +470,15 @@ A rule names the API group of the resource. Which group is Deployment in?"""
 docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
 
 [[exercises]]
+name = "rbac4"
+path = "exercises/rbac/rbac4"
+topic = "rbac"
+mode = "manifest"
+hint = """
+A ServiceAccount is named by two things. What is the second one, and why does a binding need it?"""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-subjects"
+
+[[exercises]]
 name = "networkpolicies2"
 path = "exercises/networkpolicies/networkpolicies2"
 topic = "networkpolicies"
@@ -405,6 +486,15 @@ mode = "manifest"
 hint = """
 Look at the dashes under from. How many entries are there, and are two entries an 'and' or an 'or'?"""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#behavior-of-to-and-from-selectors"
+
+[[exercises]]
+name = "networkpolicies3"
+path = "exercises/networkpolicies/networkpolicies3"
+topic = "networkpolicies"
+mode = "manifest"
+hint = """
+A policy that selects Pods denies what it does not list. What does a rule with nothing in it list?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-and-all-egress-traffic"
 
 [[exercises]]
 name = "capstone1"

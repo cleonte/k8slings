@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# namespaces3: a LimitRange whose default request is larger than its default limit.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+spec:
+  limits:
+    - type: Container
+      # TODO: the request that containers get is above the limit that they get.
+      default:
+        cpu: 100m
+        memory: 128Mi
+      defaultRequest:
+        cpu: 500m
+        memory: 64Mi

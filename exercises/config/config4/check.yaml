@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Pod, name: site}
+    assert:
+      - expr: "has(object.spec.volumes) && object.spec.volumes.exists(v, has(v.configMap) && v.configMap.name == 'nginx-conf')"
+        message: "The configuration has to come from the ConfigMap nginx-conf."
+      - expr: "object.spec.containers[0].volumeMounts.all(m, m.mountPath != '/etc/nginx' && m.mountPath != '/etc' && m.mountPath != '/')"
+        message: "The mount hides the rest of nginx's configuration."
+      - expr: "object.spec.containers[0].volumeMounts.exists(m, m.mountPath.startsWith('/etc/nginx/conf.d'))"
+        message: "default.conf has to end up in the directory nginx reads its server blocks from."

@@ -1,0 +1,20 @@
+# deployments4: a progress deadline that is shorter than the time a Pod must stay Ready.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 2
+  minReadySeconds: 30
+  progressDeadlineSeconds: 120
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+        - name: api
+          image: nginx:1.27

@@ -28,6 +28,24 @@ func quantityFunction() cel.EnvOption {
 					return types.NewErr("%v", err)
 				}
 				return types.Double(q)
+			})),
+		// `cpu: 1` and `cpu: 0.5` are valid in a manifest: YAML reads them as
+		// numbers, and Kubernetes takes them as the quantities "1" and "0.5".
+		cel.Overload("quantity_int", []*cel.Type{cel.IntType}, cel.DoubleType,
+			cel.UnaryBinding(func(v ref.Val) ref.Val {
+				n, ok := v.Value().(int64)
+				if !ok {
+					return types.NewErr("quantity() wants a string or a number")
+				}
+				return types.Double(float64(n))
+			})),
+		cel.Overload("quantity_double", []*cel.Type{cel.DoubleType}, cel.DoubleType,
+			cel.UnaryBinding(func(v ref.Val) ref.Val {
+				f, ok := v.Value().(float64)
+				if !ok {
+					return types.NewErr("quantity() wants a string or a number")
+				}
+				return types.Double(f)
 			})))
 }
 

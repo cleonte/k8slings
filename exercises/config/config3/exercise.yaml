@@ -1,0 +1,25 @@
+# I AM NOT DONE
+# config3: a Pod that ignores the log level of its ConfigMap.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  LOG_LEVEL: debug
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: main
+      image: busybox:1.37
+      command: ["sh", "-c", "echo level=$LOG_LEVEL; sleep 3600"]
+      envFrom:
+        - configMapRef:
+            name: app-config
+      env:
+        # TODO: this entry beats the ConfigMap.
+        - name: LOG_LEVEL
+          value: info

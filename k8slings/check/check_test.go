@@ -118,6 +118,7 @@ objects:
       - {expr: "quantity('64Mi') == 67108864.0", message: "binary suffix"}
       - {expr: "quantity('500m') < quantity('1')", message: "milli-cores"}
       - {expr: "quantity('9Mi') < quantity('10Mi')", message: "numbers, not strings"}
+      - {expr: "quantity(1) == quantity('1000m') && quantity(0.5) == quantity('500m')", message: "bare YAML numbers are quantities too"}
       - {expr: "quantity('1Gi') > quantity('1G')", message: "binary is bigger than decimal"}
       - {expr: "quantity('64Gi') > quantity('64Mi')", message: "the broken exercise asked for far too much"}
       - {expr: "quantity(object.spec.containers[0].resources.limits.memory) <= quantity('1Gi')", message: "reads a value from the object"}

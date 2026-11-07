@@ -1,0 +1,25 @@
+# I AM NOT DONE
+# statefulsets4: a release that updates every Pod at once, no canary.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+spec:
+  serviceName: db
+  replicas: 3
+  selector:
+    matchLabels:
+      app: db
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # TODO: this holds back no Pod.
+      partition: 0
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+        - name: db
+          image: nginx:1.27

@@ -1,0 +1,29 @@
+# I AM NOT DONE
+# config4: a ConfigMap mounted over all of /etc/nginx.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-conf
+data:
+  default.conf: |
+    server {
+      listen 80;
+      location / { return 200 "configured\n"; }
+    }
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: site
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      volumeMounts:
+        - name: conf
+          # TODO: everything else in /etc/nginx disappears under this mount.
+          mountPath: /etc/nginx
+  volumes:
+    - name: conf
+      configMap:
+        name: nginx-conf

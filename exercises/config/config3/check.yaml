@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: ConfigMap, name: app-config}
+    assert:
+      - expr: "has(object.data) && 'LOG_LEVEL' in object.data && object.data.LOG_LEVEL == 'debug'"
+        message: "The ConfigMap is right: do not change it."
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.envFrom) && c.envFrom.exists(f, has(f.configMapRef) && f.configMapRef.name == 'app-config'))"
+        message: "The Pod has to take its variables from the ConfigMap app-config."
+      - expr: "object.spec.containers.all(c, !has(c.env) || !c.env.exists(e, e.name == 'LOG_LEVEL' && !has(e.valueFrom)))"
+        message: "A variable that is set by hand in env hides the one from the ConfigMap."
+      - expr: "object.spec.containers.all(c, !has(c.env) || !c.env.exists(e, e.name == 'LOG_LEVEL' && has(e.valueFrom) && !(has(e.valueFrom.configMapKeyRef) && e.valueFrom.configMapKeyRef.name == 'app-config' && e.valueFrom.configMapKeyRef.key == 'LOG_LEVEL')))"
+        message: "LOG_LEVEL must come from the ConfigMap, whichever way it gets there."

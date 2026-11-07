@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: NetworkPolicy, name: default-deny}
+    assert:
+      - expr: "object.spec.podSelector.size() == 0"
+        message: "The policy is for every Pod of the namespace."
+      - expr: "has(object.spec.policyTypes) && 'Ingress' in object.spec.policyTypes && 'Egress' in object.spec.policyTypes"
+        message: "The policy has to cover ingress and egress."
+      - expr: "!has(object.spec.ingress) || object.spec.ingress.size() == 0"
+        message: "An ingress rule allows traffic in: a default deny has none."
+      - expr: "!has(object.spec.egress) || object.spec.egress.size() == 0"
+        message: "An egress rule allows traffic out: a default deny has none."

@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: payments}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.resources.limits) && has(c.resources.limits.cpu) && has(c.resources.limits.memory))"
+        message: "Keep a CPU and a memory limit on every container."
+      - expr: "object.spec.containers.all(c, !has(c.resources.requests) || !has(c.resources.requests.cpu) || quantity(c.resources.requests.cpu) == quantity(c.resources.limits.cpu))"
+        message: "The CPU request and limit of a container differ, so the Pod is not Guaranteed."
+      - expr: "object.spec.containers.all(c, !has(c.resources.requests) || !has(c.resources.requests.memory) || quantity(c.resources.requests.memory) == quantity(c.resources.limits.memory))"
+        message: "The memory request and limit of a container differ, so the Pod is not Guaranteed."
+      - expr: "object.spec.containers.all(c, quantity(c.resources.limits.memory) >= quantity('64Mi'))"
+        message: "Do not shrink the Pod to make this easy: it needs at least 64Mi of memory."

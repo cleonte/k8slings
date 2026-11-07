@@ -1,0 +1,14 @@
+# namespaces3: a LimitRange whose default request is larger than its default limit.
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: defaults
+spec:
+  limits:
+    - type: Container
+      default:
+        cpu: 500m
+        memory: 128Mi
+      defaultRequest:
+        cpu: 100m
+        memory: 64Mi
