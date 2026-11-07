@@ -320,3 +320,29 @@ func TestSetupStepsAreConsecutive(t *testing.T) {
 		}
 	}
 }
+
+// Two exercises of one topic with the same README title teach the same thing
+// twice: v0.12.0 shipped four such duplicates. The title is the first line of the
+// README without its "name: " prefix, compared ignoring case and punctuation.
+func TestNoTwoExercisesOfATopicShareATitle(t *testing.T) {
+	nonWord := regexp.MustCompile(`[^a-z0-9]+`)
+	seen := map[string]string{} // topic + title -> exercise name
+	for _, ex := range load(t) {
+		readme, err := fs.ReadFile(k8slings.FS, path.Join(ex.Path, "README.md"))
+		if err != nil {
+			t.Errorf("%s has no README.md: %v", ex.Name, err)
+			continue
+		}
+		first, _, _ := strings.Cut(string(readme), "\n")
+		_, title, found := strings.Cut(first, ": ")
+		if !found {
+			t.Errorf("%s: the README must start with '# %s: a title', got %q", ex.Name, ex.Name, first)
+			continue
+		}
+		key := ex.Topic + "/" + strings.Trim(nonWord.ReplaceAllString(strings.ToLower(title), " "), " ")
+		if other, dup := seen[key]; dup {
+			t.Errorf("%s and %s are both titled %q: the second repeats the first", other, ex.Name, strings.TrimSpace(title))
+		}
+		seen[key] = ex.Name
+	}
+}
