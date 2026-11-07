@@ -144,6 +144,15 @@ A request above its limit makes no sense. Which of the two values do the default
 docs = "https://kubernetes.io/docs/concepts/policy/limit-range/"
 
 [[exercises]]
+name = "namespaces4"
+path = "exercises/namespaces/namespaces4"
+topic = "namespaces"
+mode = "manifest"
+hint = """
+A quota limits the namespace it is in. Which namespace is this one in?"""
+docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
+
+[[exercises]]
 name = "deployments1"
 path = "exercises/deployments/deployments1"
 topic = "deployments"
@@ -326,6 +335,15 @@ If a Pod's probe depends on something outside the Pod, what do you want to happe
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes"
 
 [[exercises]]
+name = "probes4"
+path = "exercises/probes/probes4"
+topic = "probes"
+mode = "manifest"
+hint = """
+The probe uses a name. Which names does the container define?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#use-a-named-port"
+
+[[exercises]]
 name = "lifecycle1"
 path = "exercises/lifecycle/lifecycle1"
 topic = "lifecycle"
@@ -351,6 +369,15 @@ mode = "cluster"
 hint = """
 Containers of a Pod start one after another but do not wait for each other. What can make the kubelet wait for a helper before it starts the next container?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/#sidecar-containers-and-pod-lifecycle"
+
+[[exercises]]
+name = "lifecycle4"
+path = "exercises/lifecycle/lifecycle4"
+topic = "lifecycle"
+mode = "manifest"
+hint = """
+The init container writes into a volume. Does the app container mount that volume too, at the path where it looks?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
 
 [[exercises]]
 name = "resources1"
@@ -379,6 +406,15 @@ mode = "manifest"
 hint = """
 Which QoS class does a Pod get when requests and limits are equal for every resource of every container?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/"
+
+[[exercises]]
+name = "resources4"
+path = "exercises/resources/resources4"
+topic = "resources"
+mode = "manifest"
+hint = """
+The quota is a ceiling over all Pods together. How much may each of three replicas ask for, and for what?"""
+docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
 
 [[exercises]]
 name = "jobs1"
@@ -518,6 +554,15 @@ A rolling update goes from the highest ordinal down. What makes it stop before i
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#partitions"
 
 [[exercises]]
+name = "statefulsets5"
+path = "exercises/statefulsets/statefulsets5"
+topic = "statefulsets"
+mode = "manifest"
+hint = """
+The Service has to answer for each Pod separately, not for the group. What is a Service called that has no cluster IP?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
+
+[[exercises]]
 name = "daemonsets1"
 path = "exercises/daemonsets/daemonsets1"
 topic = "daemonsets"
@@ -545,6 +590,15 @@ mode = "manifest"
 hint = """
 An update of a DaemonSet takes the agent off some nodes while it runs. What decides how many nodes at once?"""
 docs = "https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/"
+
+[[exercises]]
+name = "daemonsets4"
+path = "exercises/daemonsets/daemonsets4"
+topic = "daemonsets"
+mode = "manifest"
+hint = """
+The control-plane node has a taint. What does a Pod need to be allowed on a tainted node, and how narrow can you make it?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#how-daemon-pods-are-scheduled"
 
 [[exercises]]
 name = "scheduling1"
@@ -613,6 +667,24 @@ The disruption controller computes how many disruptions the budget allows right 
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/disruptions/"
 
 [[exercises]]
+name = "disruption3"
+path = "exercises/disruption/disruption3"
+topic = "disruption"
+mode = "manifest"
+hint = """
+A budget protects the Pods its selector matches. Which labels do the Pods of the Deployment carry?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+
+[[exercises]]
+name = "disruption4"
+path = "exercises/disruption/disruption4"
+topic = "disruption"
+mode = "manifest"
+hint = """
+Both fields say the same thing from opposite ends. Which of them do you want to keep?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
@@ -647,6 +719,15 @@ mode = "manifest"
 hint = """
 Check the four controls of the restricted standard one by one against the Pod."""
 docs = "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted"
+
+[[exercises]]
+name = "security5"
+path = "exercises/security/security5"
+topic = "security"
+mode = "manifest"
+hint = """
+What does the container really need? Drop what it does not, then add back only that."""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-capabilities-for-a-container"
 
 [[exercises]]
 name = "rbac1"
@@ -696,6 +777,15 @@ A ServiceAccount is named by two things. What is the second one, and why does a 
 docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-subjects"
 
 [[exercises]]
+name = "rbac5"
+path = "exercises/rbac/rbac5"
+topic = "rbac"
+mode = "manifest"
+hint = """
+`kubectl logs` asks for a resource that is not `pods`. Which one, and which verb?"""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-resources"
+
+[[exercises]]
 name = "serviceaccounts1"
 path = "exercises/serviceaccounts/serviceaccounts1"
 topic = "serviceaccounts"
@@ -714,6 +804,15 @@ The API server will not issue a token that expires too soon. What is the shortes
 docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken"
 
 [[exercises]]
+name = "serviceaccounts3"
+path = "exercises/serviceaccounts/serviceaccounts3"
+topic = "serviceaccounts"
+mode = "manifest"
+hint = """
+The ServiceAccount refuses to mount its token. Who is allowed to overrule that, and where?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+
+[[exercises]]
 name = "networkpolicies2"
 path = "exercises/networkpolicies/networkpolicies2"
 topic = "networkpolicies"
@@ -730,6 +829,24 @@ mode = "manifest"
 hint = """
 A policy that selects Pods denies what it does not list. What does a rule with nothing in it list?"""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-and-all-egress-traffic"
+
+[[exercises]]
+name = "networkpolicies4"
+path = "exercises/networkpolicies/networkpolicies4"
+topic = "networkpolicies"
+mode = "manifest"
+hint = """
+Each dash in `from` starts a new alternative. Which selectors have to hold together?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#behavior-of-to-and-from-selectors"
+
+[[exercises]]
+name = "networkpolicies5"
+path = "exercises/networkpolicies/networkpolicies5"
+topic = "networkpolicies"
+mode = "manifest"
+hint = """
+Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port and protocol?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-and-endport-filtering"
 
 [[exercises]]
 name = "capstone1"

@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: ResourceQuota, name: pods}
+    assert:
+      - expr: "has(object.metadata.namespace) && object.metadata.namespace == 'team-a'"
+        message: "The quota has to be in the namespace team-a, the one it is meant to limit."
+      - expr: "string(object.spec.hard.pods) == '10'"
+        message: "Keep the limit: ten Pods."

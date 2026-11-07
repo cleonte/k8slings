@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: PodDisruptionBudget, name: web}
+    assert:
+      - expr: "has(object.spec.minAvailable) != has(object.spec.maxUnavailable)"
+        message: "A budget has either minAvailable or maxUnavailable, never both and never neither."
+      - expr: "has(object.spec.minAvailable) ? object.spec.minAvailable == 2 : object.spec.maxUnavailable == 1"
+        message: "The budget must let exactly one of the three Pods go at a time."

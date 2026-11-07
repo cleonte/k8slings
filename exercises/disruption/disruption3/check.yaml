@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: PodDisruptionBudget, name: web}
+    assert:
+      - expr: "has(object.spec.selector) && has(object.spec.selector.matchLabels) && object.spec.selector.matchLabels.size() > 0 && objects.exists(d, d.kind == 'Deployment' && object.spec.selector.matchLabels.all(k, k in d.spec.template.metadata.labels && d.spec.template.metadata.labels[k] == object.spec.selector.matchLabels[k]))"
+        message: "The budget's selector matches no Pod of the Deployment, so it protects nothing."
+      - expr: "has(object.spec.minAvailable) && object.spec.minAvailable == 2"
+        message: "Keep the budget as it is: two Pods must stay up."

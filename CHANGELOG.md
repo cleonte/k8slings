@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- 13 offline exercises for the topics that had the fewest: `disruption3` (a budget whose selector matches nothing), `disruption4` (`minAvailable` and `maxUnavailable` together), `lifecycle4` (a volume only the init container mounts), `daemonsets4` (the control-plane taint), `networkpolicies4` (`from` entries that are alternatives), `networkpolicies5` (egress that forgets DNS), `resources4` (a quota that counts requests), `serviceaccounts3` (no token mounted), `security5` (`privileged` instead of one capability), `rbac5` (`pods/log`), `probes4` (a named port that does not exist), `statefulsets5` (the headless governing Service) and `namespaces4` (a quota in the wrong namespace). A folder from an older version gets them with `k8slings update`.
+
 ### Changed
 
 - An exercise is done only when its check has passed **and** its `# I AM NOT DONE` line is gone. Before, deleting the line was enough, so a file that still failed could be skipped by accident (`run` now says so when that is the case). Passes are recorded in `.k8slings.json`, as fix exercises already did; `reset` forgets the pass. A folder made by an older version keeps every exercise whose line was already gone: they are credited once, the first time a command reads it.

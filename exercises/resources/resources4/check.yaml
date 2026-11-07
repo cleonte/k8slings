@@ -1,0 +1,15 @@
+objects:
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "has(object.spec.template.spec.containers[0].resources) && has(object.spec.template.spec.containers[0].resources.requests) && has(object.spec.template.spec.containers[0].resources.requests.cpu) && has(object.spec.template.spec.containers[0].resources.requests.memory)"
+        message: "The container must request both cpu and memory: the quota counts them."
+      - expr: "object.spec.replicas == 3"
+        message: "The Deployment keeps three replicas."
+      - expr: "object.spec.replicas * quantity(object.spec.template.spec.containers[0].resources.requests.cpu) <= 1.0"
+        message: "Three replicas ask for more CPU than the quota allows."
+      - expr: "object.spec.replicas * quantity(object.spec.template.spec.containers[0].resources.requests.memory) <= quantity('1Gi')"
+        message: "Three replicas ask for more memory than the quota allows."
+  - select: {kind: ResourceQuota, name: compute}
+    assert:
+      - expr: "string(object.spec.hard['requests.cpu']) == '1' && object.spec.hard['requests.memory'] == '1Gi'"
+        message: "The quota is the rule here: change the Deployment, not the quota."

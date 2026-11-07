@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "object.spec.initContainers.size() == 1 && object.spec.containers.size() == 1"
+        message: "Keep one init container and one app container."
+      - expr: "has(object.spec.containers[0].volumeMounts) && object.spec.containers[0].volumeMounts.exists(m, m.name == 'shared')"
+        message: "The app container does not mount the volume the init container writes to."
+      - expr: "has(object.spec.containers[0].volumeMounts) && object.spec.containers[0].volumeMounts.exists(m, m.name == 'shared' && m.mountPath == '/work')"
+        message: "The app reads /work/ready, so the volume has to be mounted at /work."

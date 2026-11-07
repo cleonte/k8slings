@@ -1,0 +1,18 @@
+# I AM NOT DONE
+# serviceaccounts3: a Pod with a key to the API and no key.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lister
+automountServiceAccountToken: false # TODO: this switches the token off for every Pod that uses the account.
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: controller
+spec:
+  serviceAccountName: lister
+  containers:
+    - name: controller
+      image: busybox:1.37
+      command: ["sh", "-c", "ls /var/run/secrets/kubernetes.io/serviceaccount && sleep 3600"]

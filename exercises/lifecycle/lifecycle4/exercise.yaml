@@ -1,0 +1,22 @@
+# I AM NOT DONE
+# lifecycle4: an init container that works for nobody.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  volumes:
+    - name: shared
+      emptyDir: {}
+  initContainers:
+    - name: prepare
+      image: busybox:1.37
+      command: ["sh", "-c", "echo ok > /work/ready"]
+      volumeMounts:
+        - name: shared
+          mountPath: /work
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sh", "-c", "cat /work/ready && sleep 3600"]
+      # TODO: the app reads /work/ready, but does not mount anything.

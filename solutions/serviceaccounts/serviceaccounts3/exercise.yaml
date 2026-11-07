@@ -1,0 +1,17 @@
+# serviceaccounts3: a Pod with a key to the API and no key.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: lister
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: controller
+spec:
+  serviceAccountName: lister
+  automountServiceAccountToken: true
+  containers:
+    - name: controller
+      image: busybox:1.37
+      command: ["sh", "-c", "ls /var/run/secrets/kubernetes.io/serviceaccount && sleep 3600"]

@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# namespaces4: a ResourceQuota in the wrong place.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pods
+  # TODO: which namespace does this limit?
+  namespace: team-b
+spec:
+  hard:
+    pods: "10"
