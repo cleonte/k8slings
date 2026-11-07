@@ -15,7 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - `lifecycle2` and `scheduling4` refuse their cheats at once, before anything is applied. `scheduling4` also refuses a *preferred* anti-affinity or a spread that only schedules anyway: they only work when the scheduler happens to agree.
 - Resetting an exercise (and so starting one) works when an object in its namespace carries a finalizer that no controller handles; before, the reset hung for a minute and failed.
-- Contributors: a cluster exercise can ship `shortcut-*.yaml` (a cheat as an exercise file, refused at once, proven by `TestClusterSolutions`); `make cluster-test` has a longer timeout (the full run takes about 40 minutes with twenty fix exercises).
+- Contributors: a cluster exercise can ship `shortcut-*.yaml` (a cheat as an exercise file, refused at once, proven by `TestClusterSolutions`); `make cluster-test` has a longer timeout, and the CI cluster job runs as five shards (the full run takes about 40 minutes with twenty fix exercises).
 
 ## [0.9.0] - 2026-11-07
 
