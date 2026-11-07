@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: Pod, name: whoami}
+    assert:
+      - expr: "has(object.spec.containers[0].resources.limits) && has(object.spec.containers[0].resources.limits.memory)"
+        message: "Keep the memory limit: MEM_LIMIT reports it."
+      - expr: "object.spec.containers[0].env.exists(e, e.name == 'POD_NAME' && has(e.valueFrom) && has(e.valueFrom.fieldRef) && e.valueFrom.fieldRef.fieldPath == 'metadata.name')"
+        message: "POD_NAME does not come from the Pod's own name."
+      - expr: "object.spec.containers[0].env.exists(e, e.name == 'POD_NAMESPACE' && has(e.valueFrom) && has(e.valueFrom.fieldRef) && e.valueFrom.fieldRef.fieldPath == 'metadata.namespace')"
+        message: "POD_NAMESPACE does not come from the Pod's own namespace."
+      - expr: "object.spec.containers[0].env.exists(e, e.name == 'NODE_NAME' && has(e.valueFrom) && has(e.valueFrom.fieldRef) && e.valueFrom.fieldRef.fieldPath == 'spec.nodeName')"
+        message: "NODE_NAME does not come from the node the Pod was scheduled to."
+      - expr: "object.spec.containers[0].env.exists(e, e.name == 'MEM_LIMIT' && has(e.valueFrom) && has(e.valueFrom.resourceFieldRef) && e.valueFrom.resourceFieldRef.resource == 'limits.memory')"
+        message: "MEM_LIMIT does not come from the memory limit of the container."

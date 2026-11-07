@@ -63,6 +63,15 @@ A tag can move. Which image would two nodes pull on different days, and what doe
 docs = "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
 
 [[exercises]]
+name = "pods8"
+path = "exercises/pods/pods8"
+topic = "pods"
+mode = "manifest"
+hint = """
+The Pod does not need to be told its own name: the downward API hands it over. What are the field paths, and what about the limit?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/downward-api/"
+
+[[exercises]]
 name = "labels1"
 path = "exercises/labels/labels1"
 topic = "labels"
