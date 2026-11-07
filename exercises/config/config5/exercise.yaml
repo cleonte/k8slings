@@ -1,0 +1,11 @@
+# I AM NOT DONE
+# config5: a Secret whose values are plain text where base64 is required.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+type: Opaque
+data:
+  # TODO: the values under data are not base64.
+  username: app
+  password: s3cr3t pass!

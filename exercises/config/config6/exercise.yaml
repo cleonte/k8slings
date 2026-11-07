@@ -1,0 +1,17 @@
+# I AM NOT DONE
+# config6: a TLS Secret whose keys are not the ones TLS Secrets use.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: site-tls
+type: kubernetes.io/tls
+stringData:
+  # TODO: the API server looks for two other key names.
+  cert: |
+    -----BEGIN CERTIFICATE-----
+    placeholder, not a real certificate
+    -----END CERTIFICATE-----
+  key: |
+    -----BEGIN PRIVATE KEY-----
+    placeholder, not a real key
+    -----END PRIVATE KEY-----

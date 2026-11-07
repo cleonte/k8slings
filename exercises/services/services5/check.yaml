@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Service, name: payments}
+    assert:
+      - expr: "has(object.spec.type) && object.spec.type == 'ExternalName'"
+        message: "Keep the type: this Service is an alias for something outside the cluster."
+      - expr: "has(object.spec.externalName) && !object.spec.externalName.contains('/') && !object.spec.externalName.contains(':')"
+        message: "externalName is a DNS name: it has no scheme, no path and no port."
+      - expr: "has(object.spec.externalName) && object.spec.externalName == 'api.example.com'"
+        message: "The alias has to lead to the host api.example.com."
+      - expr: "!has(object.spec.selector)"
+        message: "An ExternalName Service has no Pods to select."

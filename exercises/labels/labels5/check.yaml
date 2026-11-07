@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Deployment, name: shop}
+    assert:
+      - expr: "has(object.spec.selector.matchExpressions) && object.spec.selector.matchExpressions.size() > 0"
+        message: "Keep the set-based selector: matchExpressions is the lesson."
+      - expr: "object.spec.selector.matchExpressions.all(e, (e.operator in ['In', 'NotIn']) == (has(e.values) && e.values.size() > 0) || (e.operator in ['Exists', 'DoesNotExist']) && !has(e.values))"
+        message: "A rule has values it must not have, or has none that it needs."
+      - expr: "object.spec.selector.matchExpressions.all(e, e.operator == 'In' ? (e.key in object.spec.template.metadata.labels && e.values.exists(v, v == object.spec.template.metadata.labels[e.key])) : e.operator == 'Exists' ? e.key in object.spec.template.metadata.labels : e.operator == 'NotIn' ? (!(e.key in object.spec.template.metadata.labels) || !e.values.exists(v, v == object.spec.template.metadata.labels[e.key])) : !(e.key in object.spec.template.metadata.labels))"
+        message: "The selector does not select the Pods of this Deployment's own template."

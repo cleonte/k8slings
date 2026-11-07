@@ -54,6 +54,24 @@ There are two mistakes. A mount refers to a volume by name; and nginx serves the
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
 
 [[exercises]]
+name = "pods7"
+path = "exercises/pods/pods7"
+topic = "pods"
+mode = "manifest"
+hint = """
+A tag can move. Which image would two nodes pull on different days, and what does IfNotPresent do about it?"""
+docs = "https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy"
+
+[[exercises]]
+name = "pods8"
+path = "exercises/pods/pods8"
+topic = "pods"
+mode = "manifest"
+hint = """
+The Pod does not need to be told its own name: the downward API hands it over. What are the field paths, and what about the limit?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/downward-api/"
+
+[[exercises]]
 name = "labels1"
 path = "exercises/labels/labels1"
 topic = "labels"
@@ -88,6 +106,15 @@ mode = "manifest"
 hint = """
 Which of the two, labels or annotations, can a selector use?"""
 docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/"
+
+[[exercises]]
+name = "labels5"
+path = "exercises/labels/labels5"
+topic = "labels"
+mode = "manifest"
+hint = """
+A set-based selector is a list of rules. What does each operator need, or not allow, in values?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#set-based-requirement"
 
 [[exercises]]
 name = "namespaces1"
@@ -182,6 +209,24 @@ Node ports come from a range the cluster chooses. What is the default range, and
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
 
 [[exercises]]
+name = "services4"
+path = "exercises/services/services4"
+topic = "services"
+mode = "manifest"
+hint = """
+The Pod declares port names. Does the Service use one that is really there, spelled the same?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
+
+[[exercises]]
+name = "services5"
+path = "exercises/services/services5"
+topic = "services"
+mode = "manifest"
+hint = """
+An ExternalName Service is a DNS alias. What is a DNS name, and what is not part of one?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#externalname"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"
@@ -216,6 +261,24 @@ mode = "manifest"
 hint = """
 What happens to the files that were in a directory when something is mounted on top of it?"""
 docs = "https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath"
+
+[[exercises]]
+name = "config5"
+path = "exercises/config/config5"
+topic = "config"
+mode = "manifest"
+hint = """
+Everything under data is stored as base64, and the API server decodes it. Which other field takes plain text for you?"""
+docs = "https://kubernetes.io/docs/concepts/configuration/secret/#restriction-names-data"
+
+[[exercises]]
+name = "config6"
+path = "exercises/config/config6"
+topic = "config"
+mode = "manifest"
+hint = """
+A Secret of type kubernetes.io/tls has two required keys with fixed names. What does an Ingress or a Pod look for?"""
+docs = "https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets"
 
 [[exercises]]
 name = "probes1"
@@ -317,6 +380,24 @@ mode = "manifest"
 hint = """
 Two lists are involved: what the Pod has (volumes) and where the container puts it (volumeMounts). What ties them together?"""
 docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes"
+
+[[exercises]]
+name = "volumes3"
+path = "exercises/volumes/volumes3"
+topic = "volumes"
+mode = "manifest"
+hint = """
+Two mounts on one path do not work. Is there a volume type that merges several sources into one directory?"""
+docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/"
+
+[[exercises]]
+name = "volumes4"
+path = "exercises/volumes/volumes4"
+topic = "volumes"
+mode = "cluster"
+hint = """
+Read the events of the claim: the provisioner says what it supports. Which access modes can a volume on one node's disk offer?"""
+docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes"
 
 [[exercises]]
 name = "statefulsets1"
@@ -477,6 +558,24 @@ mode = "manifest"
 hint = """
 A ServiceAccount is named by two things. What is the second one, and why does a binding need it?"""
 docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-subjects"
+
+[[exercises]]
+name = "serviceaccounts1"
+path = "exercises/serviceaccounts/serviceaccounts1"
+topic = "serviceaccounts"
+mode = "manifest"
+hint = """
+A setting on the ServiceAccount is only the default. Who gets the last word, and which account does this Pod really use?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+
+[[exercises]]
+name = "serviceaccounts2"
+path = "exercises/serviceaccounts/serviceaccounts2"
+topic = "serviceaccounts"
+mode = "manifest"
+hint = """
+The API server will not issue a token that expires too soon. What is the shortest lifetime it accepts?"""
+docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken"
 
 [[exercises]]
 name = "networkpolicies2"

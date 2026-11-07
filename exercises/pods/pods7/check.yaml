@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: web}
+    assert:
+      - expr: "object.spec.containers.all(c, c.image.startsWith('nginx'))"
+        message: "The application is nginx: keep its image."
+      - expr: "object.spec.containers.all(c, c.image.matches('.*@sha256:[a-f0-9]{64}$') || (c.image.matches('.*:[^/:@]+$') && !c.image.endsWith(':latest')))"
+        message: "The image is not pinned to a version: nodes can end up with different ones."

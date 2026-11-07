@@ -115,6 +115,14 @@ func TestClusterSolutions(t *testing.T) {
 			if !strings.Contains(failed.Lines[0], compiled.Shipped) {
 				t.Fatalf("the unsolved exercise fails, but not for the reason it teaches:\n  got:  %s\n  want: ...%s...", failed.Lines[0], compiled.Shipped)
 			}
+			// A generic first problem does not say why: the diagnosis, which a failed
+			// run carries, does (see shipped_details in CLAUDE.md).
+			if want := compiled.ShippedDetails; want != "" {
+				if diagnosis := strings.Join(failed.Details, "\n"); !strings.Contains(diagnosis, want) {
+					t.Fatalf("the diagnosis of the unsolved exercise does not show its cause:\n  want: ...%s...\n  got:\n%s", want, diagnosis)
+				}
+				t.Logf("and the diagnosis says: %s", want)
+			}
 
 			sol, err := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
 			if err != nil {

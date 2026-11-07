@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Secret, name: db-credentials}
+    assert:
+      - expr: "(has(object.data) && !object.data.all(k, object.data[k].matches('^[A-Za-z0-9+/]*={0,2}$') && size(object.data[k]) % 4 == 0)) == false"
+        message: "A value under data is not base64."
+      - expr: "((has(object.stringData) && 'username' in object.stringData && object.stringData.username == 'app') || (has(object.data) && 'username' in object.data && object.data.username == 'YXBw')) && ((has(object.stringData) && 'password' in object.stringData && object.stringData.password == 's3cr3t pass!') || (has(object.data) && 'password' in object.data && object.data.password == 'czNjcjN0IHBhc3Mh'))"
+        message: "The Secret has to hold the username and the password of the ticket, in a form the API server accepts."

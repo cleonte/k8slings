@@ -1,0 +1,10 @@
+# I AM NOT DONE
+# services5: an ExternalName Service whose externalName is a URL.
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments
+spec:
+  type: ExternalName
+  # TODO: a CNAME takes a host name, not a URL.
+  externalName: https://api.example.com/v1

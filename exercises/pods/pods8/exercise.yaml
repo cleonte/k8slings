@@ -1,0 +1,28 @@
+# I AM NOT DONE
+# pods8: a Pod that hard-codes, or misspells, what the downward API knows.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: whoami
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sh", "-c", "env | grep -E 'POD|NODE|MEM'; sleep 3600"]
+      resources:
+        limits:
+          memory: 128Mi
+      env:
+        # TODO: three of these four are not what the Pod is, or point at nothing.
+        - name: POD_NAME
+          value: whoami
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespaces
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.node
+        - name: MEM_LIMIT
+          value: "134217728"

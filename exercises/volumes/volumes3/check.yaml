@@ -1,0 +1,15 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "object.spec.containers[0].volumeMounts.all(m, object.spec.containers[0].volumeMounts.filter(n, n.mountPath == m.mountPath).size() == 1)"
+        message: "Two volumes are mounted on the same path."
+      - expr: "object.spec.containers[0].volumeMounts.exists(m, m.mountPath == '/etc/app')"
+        message: "The application reads everything from /etc/app."
+      - expr: "object.spec.volumes.exists(v, has(v.projected) && v.projected.sources.exists(s, has(s.configMap) && s.configMap.name == 'app-config'))"
+        message: "The ConfigMap app-config is not in the directory."
+      - expr: "object.spec.volumes.exists(v, has(v.projected) && v.projected.sources.exists(s, has(s.secret) && s.secret.name == 'app-secret'))"
+        message: "The Secret app-secret is not in the directory."
+      - expr: "object.spec.volumes.exists(v, has(v.projected) && v.projected.sources.exists(s, has(s.downwardAPI)))"
+        message: "The facts about the Pod (downward API) are not in the directory."
+      - expr: "object.spec.containers[0].volumeMounts.exists(m, m.mountPath == '/etc/app' && object.spec.volumes.exists(v, v.name == m.name && has(v.projected)))"
+        message: "What is mounted on /etc/app has to be the projected volume."

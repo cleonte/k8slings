@@ -1,0 +1,22 @@
+# I AM NOT DONE
+# labels5: a matchExpressions rule with an operator that needs values and has none.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 2
+  selector:
+    matchExpressions:
+      # TODO: this operator compares the label with a list.
+      - key: tier
+        operator: In
+  template:
+    metadata:
+      labels:
+        app: shop
+        tier: frontend
+    spec:
+      containers:
+        - name: shop
+          image: nginx:1.27

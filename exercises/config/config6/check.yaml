@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Secret, name: site-tls}
+    assert:
+      - expr: "has(object.type) && object.type == 'kubernetes.io/tls'"
+        message: "Keep the type: this Secret is for TLS."
+      - expr: "(has(object.stringData) && 'tls.crt' in object.stringData && size(object.stringData['tls.crt']) > 0) || (has(object.data) && 'tls.crt' in object.data && size(object.data['tls.crt']) > 0)"
+        message: "The certificate is not under the key name that TLS Secrets use."
+      - expr: "(has(object.stringData) && 'tls.key' in object.stringData && size(object.stringData['tls.key']) > 0) || (has(object.data) && 'tls.key' in object.data && size(object.data['tls.key']) > 0)"
+        message: "The private key is not under the key name that TLS Secrets use."

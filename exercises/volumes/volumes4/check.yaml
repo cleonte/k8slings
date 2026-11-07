@@ -1,0 +1,14 @@
+shipped: "PersistentVolumeClaim data is not Bound"
+shipped_details: "NodePath only supports ReadWriteOnce"
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "has(object.spec.volumes) && object.spec.volumes.exists(v, has(v.persistentVolumeClaim) && v.persistentVolumeClaim.claimName == 'data')"
+        message: "The data of the Pod has to stay on the PersistentVolumeClaim data."
+steps:
+  - assert:
+      resource: pvc/data
+      expr: "object.status.phase == 'Bound'"
+      message: "The PersistentVolumeClaim data is not Bound: no volume was provided for it."
+  - ready: {pod: app}
+  - exec: {pod: app, args: [sh, -c, "echo ok > /data/probe && cat /data/probe"], contains: ok}

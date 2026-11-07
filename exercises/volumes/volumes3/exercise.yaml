@@ -1,0 +1,49 @@
+# I AM NOT DONE
+# volumes3: three volumes mounted on the same path.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  settings.ini: |
+    mode=production
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secret
+stringData:
+  token: not-a-real-token
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  labels:
+    app: demo
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sh", "-c", "ls /etc/app; sleep 3600"]
+      volumeMounts:
+        # TODO: three volumes cannot share one path.
+        - name: config
+          mountPath: /etc/app
+        - name: creds
+          mountPath: /etc/app
+        - name: meta
+          mountPath: /etc/app
+  volumes:
+    - name: config
+      configMap:
+        name: app-config
+    - name: creds
+      secret:
+        secretName: app-secret
+    - name: meta
+      downwardAPI:
+        items:
+          - path: labels
+            fieldRef:
+              fieldPath: metadata.labels

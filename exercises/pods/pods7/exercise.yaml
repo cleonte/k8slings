@@ -1,0 +1,12 @@
+# I AM NOT DONE
+# pods7: an unpinned image with a pull policy that keeps whatever a node has.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+    - name: nginx
+      # TODO: which version of nginx is this?
+      image: nginx
+      imagePullPolicy: IfNotPresent
