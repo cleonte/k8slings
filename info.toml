@@ -559,8 +559,8 @@ path = "exercises/statefulsets/statefulsets5"
 topic = "statefulsets"
 mode = "manifest"
 hint = """
-The Service has to answer for each Pod separately, not for the group. What is a Service called that has no cluster IP?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
+Two separate cases, each with Retain or Delete. Which one may lose data without anyone noticing?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention"
 
 [[exercises]]
 name = "daemonsets1"

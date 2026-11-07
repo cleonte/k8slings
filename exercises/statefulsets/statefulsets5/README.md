@@ -1,5 +1,10 @@
-# statefulsets5: the governing Service
+# statefulsets5: what happens to the volumes
 
-A StatefulSet gives each Pod a stable DNS name (`db-0.db`, `db-1.db`) through the Service named in `serviceName`. That only works if the Service is **headless** (`clusterIP: None`): a normal Service has one virtual IP and no per-Pod records.
+The PersistentVolumeClaims that a StatefulSet creates from its `volumeClaimTemplates` are **kept** when it is scaled down or deleted: data is precious. `persistentVolumeClaimRetentionPolicy` changes that, separately for the two cases:
 
-This StatefulSet runs two database Pods that find each other by name.
+- `whenScaled`: what happens to the claims of the replicas that a scale-down removes.
+- `whenDeleted`: what happens to all the claims when the StatefulSet itself is deleted.
+
+Each is `Retain` (the default) or `Delete`.
+
+This StatefulSet is a cache that is rebuilt from the database. Its volumes are worth nothing once the StatefulSet is deleted, but while it exists a scale-down must **not** throw away the volumes: they are reused when it scales up again, and they hold the warm data.
