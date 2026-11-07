@@ -1,0 +1,21 @@
+# labels5: a matchExpressions rule with an operator that needs values and has none.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 2
+  selector:
+    matchExpressions:
+      - key: tier
+        operator: In
+        values: [frontend, edge]
+  template:
+    metadata:
+      labels:
+        app: shop
+        tier: frontend
+    spec:
+      containers:
+        - name: shop
+          image: nginx:1.27

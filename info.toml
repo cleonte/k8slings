@@ -108,6 +108,15 @@ Which of the two, labels or annotations, can a selector use?"""
 docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/"
 
 [[exercises]]
+name = "labels5"
+path = "exercises/labels/labels5"
+topic = "labels"
+mode = "manifest"
+hint = """
+A set-based selector is a list of rules. What does each operator need, or not allow, in values?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#set-based-requirement"
+
+[[exercises]]
 name = "namespaces1"
 path = "exercises/namespaces/namespaces1"
 topic = "namespaces"
