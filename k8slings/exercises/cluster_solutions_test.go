@@ -175,9 +175,12 @@ func TestClusterSolutions(t *testing.T) {
 // the solution script repairs it and the check passes, and each shortcut script
 // (a way to cheat) is refused with the message it declares.
 //
-//	go test -tags cluster -run TestFixSolutions -timeout 30m ./k8slings/exercises/
+//	go test -tags cluster -run TestFixSolutions -timeout 100m ./k8slings/exercises/
+//
+// All of them on one cluster take about 40 minutes with twenty exercises (each
+// is two minutes or so), so the context is 70 minutes; K8SLINGS_SHARD splits them.
 func TestFixSolutions(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 70*time.Minute)
 	defer cancel()
 
 	cl := proofCluster(t, ctx)
