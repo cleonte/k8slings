@@ -6,19 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-07
+
 ### Added
 
 - **Setups with several steps** for fix exercises: `setup.yaml`, then `setup-2.yaml` and so on (up to five). Each step except the last has to finish rolling out before the next is applied, so an exercise can start from a cluster with history. Seeding shows "setting up <name>: step 1 of 2" in `run`, `watch --plain` and the full-screen view, and cancelling (`q`, ctrl+c) stops it with nothing recorded, so the next run starts over. A seeding that fails leaves no recorded state either. `init`, `reset` and `doctor` all decide which files stay in the binary with one function, so no setup step is ever written to your folder.
 - `troubleshooting12`: a bad rollout. Revision 1 works, revision 2 asks for an image tag that does not exist, and the ticket is "get it back to what was running yesterday" (`kubectl rollout history`, `kubectl rollout undo`). Setting the old image by hand is accepted too: the check cannot tell it from an undo.
 - `capstone2`: three unrelated faults in one namespace (a misspelled image, a Service selector that matches no Pod, a ConfigMap key that is not the one the Pod asks for), and a ticket that only describes the symptoms. The check always names the first fault that is left, and every object has to be repaired in place.
-
-### Added
-
 - Five more troubleshooting exercises: `troubleshooting7` (a ResourceQuota that rejects Pods without requests), `troubleshooting8` (a NetworkPolicy that forgets DNS), `troubleshooting9` (OOMKilled), `troubleshooting10` (a PersistentVolumeClaim with a StorageClass that does not exist), and `troubleshooting11` (node affinity with a mistyped node name; needs the default three-node cluster). The proofs refuse the shortcuts: raising or deleting the quota, allowing all egress, removing or inflating the memory limit, swapping the volume for `emptyDir`, removing the affinity, `nodeName`, and relabelling a node.
+- Fix-mode docs in the README: what to do when you break the cluster for real (`reset`, `cluster down && cluster up`, what is kept).
 
 ### Changed
 
 - Closed cheats in earlier exercises: `troubleshooting2` (another image), `troubleshooting4` (removing the CPU request), `troubleshooting5` (a TCP probe instead of HTTP), `troubleshooting6` (binding the `view` ClusterRole; it also checks that `reader` cannot read ConfigMaps, list Deployments or create Pods).
+- The cluster proofs also check the *cause* where the first problem is generic: an optional `shipped_details` in `check.yaml` must show in the diagnosis (`troubleshooting9`: OOMKilled, `10`: the missing StorageClass, `11`: the node affinity that matches nothing). Contributors only; learners see no change.
+- CI: the kind job runs as three shards, each on its own cluster (it was cancelled at the 30 minute limit with twelve troubleshooting exercises and a capstone on one cluster). `K8SLINGS_SHARD=i/n` does the split; `make cluster-test` without it still runs everything.
 
 ## [0.4.0] - 2026-11-06
 
@@ -104,7 +106,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/cleonte/k8slings/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/cleonte/k8slings/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/cleonte/k8slings/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/cleonte/k8slings/compare/v0.2.0...v0.2.1
