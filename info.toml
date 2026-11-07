@@ -538,6 +538,15 @@ Control-plane nodes carry a taint. Which key does it have in a current cluster, 
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
 
 [[exercises]]
+name = "daemonsets3"
+path = "exercises/daemonsets/daemonsets3"
+topic = "daemonsets"
+mode = "manifest"
+hint = """
+An update of a DaemonSet takes the agent off some nodes while it runs. What decides how many nodes at once?"""
+docs = "https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/"
+
+[[exercises]]
 name = "scheduling1"
 path = "exercises/scheduling/scheduling1"
 topic = "scheduling"

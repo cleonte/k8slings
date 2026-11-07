@@ -1,0 +1,24 @@
+# I AM NOT DONE
+# daemonsets3: an update strategy that replaces the agent on every node at once.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-agent
+spec:
+  selector:
+    matchLabels:
+      app: node-agent
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      # TODO: how many nodes may be without the agent during an update?
+      maxUnavailable: 100%
+  template:
+    metadata:
+      labels:
+        app: node-agent
+    spec:
+      containers:
+        - name: agent
+          image: busybox:1.37
+          command: ["sleep", "3600"]
