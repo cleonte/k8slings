@@ -6,10 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-07
+
 ### Added
 
 - Ten more offline exercises: `config3` (an `env` entry hides the ConfigMap), `config4` (a ConfigMap mounted over a whole directory; `subPath`), `resources3` (make a Pod Guaranteed), `statefulsets3` (a StatefulSet whose headless Service does not exist), `statefulsets4` (a canary with `partition`), `networkpolicies3` (a default deny with an empty rule), `namespaces3` (a LimitRange whose default request is above its default limit), `rbac4` (a ServiceAccount subject without its namespace), `deployments4` (a progress deadline shorter than `minReadySeconds`) and `probes3` (a liveness probe that depends on the database).
 - `troubleshooting13`: the client's Pods use a DNS server that does not exist (`dnsPolicy: None`), so no name resolves although the Service is fine. A hosts entry for the Service does not count.
+- Check steps: `exec` can pick the Pod with a `selector` (the first Pod that is Running and not being deleted), for the Pods of a Deployment, whose names nobody can write down. Contributors only.
+
+### Fixed
+
+- A bare number for a quantity in an exercise (`cpu: 1`, `cpu: 0.5`) is accepted by the checks, as Kubernetes accepts it. Before, a correct answer written that way was refused.
 
 ## [0.6.0] - 2026-11-07
 
@@ -117,7 +124,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/cleonte/k8slings/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/cleonte/k8slings/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/cleonte/k8slings/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/cleonte/k8slings/compare/v0.3.0...v0.4.0
