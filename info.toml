@@ -809,8 +809,8 @@ path = "exercises/serviceaccounts/serviceaccounts3"
 topic = "serviceaccounts"
 mode = "manifest"
 hint = """
-The ServiceAccount refuses to mount its token. Who is allowed to overrule that, and where?"""
-docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+`deploy` fails because nobody gave it the secret. What do `build` and `deploy` have in common that you can put it on instead?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account"
 
 [[exercises]]
 name = "networkpolicies2"

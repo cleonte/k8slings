@@ -1,7 +1,13 @@
 objects:
-  - select: {kind: Pod, name: controller}
+  - select: {kind: ServiceAccount, name: builder}
     assert:
-      - expr: "has(object.spec.automountServiceAccountToken) ? object.spec.automountServiceAccountToken : !objects.exists(s, s.kind == 'ServiceAccount' && s.metadata.name == object.spec.serviceAccountName && has(s.automountServiceAccountToken) && s.automountServiceAccountToken == false)"
-        message: "The Pod gets no token: the ServiceAccount switches it off and the Pod does not ask for it."
-      - expr: "object.spec.serviceAccountName == 'lister'"
-        message: "The Pod keeps using the ServiceAccount lister."
+      - expr: "has(object.imagePullSecrets) && object.imagePullSecrets.exists(s, s.name == 'regcred')"
+        message: "The ServiceAccount does not list the pull secret: put imagePullSecrets there."
+      - expr: "objects.filter(o, o.kind == 'Pod').all(p, !has(p.spec.imagePullSecrets))"
+        message: "The secret belongs on the ServiceAccount: take it off the Pod, which gets it from the account."
+      - expr: "objects.filter(o, o.kind == 'Pod').size() == 2 && objects.filter(o, o.kind == 'Pod').all(p, p.spec.serviceAccountName == 'builder')"
+        message: "Both Pods keep running as the ServiceAccount builder."
+  - select: {kind: Secret, name: regcred}
+    assert:
+      - expr: "object.type == 'kubernetes.io/dockerconfigjson'"
+        message: "Keep the Secret as it is."
