@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-07
+
 ### Added
 
 - 13 offline exercises for the topics that had the fewest: `disruption3` (a budget whose selector matches nothing), `disruption4` (`minAvailable` and `maxUnavailable` together), `lifecycle4` (a volume only the init container mounts), `daemonsets4` (the control-plane taint), `networkpolicies4` (`from` entries that are alternatives), `networkpolicies5` (egress that forgets DNS), `resources4` (a quota that counts requests), `serviceaccounts3` (no token mounted), `security5` (`privileged` instead of one capability), `rbac5` (`pods/log`), `probes4` (a named port that does not exist), `statefulsets5` (the headless governing Service) and `namespaces4` (a quota in the wrong namespace). A folder from an older version gets them with `k8slings update`.
@@ -175,7 +177,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/cleonte/k8slings/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/cleonte/k8slings/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/cleonte/k8slings/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/cleonte/k8slings/compare/v0.8.0...v0.9.0
