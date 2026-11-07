@@ -18,7 +18,7 @@ spec:
       containers:
         - name: web
           image: busybox:1.37
-          command: ["sh", "-c", "mkdir /www && echo ok > /www/index.html && sleep 20 && httpd -f -p 8080 -h /www"]
+          command: ["sh", "-c", "trap 'exit 0' TERM; mkdir /www; echo ok > /www/index.html; sleep 20 & wait $!; exec httpd -f -p 8080 -h /www"]
           ports:
             - containerPort: 8080
           readinessProbe:
