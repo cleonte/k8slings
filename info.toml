@@ -190,6 +190,15 @@ With a volume that only one Pod may use, can a rolling update start the new Pod 
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
 
 [[exercises]]
+name = "deployments6"
+path = "exercises/deployments/deployments6"
+topic = "deployments"
+mode = "manifest"
+hint = """
+How many old ReplicaSets does a Deployment keep, and what does undo need from them?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#clean-up-policy"
+
+[[exercises]]
 name = "services1"
 path = "exercises/services/services1"
 topic = "services"

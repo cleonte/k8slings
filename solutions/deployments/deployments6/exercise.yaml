@@ -1,0 +1,20 @@
+# deployments6: a Deployment that keeps no history, and counts a Pod available at once.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 3
+  revisionHistoryLimit: 2
+  minReadySeconds: 10
+  selector:
+    matchLabels:
+      app: shop
+  template:
+    metadata:
+      labels:
+        app: shop
+    spec:
+      containers:
+        - name: shop
+          image: nginx:1.27
