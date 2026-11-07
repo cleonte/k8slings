@@ -1,0 +1,18 @@
+shipped: "wget -qO- http://web.k8slings-troubleshooting13.svc.cluster.local` fails"
+steps:
+  - unchanged: deployment/client
+  - unchanged: service/web
+  - assert:
+      resource: deployment/client
+      expr: "!has(object.spec.template.spec.hostAliases)"
+      message: "Names must be resolved by DNS, not by hand-written hosts entries."
+    now: true
+  - assert:
+      resource: deployment/client
+      expr: "object.spec.template.spec.containers[0].image == 'busybox:1.37'"
+      message: "Keep the client as it is: its image is not the problem."
+    now: true
+  - rollout: deployment/web
+  - rollout: deployment/client
+  - endpoints: {service: web, min: 1, port: 80}
+  - exec: {selector: app=client, args: [timeout, "3", wget, -qO-, http://web.k8slings-troubleshooting13.svc.cluster.local], contains: nginx}

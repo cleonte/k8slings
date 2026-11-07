@@ -206,6 +206,29 @@ func TestExecNeedsARunningPodAndCanExpectFailure(t *testing.T) {
 	}
 }
 
+func TestExecWithASelectorPicksARunningPodThatIsNotBeingDeleted(t *testing.T) {
+	c := steps(t, `  - exec: {selector: app=client, args: [wget, -qO-, http://server], contains: page}
+`)
+	k := func(listing string) *fakeKube {
+		return &fakeKube{rules: []rule{
+			{words: []string{"get pods", "-l app=client"}, out: listing},
+			{words: []string{"get pod client-new"}, out: "Running"},
+			{words: []string{"exec client-new"}, out: "page"},
+		}}
+	}
+	// The old Pod is being deleted (it has a timestamp), the new one is Running.
+	fk := k("client-old Running 2026-11-07T10:00:00Z\nclient-pend Pending \nclient-new Running \n")
+	if got := run(c, fk); got != "" {
+		t.Fatalf("got %q", got)
+	}
+	if got := run(c, k("client-old Running 2026-11-07T10:00:00Z\nclient-pend Pending \n")); got != "No Pod with app=client is Running yet." {
+		t.Fatalf("got %q", got)
+	}
+	if got := run(c, k("")); !strings.Contains(got, "No Pod with app=client is Running") {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestCanI(t *testing.T) {
 	c := steps(t, `  - can_i: {as: reader, verb: list, resource: pods}
   - can_i: {as: reader, verb: delete, resource: pods, ok: false}
@@ -269,6 +292,8 @@ func TestLoadRejectsBadSteps(t *testing.T) {
 		"assert bad cel": "  - assert: {resource: pod/a, expr: 'object.', message: m}\n",
 		"http no port":   "  - http: {service: a}\n",
 		"exec no args":   "  - exec: {pod: a}\n",
+		"exec both":      "  - exec: {pod: a, selector: b=c, args: [x]}\n",
+		"exec neither":   "  - exec: {args: [x]}\n",
 		"can_i no verb":  "  - can_i: {as: a, resource: pods}\n",
 		"unknown step":   "  - sleep: 5\n",
 	} {

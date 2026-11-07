@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `troubleshooting13`: the client's Pods use a DNS server that does not exist (`dnsPolicy: None`), so no name resolves although the Service is fine. A hosts entry for the Service does not count.
+
 ## [0.6.0] - 2026-11-07
 
 ### Added

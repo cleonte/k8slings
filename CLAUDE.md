@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: usable and proven; two pieces are still to build or to grow.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), <!-- count:exercises -->58<!-- /count --> exercises in <!-- count:topics -->18<!-- /count --> topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. **Fix mode** (Phase 4) is built, with twelve troubleshooting exercises and a capstone; more of them, and cluster-scoped setups, are next. Sections marked *(target)* describe what is not built yet: the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
+> **Status: usable and proven; two pieces are still to build or to grow.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), <!-- count:exercises -->59<!-- /count --> exercises in <!-- count:topics -->18<!-- /count --> topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. **Fix mode** (Phase 4) is built, with thirteen troubleshooting exercises and a capstone; more of them, and cluster-scoped setups, are next. Sections marked *(target)* describe what is not built yet: the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
 
 ## What this project is
 
@@ -149,6 +149,7 @@ steps:
   - endpoints: {service: web, min: 2, port: 80}      # ready EndpointSlice addresses
   - http: {service: web, port: 80, path: /, body_contains: nginx}
   - exec: {pod: intruder, args: [wget, -qO-, -T, "3", http://server], ok: false}
+  - exec: {selector: app=client, args: [wget, -qO-, http://web], contains: nginx}   # a Deployment's Pods have no name to write: the first Running Pod that is not being deleted
   - can_i: {as: reader, verb: get, resource: pods/log, ok: true}   # a ServiceAccount of the exercise namespace; pods/log is the log subresource
     now: true                                       # `now` works on every step: an apply decides RBAC at once
   - logs: {pod: app, contains: "ready"}
