@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Eleven basics exercises, and a new topic, `serviceaccounts`: `config5` (a Secret with plain text where base64 belongs), `config6` (a TLS Secret with the wrong key names), `pods7` (an unpinned image with `IfNotPresent`), `pods8` (the downward API), `services4` (a `targetPort` name the container does not declare), `services5` (an ExternalName that is a URL), `volumes3` (three volumes on one path, merged into a projected volume), `volumes4` (a ReadWriteMany claim that the default StorageClass cannot provide; it runs on the cluster), `labels5` (`matchExpressions` with an operator that needs values), `serviceaccounts1` (a token that is mounted although the ServiceAccount turns it off) and `serviceaccounts2` (a projected token below the minimum lifetime).
+
 ## [0.8.0] - 2026-11-07
 
 ### Added
