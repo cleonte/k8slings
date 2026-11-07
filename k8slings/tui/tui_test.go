@@ -132,6 +132,11 @@ func solve(t *testing.T, name string, withMarker bool) {
 	if err := os.WriteFile(ex.File(), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	if !withMarker {
+		if err := exercises.RecordPass(name); err != nil { // finished: it passed, and the marker is gone
+			t.Fatal(err)
+		}
+	}
 }
 
 func TestShowsTheFailureOfTheFirstExercise(t *testing.T) {

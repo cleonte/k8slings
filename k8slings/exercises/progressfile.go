@@ -17,9 +17,16 @@ import (
 // and created again.
 const ProgressFile = ".k8slings.json"
 
+const progressFormat = 2
+
 type progressData struct {
-	// Done maps the name of a fix exercise to the time it was fixed. Once done,
-	// an exercise stays done, even if the learner breaks it again later.
+	// Format is 2 once passes are recorded for every mode (before, a manifest or
+	// cluster exercise was done as soon as its marker was gone, passing or not).
+	Format int `json:"format,omitempty"`
+	// Done maps the name of an exercise to the time its check passed. A fix
+	// exercise is done when it is here; a manifest or cluster exercise when it is
+	// here and its marker is gone. Once done, an exercise stays done, even if the
+	// learner breaks it again later.
 	Done map[string]time.Time `json:"done,omitempty"`
 	// Seeds maps a fix exercise to the UIDs of the objects it seeded, by "kind/name".
 	Seeds map[string]map[string]string `json:"seeds,omitempty"`
@@ -75,18 +82,19 @@ func updateProgress(f func(*progressData)) error {
 	defer progressMu.Unlock()
 	p := readProgress()
 	f(&p)
+	p.Format = progressFormat
 	return writeProgress(p)
 }
 
-func fixDone(name string) bool {
+func passed(name string) bool {
 	progressMu.Lock()
 	defer progressMu.Unlock()
 	_, ok := readProgress().Done[name]
 	return ok
 }
 
-// markFixDone records that a fix exercise is fixed.
-func markFixDone(name string) error {
+// markPassed records that the check of an exercise passed.
+func markPassed(name string) error {
 	return updateProgress(func(p *progressData) {
 		if p.Done == nil {
 			p.Done = map[string]time.Time{}
@@ -169,3 +177,62 @@ func IsNewIn(dir, name string) bool {
 	defer progressMu.Unlock()
 	return slices.Contains(readProgressIn(dir).New, name)
 }
+
+// StampFormat marks the workspace in dir as one that records passes from the
+// start, so that no exercise in it is mistaken for one finished the old way.
+func StampFormat(dir string) error {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	p := readProgressIn(dir)
+	p.Format = progressFormat
+	return writeProgressIn(dir, p)
+}
+
+// ForgetPassed drops the recorded pass of an exercise in the workspace in dir
+// (its file was reset, so it has to pass again).
+func ForgetPassed(dir, name string) error {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	p := readProgressIn(dir)
+	if _, ok := p.Done[name]; !ok {
+		return nil
+	}
+	delete(p.Done, name)
+	return writeProgressIn(dir, p)
+}
+
+// grandfather credits the exercises whose marker was already gone before passes
+// were recorded: they were done by the old rule, and a learner who upgrades must
+// not find them pending again. It runs once per workspace.
+func grandfather(all []Exercise) {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	p := readProgress()
+	if p.Format >= progressFormat {
+		return
+	}
+	now := time.Now().UTC().Truncate(time.Second)
+	changed := false
+	for _, e := range all {
+		if e.Mode == ModeFix {
+			continue
+		}
+		if data, err := os.ReadFile(e.File()); err == nil && !notDoneRegex.Match(data) {
+			if p.Done == nil {
+				p.Done = map[string]time.Time{}
+			}
+			if _, ok := p.Done[e.Name]; !ok {
+				p.Done[e.Name] = now
+				changed = true
+			}
+		}
+	}
+	if _, err := os.Stat(ProgressFile); err != nil && !changed {
+		return // not a workspace (yet): leave no file behind
+	}
+	p.Format = progressFormat
+	_ = writeProgress(p)
+}
+
+// RecordPass records that the check of the exercise passed, as running it does.
+func RecordPass(name string) error { return markPassed(name) }

@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- An exercise is done only when its check has passed **and** its `# I AM NOT DONE` line is gone. Before, deleting the line was enough, so a file that still failed could be skipped by accident (`run` now says so when that is the case). Passes are recorded in `.k8slings.json`, as fix exercises already did; `reset` forgets the pass. A folder made by an older version keeps every exercise whose line was already gone: they are credited once, the first time a command reads it.
+- The cluster proofs in CI are split by a hash of the exercise name instead of by position, and the safety rules run in a job of their own.
+
 ## [0.11.0] - 2026-11-07
 
 ### Added

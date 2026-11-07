@@ -86,3 +86,19 @@ func TestResetNeverWritesSetupFiles(t *testing.T) {
 		return nil
 	})
 }
+
+func TestResetMakesTheExerciseHavePassAgain(t *testing.T) {
+	root := t.TempDir()
+	t.Chdir(root)
+	if err := exercises.RecordPass("a"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Reset(src, root, "a"); err != nil {
+		t.Fatal(err)
+	}
+	ex := exercises.Exercise{Name: "a", Path: "exercises/t/a", Topic: "t", Mode: exercises.ModeManifest, Hint: "h"}
+	_ = os.WriteFile(ex.File(), []byte("kind: Pod\n"), 0o644) // the marker taken out without a pass
+	if ex.State() != exercises.Pending {
+		t.Fatal("a reset exercise has to pass again before it is done")
+	}
+}

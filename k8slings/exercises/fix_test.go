@@ -186,7 +186,7 @@ func TestNoSeedContextNeverBreaksTheCluster(t *testing.T) {
 
 func TestReseedBreaksTheClusterAgainAndForgetsDone(t *testing.T) {
 	ex := fixExercise(t)
-	_ = markFixDone("web")
+	_ = markPassed("web")
 	if ex.State() != Done {
 		t.Fatal("setup")
 	}
@@ -240,7 +240,7 @@ func TestADamagedProgressFileMeansNoProgressNotACrash(t *testing.T) {
 	if ex.State() != Pending {
 		t.Fatal("a damaged file means nothing is done")
 	}
-	if err := markFixDone("web"); err != nil {
+	if err := markPassed("web"); err != nil {
 		t.Fatal(err)
 	}
 	if ex.State() != Done {
@@ -256,7 +256,7 @@ func TestProgressWritesAreAtomicAndSafeToRaceOn(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			if i%2 == 0 {
-				_ = markFixDone("web")
+				_ = markPassed("web")
 			} else {
 				_ = recordSeed("other", map[string]string{"x/y": "u"})
 			}
