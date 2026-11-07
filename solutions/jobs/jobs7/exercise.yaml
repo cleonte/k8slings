@@ -1,0 +1,24 @@
+# jobs7: a failure policy that ignores the fatal exit code and fails on the harmless one.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: import
+spec:
+  backoffLimit: 3
+  podFailurePolicy:
+    rules:
+      - action: Ignore
+        onExitCodes:
+          operator: In
+          values: [42]
+      - action: FailJob
+        onExitCodes:
+          operator: In
+          values: [1]
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: task
+          image: busybox:1.37
+          command: ["sh", "-c", "echo importing; exit 0"]

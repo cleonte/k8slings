@@ -417,6 +417,15 @@ Two fields end a Job's story: one stops a run that hangs, one cleans up after a 
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup"
 
 [[exercises]]
+name = "jobs7"
+path = "exercises/jobs/jobs7"
+topic = "jobs"
+mode = "manifest"
+hint = """
+A failed Pod usually counts against the backoff limit. Which rule makes one exit code harmless and another one fatal, and what does it need from the Pod?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-failure-policy"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"

@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: Job, name: import}
+    assert:
+      - expr: "has(object.spec.podFailurePolicy) && has(object.spec.podFailurePolicy.rules)"
+        message: "Keep the pod failure policy: it is what tells the failures apart."
+      - expr: "object.spec.template.spec.restartPolicy == 'Never'"
+        message: "A Job with a pod failure policy needs a restart policy that lets the Job, not the kubelet, replace failed Pods."
+      - expr: "object.spec.podFailurePolicy.rules.exists(r, r.action == 'Ignore' && has(r.onExitCodes) && r.onExitCodes.values.exists(v, v == 42))"
+        message: "A Pod that exits with 42 (its node went away) must not count against the backoff limit."
+      - expr: "object.spec.podFailurePolicy.rules.exists(r, r.action == 'FailJob' && has(r.onExitCodes) && r.onExitCodes.values.exists(v, v == 1))"
+        message: "A Pod that exits with 1 (bad input) must fail the Job at once: no retry can fix it."
+      - expr: "object.spec.podFailurePolicy.rules.all(r, !has(r.onExitCodes) || !(r.onExitCodes.values.exists(v, v == 42) && r.action != 'Ignore') && !(r.onExitCodes.values.exists(v, v == 1) && r.action != 'FailJob'))"
+        message: "One rule sends an exit code somewhere it does not belong."
