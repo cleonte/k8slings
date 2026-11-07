@@ -373,6 +373,15 @@ Two lists are involved: what the Pod has (volumes) and where the container puts 
 docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes"
 
 [[exercises]]
+name = "volumes3"
+path = "exercises/volumes/volumes3"
+topic = "volumes"
+mode = "manifest"
+hint = """
+Two mounts on one path do not work. Is there a volume type that merges several sources into one directory?"""
+docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/"
+
+[[exercises]]
 name = "statefulsets1"
 path = "exercises/statefulsets/statefulsets1"
 topic = "statefulsets"
