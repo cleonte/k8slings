@@ -44,16 +44,18 @@ jobs:
   cluster:
     # The proofs take about 30 minutes on one cluster, so they run as five
     # shards, each with its own cluster and every fifth exercise (K8SLINGS_SHARD,
-    # see k8slings/exercises/shard_test.go). Shard 0 also proves the safety rules.
-    name: kind cluster (Kubernetes 1.37), shard ${{ matrix.shard }} of 5
+    # see k8slings/exercises/shard_test.go). The safety rules are proven by a
+    # sixth job, on a cluster of their own, so no shard carries them.
+    name: kind cluster (Kubernetes 1.37), ${{ matrix.shard == 'safety' && 'safety rules' || format('shard {0} of 5', matrix.shard) }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4]
+        shard: [0, 1, 2, 3, 4, safety]
     env:
-      K8SLINGS_SHARD: ${{ matrix.shard }}/5
+      K8SLINGS_SHARD: ${{ matrix.shard != 'safety' && format('{0}/5', matrix.shard) || '' }}
+      MAKE_TARGET: ${{ matrix.shard == 'safety' && 'cluster-safety-test' || 'cluster-proofs-test' }}
     steps:
     - uses: actions/checkout@v7
 
@@ -81,15 +83,15 @@ jobs:
       run: |
         start=$(date +%s)
         set -o pipefail
-        make cluster-test 2>&1 | tee cluster-test.log
+        make "$MAKE_TARGET" 2>&1 | tee cluster-test.log
         echo "duration=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
 
     - name: Report the time
       if: always()
       run: |
         d="${{ steps.tests.outputs.duration }}"
-        echo "### Cluster tests, shard ${{ matrix.shard }} of 5" >> "$GITHUB_STEP_SUMMARY"
-        echo "Took ${d:-?} seconds (budget per shard: about 600 s; see CLAUDE.md)." >> "$GITHUB_STEP_SUMMARY"
+        echo "### Cluster tests, ${{ matrix.shard }} ($MAKE_TARGET)" >> "$GITHUB_STEP_SUMMARY"
+        echo "Took ${d:-?} seconds (budget: about 600 s; see CLAUDE.md)." >> "$GITHUB_STEP_SUMMARY"
         grep -E "fails as intended|solution passes|^--- |^\s+--- " cluster-test.log >> "$GITHUB_STEP_SUMMARY" || true
 
     - name: Collect what the clusters said
