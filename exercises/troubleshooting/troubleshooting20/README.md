@@ -7,7 +7,7 @@ This is a **fix** exercise: there is no file to edit. k8slings has broken the na
 Rules:
 
 - **The Pod runs on the control-plane node.** Keep its `nodeSelector`, and do not pin it with `nodeName`.
-- **The node keeps its taint.** The Pod has to be allowed in; the node must not be opened to every Pod. (Needs the cluster with its workers: the control-plane node is only tainted there.)
+- **The node keeps its taint.** The Pod has to be allowed in, by a toleration that names this taint; a toleration that matches every taint does not count, and the node must not be opened to every Pod. (Needs the cluster with its workers: the control-plane node is only tainted there.)
 - **Repair the Deployment that is there.** Deleting it and creating a new one does not count.
 
 ```sh

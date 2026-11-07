@@ -376,8 +376,8 @@ path = "exercises/lifecycle/lifecycle4"
 topic = "lifecycle"
 mode = "manifest"
 hint = """
-The init container writes into a volume. Does the app container mount that volume too, at the path where it looks?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+Init containers do not wait for each other in any order you did not write. Which one needs the other's file?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/#understanding-init-containers"
 
 [[exercises]]
 name = "resources1"
@@ -559,8 +559,8 @@ path = "exercises/statefulsets/statefulsets5"
 topic = "statefulsets"
 mode = "manifest"
 hint = """
-The Service has to answer for each Pod separately, not for the group. What is a Service called that has no cluster IP?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#stable-network-id"
+Two separate cases, each with Retain or Delete. Which one may lose data without anyone noticing?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#persistentvolumeclaim-retention"
 
 [[exercises]]
 name = "daemonsets1"
@@ -597,8 +597,8 @@ path = "exercises/daemonsets/daemonsets4"
 topic = "daemonsets"
 mode = "manifest"
 hint = """
-The control-plane node has a taint. What does a Pod need to be allowed on a tainted node, and how narrow can you make it?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#how-daemon-pods-are-scheduled"
+Two features of the node are used, and each has a safety setting that goes with it. Which one resolves cluster names, and which one stops the agent from writing?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy"
 
 [[exercises]]
 name = "scheduling1"
@@ -809,8 +809,8 @@ path = "exercises/serviceaccounts/serviceaccounts3"
 topic = "serviceaccounts"
 mode = "manifest"
 hint = """
-The ServiceAccount refuses to mount its token. Who is allowed to overrule that, and where?"""
-docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+`deploy` fails because nobody gave it the secret. What do `build` and `deploy` have in common that you can put it on instead?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account"
 
 [[exercises]]
 name = "networkpolicies2"
@@ -845,7 +845,7 @@ path = "exercises/networkpolicies/networkpolicies5"
 topic = "networkpolicies"
 mode = "manifest"
 hint = """
-Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port and protocol?"""
+Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port, and with which protocols?"""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-and-endport-filtering"
 
 [[exercises]]
@@ -1027,7 +1027,7 @@ path = "exercises/troubleshooting/troubleshooting19"
 topic = "troubleshooting"
 mode = "fix"
 hint = """
-There is no shell to exec into, and no tool to look around with. How do you get one next to the container, in the same Pod?"""
+There is no shell to exec into. What does the application say about itself, and, if that is not enough, how do you get a shell next to the container, in the same Pod?"""
 docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container"
 
 [[exercises]]

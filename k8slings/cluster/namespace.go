@@ -113,9 +113,24 @@ func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 }
 
 // builtinFinalizer says whether a finalizer belongs to the cluster itself
-// (pvc-protection, foregroundDeletion ...), which handles it.
+// (pvc-protection, foregroundDeletion, the batch.kubernetes.io/job-tracking of
+// every Job Pod ...), which handles it: the domain is kubernetes.io or k8s.io or
+// a subdomain of one of them, or the name is one of the built-in bare ones.
 func builtinFinalizer(f string) bool {
-	return strings.HasPrefix(f, "kubernetes.io/") || f == "kubernetes" || f == "orphan" || f == "foregroundDeletion"
+	switch f {
+	case "kubernetes", "orphan", "foregroundDeletion":
+		return true
+	}
+	domain, _, found := strings.Cut(f, "/")
+	if !found {
+		return false
+	}
+	for _, d := range []string{"kubernetes.io", "k8s.io"} {
+		if domain == d || strings.HasSuffix(domain, "."+d) {
+			return true
+		}
+	}
+	return false
 }
 
 // ReleaseFinalizers removes, from every object of the namespace, the finalizers

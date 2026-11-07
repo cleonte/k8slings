@@ -1,5 +1,5 @@
-# lifecycle4: the file the init container writes
+# lifecycle4: init containers run in the order they are written
 
-An init container runs to completion before the app starts, and it often prepares something for it. But containers of a Pod do not share a file system: they share only the volumes that **each of them mounts**. An `emptyDir` that only the init container mounts is thrown away with it as far as the app can see.
+Init containers run **one at a time, in the order of the list**, and each must finish before the next starts. When the second one needs what the first leaves behind, the order of the list is the only thing that makes it work. A list in the wrong order is not rejected: the first container to run simply finds nothing, and fails.
 
-Here the init container writes `/work/ready`, and the app reads it.
+Here `fetch` downloads the template into a shared volume, and `render` fills it in. `render` is listed first.

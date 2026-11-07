@@ -16,4 +16,6 @@ k8slings kubectl -n k8slings-troubleshooting14 exec deploy/web -- printenv FEATU
 
 The ConfigMap says one thing and the Pod says another. When does a container read an environment variable?
 
+Any way of getting new Pods counts: `kubectl rollout restart deployment/web`, or deleting the Pods and letting the ReplicaSet create them again.
+
 `k8slings reset troubleshooting14` puts the cluster back as it was.

@@ -3,6 +3,8 @@ objects:
     assert:
       - expr: "object.spec.egress.exists(r, has(r.ports) && r.ports.exists(p, p.port == 53 && has(p.protocol) && p.protocol == 'UDP'))"
         message: "Nothing lets the client send a DNS query (UDP port 53)."
+      - expr: "object.spec.egress.exists(r, has(r.ports) && r.ports.exists(p, p.port == 53 && has(p.protocol) && p.protocol == 'TCP'))"
+        message: "DNS also uses TCP port 53, for answers that do not fit in one UDP packet: open both."
       - expr: "object.spec.egress.all(r, has(r.to) && r.to.size() > 0)"
         message: "Every rule needs a destination: a rule without `to` allows traffic to anywhere."
       - expr: "object.spec.egress.exists(r, has(r.to) && r.to.exists(t, has(t.podSelector) && t.podSelector.matchLabels.role == 'db'))"

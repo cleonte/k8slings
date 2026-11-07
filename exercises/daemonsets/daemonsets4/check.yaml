@@ -1,9 +1,11 @@
 objects:
-  - select: {kind: DaemonSet, name: collector}
+  - select: {kind: DaemonSet, name: log-agent}
     assert:
-      - expr: "has(object.spec.template.spec.tolerations) && object.spec.template.spec.tolerations.exists(t, has(t.key) && t.key == 'node-role.kubernetes.io/control-plane')"
-        message: "The Pod does not tolerate the control-plane taint, so it never runs on that node."
-      - expr: "object.spec.template.spec.tolerations.all(t, has(t.key) && t.key != '')"
-        message: "Tolerate the control-plane taint only: a toleration with no key matches every taint."
-      - expr: "object.spec.template.spec.tolerations.all(t, !has(t.effect) || t.effect == 'NoSchedule')"
-        message: "The taint has the effect NoSchedule."
+      - expr: "has(object.spec.template.spec.hostNetwork) && object.spec.template.spec.hostNetwork == true"
+        message: "The agent runs on the host network: keep hostNetwork."
+      - expr: "has(object.spec.template.spec.dnsPolicy) && object.spec.template.spec.dnsPolicy == 'ClusterFirstWithHostNet'"
+        message: "On the host network the Pod needs dnsPolicy ClusterFirstWithHostNet to resolve cluster names."
+      - expr: "object.spec.template.spec.volumes.exists(v, v.name == 'varlog' && has(v.hostPath) && v.hostPath.path == '/var/log')"
+        message: "Keep the hostPath volume of /var/log."
+      - expr: "has(object.spec.template.spec.containers[0].volumeMounts) && object.spec.template.spec.containers[0].volumeMounts.exists(m, m.name == 'varlog' && has(m.readOnly) && m.readOnly == true)"
+        message: "The agent only reads the logs: mount the hostPath readOnly."

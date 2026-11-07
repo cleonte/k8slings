@@ -1,18 +1,37 @@
 # I AM NOT DONE
-# serviceaccounts3: a Pod with a key to the API and no key.
+# serviceaccounts3: pulling from a private registry, for every Pod of an account.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: regcred
+type: kubernetes.io/dockerconfigjson
+stringData:
+  .dockerconfigjson: '{"auths":{"registry.example.com":{"auth":"dXNlcjpwYXNzd29yZA=="}}}'
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: lister
-automountServiceAccountToken: false # TODO: this switches the token off for every Pod that uses the account.
+  name: builder
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: controller
+  name: build
 spec:
-  serviceAccountName: lister
+  serviceAccountName: builder
+  # TODO: the secret is on this Pod only; `deploy` has none.
+  imagePullSecrets:
+    - name: regcred
   containers:
-    - name: controller
-      image: busybox:1.37
-      command: ["sh", "-c", "ls /var/run/secrets/kubernetes.io/serviceaccount && sleep 3600"]
+    - name: build
+      image: registry.example.com/team/build:1.0
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: deploy
+spec:
+  serviceAccountName: builder
+  containers:
+    - name: deploy
+      image: registry.example.com/team/deploy:1.0

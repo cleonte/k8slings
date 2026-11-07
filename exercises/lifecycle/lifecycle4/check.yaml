@@ -1,9 +1,9 @@
 objects:
   - select: {kind: Pod, name: app}
     assert:
-      - expr: "object.spec.initContainers.size() == 1 && object.spec.containers.size() == 1"
-        message: "Keep one init container and one app container."
-      - expr: "has(object.spec.containers[0].volumeMounts) && object.spec.containers[0].volumeMounts.exists(m, m.name == 'shared')"
-        message: "The app container does not mount the volume the init container writes to."
-      - expr: "has(object.spec.containers[0].volumeMounts) && object.spec.containers[0].volumeMounts.exists(m, m.name == 'shared' && m.mountPath == '/work')"
-        message: "The app reads /work/ready, so the volume has to be mounted at /work."
+      - expr: "object.spec.initContainers.size() == 2 && object.spec.initContainers.exists(c, c.name == 'fetch') && object.spec.initContainers.exists(c, c.name == 'render')"
+        message: "Keep both init containers, fetch and render."
+      - expr: "object.spec.initContainers[0].name == 'fetch' && object.spec.initContainers[1].name == 'render'"
+        message: "render reads the file that fetch writes, so fetch has to come first in the list."
+      - expr: "object.spec.initContainers.all(c, has(c.volumeMounts) && c.volumeMounts.exists(m, m.name == 'work' && m.mountPath == '/work'))"
+        message: "Both init containers share the volume at /work."

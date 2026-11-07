@@ -1,5 +1,5 @@
-# serviceaccounts3: no token mounted
+# serviceaccounts3: pull credentials on the ServiceAccount
 
-A Pod talks to the API server with the token of its ServiceAccount, which Kubernetes mounts into it. A ServiceAccount can switch that off with `automountServiceAccountToken: false` (a good default for Pods that never call the API). A Pod that **does** need the API then has to ask for the token itself, or the ServiceAccount must stop refusing it.
+To pull an image from a private registry, a Pod needs `imagePullSecrets`: a reference to a Secret of type `kubernetes.io/dockerconfigjson`. Putting it on **every Pod** is easy to forget (the one you forget fails with `ImagePullBackOff`). Put it on the **ServiceAccount** and every Pod that uses the account gets it automatically.
 
-This controller lists Pods through the API, with the ServiceAccount `lister`.
+Here two Pods, `build` and `deploy`, run as the ServiceAccount `builder` and pull from `registry.example.com`. Only `build` has the secret; `deploy` fails to pull. Fix it where it belongs: once, on the account.

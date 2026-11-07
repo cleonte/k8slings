@@ -1,5 +1,8 @@
-# daemonsets4: one Pod per node, but not on all of them
+# daemonsets4: a node agent that uses the node itself
 
-A DaemonSet is meant to run one Pod on **every** node, but the control-plane nodes carry the taint `node-role.kubernetes.io/control-plane:NoSchedule`, which keeps ordinary Pods away. A node agent (logs, metrics, networking) that has to be everywhere needs a toleration for that taint, and only for that one: tolerating everything would also put it on nodes that are being drained or are not ready.
+A log collector or a network agent often has to look at the **node**, not at its own container. `hostNetwork: true` puts the Pod in the node's network namespace; a `hostPath` volume mounts a directory of the node's file system. Both are powerful, and each has a rule that goes with it:
 
-This DaemonSet is a log collector that has to run on the control-plane node as well.
+- A Pod with `hostNetwork: true` uses the node's DNS settings, so it cannot resolve cluster names such as `web.default.svc` unless it sets `dnsPolicy: ClusterFirstWithHostNet`.
+- A `hostPath` that the agent only reads has to be mounted `readOnly: true`, or a bug (or an attacker) in the agent can write to the node's own files.
+
+This DaemonSet collects the node's logs from `/var/log` and sends them to a Service in the cluster.

@@ -1,32 +1,35 @@
 # I AM NOT DONE
-# statefulsets5: a stable name needs a headless Service.
-apiVersion: v1
-kind: Service
-metadata:
-  name: db
-spec:
-  # TODO: this Service has one virtual IP, so db-0.db does not resolve.
-  type: ClusterIP
-  selector:
-    app: db
-  ports:
-    - port: 5432
----
+# statefulsets5: what happens to the volumes when the StatefulSet goes.
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: db
+  name: cache
 spec:
-  serviceName: db
-  replicas: 2
+  serviceName: cache
+  replicas: 3
   selector:
     matchLabels:
-      app: db
+      app: cache
+  # TODO: these two are the wrong way round.
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Delete
   template:
     metadata:
       labels:
-        app: db
+        app: cache
     spec:
       containers:
-        - name: db
+        - name: cache
           image: nginx:1.27
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

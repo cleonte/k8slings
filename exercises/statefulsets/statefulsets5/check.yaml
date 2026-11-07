@@ -1,11 +1,11 @@
 objects:
-  - select: {kind: Service, name: db}
+  - select: {kind: StatefulSet, name: cache}
     assert:
-      - expr: "has(object.spec.clusterIP) && object.spec.clusterIP == 'None'"
-        message: "The governing Service has to be headless: clusterIP None."
-      - expr: "object.spec.selector.all(k, objects.exists(s, s.kind == 'StatefulSet' && k in s.spec.template.metadata.labels && s.spec.template.metadata.labels[k] == object.spec.selector[k]))"
-        message: "The Service's selector must match the Pods of the StatefulSet."
-  - select: {kind: StatefulSet, name: db}
-    assert:
-      - expr: "object.spec.serviceName == 'db' && object.spec.replicas == 2"
-        message: "Keep the StatefulSet: it is the Service that is wrong."
+      - expr: "has(object.spec.persistentVolumeClaimRetentionPolicy)"
+        message: "Say what happens to the claims: persistentVolumeClaimRetentionPolicy."
+      - expr: "has(object.spec.persistentVolumeClaimRetentionPolicy.whenScaled) && object.spec.persistentVolumeClaimRetentionPolicy.whenScaled == 'Retain'"
+        message: "A scale-down must keep the volumes: they hold the warm data and are reused when it scales up."
+      - expr: "has(object.spec.persistentVolumeClaimRetentionPolicy.whenDeleted) && object.spec.persistentVolumeClaimRetentionPolicy.whenDeleted == 'Delete'"
+        message: "When the StatefulSet is deleted its volumes are worth nothing: they should go with it."
+      - expr: "object.spec.replicas == 3 && object.spec.volumeClaimTemplates.size() == 1"
+        message: "Keep the StatefulSet as it is: three replicas, one claim template."
