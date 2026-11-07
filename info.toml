@@ -860,6 +860,15 @@ A Pod's /etc/resolv.conf comes from its dnsPolicy, and with dnsPolicy None from 
 docs = "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy"
 
 [[exercises]]
+name = "troubleshooting14"
+path = "exercises/troubleshooting/troubleshooting14"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+An environment variable is read once, when the container starts. What makes a Deployment start new containers without changing what it runs?"""
+docs = "https://kubernetes.io/docs/concepts/configuration/configmap/#configmaps-and-pods"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"

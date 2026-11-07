@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  FEATURE_FLAG: "false"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: busybox:1.37
+          command: ["sh", "-c", "echo flag=$FEATURE_FLAG; sleep 3600"]
+          env:
+            - name: FEATURE_FLAG
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: FEATURE_FLAG

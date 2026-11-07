@@ -1,0 +1,16 @@
+shipped: "`printenv FEATURE_FLAG` does not print"
+steps:
+  - unchanged: deployment/web
+  - unchanged: configmap/app-config
+  - assert:
+      resource: configmap/app-config
+      expr: "object.data.FEATURE_FLAG == 'true'"
+      message: "Keep the new value of the flag: it is the change that was asked for."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].env.exists(e, e.name == 'FEATURE_FLAG' && has(e.valueFrom) && has(e.valueFrom.configMapKeyRef) && e.valueFrom.configMapKeyRef.name == 'app-config')"
+      message: "The application has to keep reading the flag from the ConfigMap."
+    now: true
+  - rollout: deployment/web
+  - exec: {selector: app=web, args: [printenv, FEATURE_FLAG], contains: "true"}
