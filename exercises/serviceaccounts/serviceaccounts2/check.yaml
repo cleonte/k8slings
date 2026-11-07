@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: client}
+    assert:
+      - expr: "object.spec.volumes.exists(v, has(v.projected) && v.projected.sources.exists(s, has(s.serviceAccountToken)))"
+        message: "The Pod has to ask for its own token with a projected volume."
+      - expr: "object.spec.volumes.all(v, !has(v.projected) || v.projected.sources.all(s, !has(s.serviceAccountToken) || (has(s.serviceAccountToken.audience) && s.serviceAccountToken.audience == 'vault')))"
+        message: "The token is meant for the audience vault."
+      - expr: "object.spec.volumes.all(v, !has(v.projected) || v.projected.sources.all(s, !has(s.serviceAccountToken) || !has(s.serviceAccountToken.expirationSeconds) || s.serviceAccountToken.expirationSeconds >= 600))"
+        message: "The API server does not issue a token that lives this briefly."
+      - expr: "object.spec.containers[0].volumeMounts.exists(m, object.spec.volumes.exists(v, v.name == m.name && has(v.projected)))"
+        message: "The container has to mount the projected volume."

@@ -1,0 +1,21 @@
+# serviceaccounts2: a projected token that asks for a lifetime below the minimum.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+spec:
+  containers:
+    - name: client
+      image: busybox:1.37
+      command: ["sh", "-c", "cat /var/run/secrets/tokens/vault-token; sleep 3600"]
+      volumeMounts:
+        - name: vault-token
+          mountPath: /var/run/secrets/tokens
+  volumes:
+    - name: vault-token
+      projected:
+        sources:
+          - serviceAccountToken:
+              path: vault-token
+              audience: vault
+              expirationSeconds: 3600

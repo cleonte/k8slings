@@ -560,6 +560,15 @@ A setting on the ServiceAccount is only the default. Who gets the last word, and
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
 
 [[exercises]]
+name = "serviceaccounts2"
+path = "exercises/serviceaccounts/serviceaccounts2"
+topic = "serviceaccounts"
+mode = "manifest"
+hint = """
+The API server will not issue a token that expires too soon. What is the shortest lifetime it accepts?"""
+docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/#serviceaccounttoken"
+
+[[exercises]]
 name = "networkpolicies2"
 path = "exercises/networkpolicies/networkpolicies2"
 topic = "networkpolicies"
