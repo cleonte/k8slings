@@ -138,6 +138,34 @@ func TestClusterSolutions(t *testing.T) {
 				t.Fatalf("the solution must pass: %v", err)
 			}
 			t.Logf("solution passes in %s", time.Since(start).Round(time.Second))
+
+			// Ways to cheat (shortcut-*.yaml, first line `# rejected: "text"`) must be
+			// refused, and at once: the refusal comes from the static part of the
+			// check, before anything is applied, so it must not wait for a timeout.
+			shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.yaml"))
+			for _, f := range shortcuts {
+				t.Run(path.Base(f), func(t *testing.T) {
+					data, err := fs.ReadFile(k8slings.Solutions, f)
+					if err != nil {
+						t.Fatal(err)
+					}
+					first, _, _ := strings.Cut(string(data), "\n")
+					m := rejectedRe.FindStringSubmatch(first)
+					if m == nil {
+						t.Fatalf(`%s must start with: # rejected: "what the check says"`, f)
+					}
+					begin := time.Now()
+					_, err = ex.RunSource(ctx, broken, data)
+					var refused *exercises.FailedError
+					if !errors.As(err, &refused) || !strings.Contains(refused.Lines[0], m[1]) {
+						t.Fatalf("the shortcut must be refused with %q, got %v", m[1], err)
+					}
+					if took := time.Since(begin); took > 10*time.Second {
+						t.Fatalf("refused after %s: a cheat is refused at once, by the static part of the check", took.Round(time.Second))
+					}
+					t.Logf("refused at once: %s", refused.Lines[0])
+				})
+			}
 		})
 	}
 }

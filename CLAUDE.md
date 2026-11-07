@@ -159,6 +159,8 @@ Steps are evaluated in order and the first one that does not hold is reported; t
 
 Why declarative and not a Go `Check` func per exercise (as the first prototype did, with a `registry` of Go `Check` funcs): a declarative file is reviewable without reading Go, shares one evaluator and one set of timeouts, produces uniform failure output, and lets the same file drive fix mode. The cost is a fixed vocabulary. The planned escape hatch is a **named Go check** (`go: <name>` in `check.yaml`, resolved in a registry), for checks the vocabulary cannot express. It is **not built**: no exercise has needed it yet, and adding one needs a sentence in the PR on why the vocabulary was not enough. Named checks would follow the same purity rules.
 
+A cluster exercise can also ship **cheats as files**: `solutions/<topic>/<name>/shortcut-*.yaml`, an exercise file whose first line is `# rejected: "text"`. `TestClusterSolutions` runs each one and requires the check to refuse it with that text **at once** (within seconds, by the static `objects:` part, before anything is applied), so a cheat never costs the learner a timeout. A guard written for this has to hold in the shipped state too, or it becomes the shipped reason and gives the fix away: state what must *stay as it is* (a container's name and command, the replica count), and let the runtime steps judge the fix.
+
 All checks are **read-only and idempotent**: they are polled repeatedly. They must never mutate the cluster. A step that fails reports the first failing step with expected-versus-actual, not a dump.
 
 ### fix — troubleshooting with live state
