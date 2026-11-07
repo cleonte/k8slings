@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: PodDisruptionBudget, name: web}
+    assert:
+      - expr: "has(object.spec.selector) && has(object.spec.selector.matchLabels) && objects.exists(d, d.kind == 'Deployment' && object.spec.selector.matchLabels.all(k, k in d.spec.template.metadata.labels && d.spec.template.metadata.labels[k] == object.spec.selector.matchLabels[k]))"
+        message: "The budget does not select the Pods of the Deployment."
+      - expr: "has(object.spec.minAvailable) || has(object.spec.maxUnavailable)"
+        message: "The budget says nothing about how many Pods may go."
+      - expr: "has(object.spec.minAvailable) ? (object.spec.minAvailable == 1 || object.spec.minAvailable == 2 || string(object.spec.minAvailable).matches('^([1-9]|[1-5][0-9]|6[0-6])%$')) : (object.spec.maxUnavailable == 1 || object.spec.maxUnavailable == 2 || string(object.spec.maxUnavailable).matches('^([1-9]|[1-5][0-9]|6[0-6])%$'))"
+        message: "The budget allows either no disruption at all, or so many that it protects nothing."

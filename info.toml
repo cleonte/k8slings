@@ -595,6 +595,15 @@ A Pod names its priority class. Does a class of that name exist, and is its valu
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/"
 
 [[exercises]]
+name = "disruption1"
+path = "exercises/disruption/disruption1"
+topic = "disruption"
+mode = "manifest"
+hint = """
+A budget says how many Pods may be missing at once. What does a budget that demands all of them allow?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
