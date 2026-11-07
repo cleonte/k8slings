@@ -12,6 +12,7 @@ import (
 var PreloadImages = []string{
 	"nginx:1.27",
 	"busybox:1.37",
+	"hashicorp/http-echo:1.0.0", // troubleshooting19: an image with no shell
 }
 
 // Preload pulls the images straight into every node's container runtime. It

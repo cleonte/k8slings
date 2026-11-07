@@ -905,6 +905,15 @@ The Job gave up, and its logs say why. What can you change in a Job that already
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy"
 
 [[exercises]]
+name = "troubleshooting19"
+path = "exercises/troubleshooting/troubleshooting19"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+There is no shell to exec into, and no tool to look around with. How do you get one next to the container, in the same Pod?"""
+docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"

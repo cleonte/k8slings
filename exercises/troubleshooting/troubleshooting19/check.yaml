@@ -1,0 +1,11 @@
+shipped: "on Service web:80 fails"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].image == 'hashicorp/http-echo:1.0.0'"
+      message: "Keep the application: its image is not the problem, and it has no shell on purpose."
+    now: true
+  - rollout: deployment/web
+  - endpoints: {service: web, min: 1}
+  - http: {service: web, port: 80, path: /, body_contains: "hello from the application"}
