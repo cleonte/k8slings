@@ -526,6 +526,15 @@ A Deployment keeps its earlier revisions: kubectl rollout history lists them, an
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment"
 
 [[exercises]]
+name = "troubleshooting13"
+path = "exercises/troubleshooting/troubleshooting13"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+A Pod's /etc/resolv.conf comes from its dnsPolicy, and with dnsPolicy None from the dnsConfig it carries. Compare it with a Pod that works, and look at the Deployment's Pod template."""
+docs = "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"
