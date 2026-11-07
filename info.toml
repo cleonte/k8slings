@@ -209,6 +209,15 @@ The Pod declares port names. Does the Service use one that is really there, spel
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
 
 [[exercises]]
+name = "services5"
+path = "exercises/services/services5"
+topic = "services"
+mode = "manifest"
+hint = """
+An ExternalName Service is a DNS alias. What is a DNS name, and what is not part of one?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#externalname"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"

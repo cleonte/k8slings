@@ -1,0 +1,8 @@
+# services5: an ExternalName Service whose externalName is a URL.
+apiVersion: v1
+kind: Service
+metadata:
+  name: payments
+spec:
+  type: ExternalName
+  externalName: api.example.com
