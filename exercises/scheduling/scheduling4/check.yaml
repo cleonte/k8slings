@@ -11,3 +11,8 @@ steps:
       selector: app=web
       expr: "objects.size() == 2 && objects.all(p, has(p.spec.nodeName)) && objects[0].spec.nodeName != objects[1].spec.nodeName"
       message: "The two Pods of web run on the same node."
+  - assert:
+      resource: deployment/web
+      expr: "(has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.podAntiAffinity)) || (has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.size() > 0)"
+      message: "Something has to keep the replicas apart: a rule, not the luck of the scheduler."
+      now: true
