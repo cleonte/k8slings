@@ -228,7 +228,12 @@ func TestFixSolutions(t *testing.T) {
 
 			// Start clean: a cluster kept from an earlier run still has the namespace
 			// labelled as seeded, and this run has no progress file.
-			if out, err := cl.Kubectl(ctx, "delete", "namespace", ex.Namespace(), "--ignore-not-found", "--wait=true"); err != nil {
+			// An exercise may leave a finalizer that nothing handles (a delete that never
+			// finishes): the namespace would stay Terminating for ever.
+			if err := cl.ReleaseFinalizers(ctx, ex.Namespace()); err != nil {
+				t.Fatalf("cannot release what holds the namespace: %v", err)
+			}
+			if out, err := cl.Kubectl(ctx, "delete", "namespace", ex.Namespace(), "--ignore-not-found", "--wait=true", "--timeout=3m"); err != nil {
 				t.Fatalf("cannot clear the namespace: %s", out)
 			}
 

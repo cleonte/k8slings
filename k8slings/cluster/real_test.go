@@ -74,6 +74,26 @@ func TestRealCluster(t *testing.T) {
 		}
 	}
 
+	// An object with a finalizer that nothing handles (an exercise leaves one on
+	// purpose) must not block emptying its namespace: before, this hung for the
+	// whole 60 s of the delete and then failed.
+	if err := c.ResetNamespace(ctx, "k8slings-finalizer"); err != nil {
+		t.Fatalf("ResetNamespace: %v", err)
+	}
+	if out, err := c.KubectlInput(ctx, strings.NewReader("apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: stuck\n  finalizers: [example.com/cleanup]\n"), "apply", "-n", "k8slings-finalizer", "-f", "-"); err != nil {
+		t.Fatalf("apply: %s", out)
+	}
+	_, _ = c.Kubectl(ctx, "delete", "configmap", "stuck", "-n", "k8slings-finalizer", "--wait=false") // now it is Terminating, and stays so
+	began := time.Now()
+	if err := c.ResetNamespace(ctx, "k8slings-finalizer"); err != nil {
+		t.Fatalf("a stuck object must not block the reset: %v", err)
+	}
+	if out, _ := c.Kubectl(ctx, "get", "configmap", "stuck", "-n", "k8slings-finalizer", "--ignore-not-found", "-o", "name"); strings.TrimSpace(out) != "" {
+		t.Fatalf("the stuck ConfigMap is still there: %s", out)
+	}
+	t.Logf("a reset with a stuck object took %s", time.Since(began).Round(time.Millisecond))
+	_, _ = c.Kubectl(ctx, "delete", "namespace", "k8slings-finalizer", "--wait=false")
+
 	// A kubeconfig that leads somewhere else is refused, even with the right context name.
 	other := *c
 	other.Kubeconfig = filepath.Join(t.TempDir(), "kubeconfig")

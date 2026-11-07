@@ -286,3 +286,47 @@ func TestOnlyNamespacesOfK8slingsAreEmptiedOrSeeded(t *testing.T) {
 		}
 	}
 }
+
+func TestReleaseFinalizersRemovesOnlyWhatNoControllerHandles(t *testing.T) {
+	c, f := newCluster(t, func(cmd Cmd) (string, error) {
+		args := strings.Join(cmd.Args, " ")
+		switch {
+		case strings.Contains(args, "api-resources"):
+			return "configmaps\npersistentvolumeclaims\n", nil
+		case strings.Contains(args, "jsonpath={range .items[?(@.metadata.finalizers)]}"):
+			return "ConfigMap/legacy\t[\"cleanup.example.com\"]\n" +
+				"ConfigMap/current\t[\"cleanup.example.com\",\"kubernetes.io/pvc-protection\"]\n" +
+				"PersistentVolumeClaim/data\t[\"kubernetes.io/pvc-protection\"]\n", nil
+		}
+		return "", nil
+	})
+	if err := c.ReleaseFinalizers(context.Background(), "k8slings-troubleshooting15"); err != nil {
+		t.Fatal(err)
+	}
+	var patches []string
+	for _, call := range f.called("kubectl --kubeconfig") {
+		if slices.Contains(call.Args, "patch") {
+			patches = append(patches, strings.Join(call.Args[len(call.Args)-8:], " "))
+		}
+	}
+	if len(patches) != 2 {
+		t.Fatalf("two objects carry a finalizer to release, and the cluster's own is left alone: %v", patches)
+	}
+	for i, want := range []string{`ConfigMap/legacy -n k8slings-troubleshooting15 --type=merge -p {"metadata":{"finalizers":[]}}`, `ConfigMap/current -n k8slings-troubleshooting15 --type=merge -p {"metadata":{"finalizers":["kubernetes.io/pvc-protection"]}}`} {
+		if !strings.Contains(patches[i], want) {
+			t.Errorf("patch %d = %q, want ...%s", i, patches[i], want)
+		}
+	}
+}
+
+func TestReleaseFinalizersRefusesNamespacesThatAreNotOurs(t *testing.T) {
+	c, f := newCluster(t, namespaceFake(1))
+	for _, ns := range []string{"default", "kube-system", "k8slings-", ""} {
+		if err := c.ReleaseFinalizers(context.Background(), ns); err == nil {
+			t.Errorf("%q must be refused", ns)
+		}
+	}
+	if len(f.called("kubectl --kubeconfig")) != 0 {
+		t.Fatal("a refused namespace must not be touched")
+	}
+}
