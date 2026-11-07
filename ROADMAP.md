@@ -172,7 +172,7 @@ Branch `phase-4-fix`.
 - [x] `troubleshooting7` to `troubleshooting11`: quota, NetworkPolicy and DNS, OOMKilled, PVC with a missing StorageClass, node affinity.
 - [x] Multi-step setups (`setup-2.yaml` ...), for exercises that need history: `troubleshooting12` (bad rollout, `rollout undo`).
 - [x] A multi-fault capstone: `capstone2` (three unrelated faults).
-- [ ] More troubleshooting exercises: taints, DNS faults.
+- [x] More troubleshooting exercises: DNS (`troubleshooting13`), a taint (`troubleshooting20`), finalizers, CronJobs, Jobs, a shell-less container and more (`troubleshooting14` to `19`).
 - [x] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons

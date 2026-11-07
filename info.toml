@@ -896,6 +896,34 @@ A CronJob can be told not to create Jobs at all. Which field, and what does a Jo
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-suspension"
 
 [[exercises]]
+name = "troubleshooting18"
+path = "exercises/troubleshooting/troubleshooting18"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+The Job gave up, and its logs say why. What can you change in a Job that already ran, and what has to be made again?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy"
+
+[[exercises]]
+name = "troubleshooting19"
+path = "exercises/troubleshooting/troubleshooting19"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+There is no shell to exec into, and no tool to look around with. How do you get one next to the container, in the same Pod?"""
+docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container"
+
+[[exercises]]
+name = "troubleshooting20"
+path = "exercises/troubleshooting/troubleshooting20"
+topic = "troubleshooting"
+mode = "fix"
+requires = ["multinode"]
+hint = """
+The scheduler's event says how many nodes it refused and why. Which of those reasons is about a taint, and what lets a Pod past a taint?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"

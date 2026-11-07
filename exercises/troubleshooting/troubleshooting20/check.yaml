@@ -1,0 +1,21 @@
+shipped: "Deployment ctl"
+shipped_details: "untolerated taint"
+steps:
+  - unchanged: deployment/ctl
+  - assert:
+      resource: deployment/ctl
+      expr: "has(object.spec.template.spec.nodeSelector) && 'node-role.kubernetes.io/control-plane' in object.spec.template.spec.nodeSelector"
+      message: "The Pod has to run on the control-plane node: keep its node selector."
+    now: true
+  - assert:
+      resource: deployment/ctl
+      expr: "!has(object.spec.template.spec.nodeName)"
+      message: "Do not pin the Pod to a node by name: the scheduler decides, and the taint is what has to be dealt with."
+    now: true
+  - assert:
+      resources: nodes
+      selector: node-role.kubernetes.io/control-plane
+      expr: "objects.size() >= 1 && objects.all(n, has(n.spec.taints) && n.spec.taints.exists(t, t.key == 'node-role.kubernetes.io/control-plane' && t.effect == 'NoSchedule'))"
+      message: "The control-plane node has lost its taint: put it back. The Pod has to be allowed in; the node must not be opened to every Pod."
+    now: true
+  - rollout: deployment/ctl
