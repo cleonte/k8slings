@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: api}
+    assert:
+      - expr: "object.spec.containers[0].readinessProbe.httpGet.port == 'web' || object.spec.containers[0].readinessProbe.httpGet.port == 8080"
+        message: "The probe's port is neither the name of a port of the container nor its number."
+      - expr: "object.spec.containers[0].ports.size() == 1 && object.spec.containers[0].ports[0].containerPort == 8080"
+        message: "Keep the container port: it is the probe that is wrong."

@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Role, name: pod-reader}
+    assert:
+      - expr: "object.rules.exists(r, '' in r.apiGroups && 'pods/log' in r.resources && 'get' in r.verbs)"
+        message: "Nothing allows reading logs: they are the subresource pods/log, verb get."
+      - expr: "object.rules.all(r, !('*' in r.verbs) && !('*' in r.resources))"
+        message: "No wildcards: the account may read Pods and logs, nothing else."
+      - expr: "object.rules.all(r, r.verbs.all(v, v in ['get', 'list']))"
+        message: "Reading only: get and list."

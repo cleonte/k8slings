@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: NetworkPolicy, name: client-egress}
+    assert:
+      - expr: "object.spec.egress.exists(r, has(r.ports) && r.ports.exists(p, p.port == 53 && has(p.protocol) && p.protocol == 'UDP'))"
+        message: "Nothing lets the client send a DNS query (UDP port 53)."
+      - expr: "object.spec.egress.all(r, has(r.to) && r.to.size() > 0)"
+        message: "Every rule needs a destination: a rule without `to` allows traffic to anywhere."
+      - expr: "object.spec.egress.exists(r, has(r.to) && r.to.exists(t, has(t.podSelector) && t.podSelector.matchLabels.role == 'db'))"
+        message: "Keep the rule that lets the client reach the db Pods."
+      - expr: "object.spec.egress.all(r, !has(r.ports) || r.ports.all(p, p.port == 53 || p.port == 5432))"
+        message: "Only the database port and DNS may be open."

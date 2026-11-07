@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: DaemonSet, name: collector}
+    assert:
+      - expr: "has(object.spec.template.spec.tolerations) && object.spec.template.spec.tolerations.exists(t, has(t.key) && t.key == 'node-role.kubernetes.io/control-plane')"
+        message: "The Pod does not tolerate the control-plane taint, so it never runs on that node."
+      - expr: "object.spec.template.spec.tolerations.all(t, has(t.key) && t.key != '')"
+        message: "Tolerate the control-plane taint only: a toleration with no key matches every taint."
+      - expr: "object.spec.template.spec.tolerations.all(t, !has(t.effect) || t.effect == 'NoSchedule')"
+        message: "The taint has the effect NoSchedule."

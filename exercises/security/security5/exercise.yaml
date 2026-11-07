@@ -1,0 +1,14 @@
+# I AM NOT DONE
+# security5: privileged for the sake of one capability.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netconf
+spec:
+  containers:
+    - name: netconf
+      image: busybox:1.37
+      command: ["sh", "-c", "sysctl -w net.ipv4.ip_forward=1; sleep 3600"]
+      securityContext:
+        # TODO: everything, to change one network setting.
+        privileged: true

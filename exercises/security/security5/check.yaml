@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: netconf}
+    assert:
+      - expr: "!has(object.spec.containers[0].securityContext.privileged) || object.spec.containers[0].securityContext.privileged == false"
+        message: "The container is still privileged."
+      - expr: "has(object.spec.containers[0].securityContext.capabilities) && has(object.spec.containers[0].securityContext.capabilities.add) && 'NET_ADMIN' in object.spec.containers[0].securityContext.capabilities.add"
+        message: "Changing network settings needs the NET_ADMIN capability."
+      - expr: "object.spec.containers[0].securityContext.capabilities.add.size() == 1"
+        message: "Add NET_ADMIN and nothing else."
+      - expr: "has(object.spec.containers[0].securityContext.capabilities.drop) && 'ALL' in object.spec.containers[0].securityContext.capabilities.drop"
+        message: "Drop ALL capabilities first, so the one you add is the only one."

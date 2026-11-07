@@ -1,0 +1,14 @@
+# namespaces4: a ResourceQuota in the wrong place.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: pods
+  namespace: team-a
+spec:
+  hard:
+    pods: "10"

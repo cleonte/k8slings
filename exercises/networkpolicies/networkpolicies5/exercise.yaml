@@ -1,0 +1,21 @@
+# I AM NOT DONE
+# networkpolicies5: a locked-down client that cannot resolve a name.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: client-egress
+spec:
+  podSelector:
+    matchLabels:
+      role: client
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              role: db
+      ports:
+        - protocol: TCP
+          port: 5432
+    # TODO: the client cannot ask the cluster DNS (namespace kube-system, port 53).

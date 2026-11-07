@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: controller}
+    assert:
+      - expr: "has(object.spec.automountServiceAccountToken) ? object.spec.automountServiceAccountToken : !objects.exists(s, s.kind == 'ServiceAccount' && s.metadata.name == object.spec.serviceAccountName && has(s.automountServiceAccountToken) && s.automountServiceAccountToken == false)"
+        message: "The Pod gets no token: the ServiceAccount switches it off and the Pod does not ask for it."
+      - expr: "object.spec.serviceAccountName == 'lister'"
+        message: "The Pod keeps using the ServiceAccount lister."

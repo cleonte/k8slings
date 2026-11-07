@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: NetworkPolicy, name: db-from-app}
+    assert:
+      - expr: "object.spec.ingress.size() == 1 && object.spec.ingress[0].from.size() == 1"
+        message: "One source is allowed: the app Pods of the shop namespace, as a single entry."
+      - expr: "object.spec.ingress[0].from.all(f, has(f.podSelector) && has(f.namespaceSelector))"
+        message: "The Pod selector and the namespace selector have to be in the same entry, or they are alternatives."
+      - expr: "object.spec.ingress[0].from[0].podSelector.matchLabels.role == 'app' && object.spec.ingress[0].from[0].namespaceSelector.matchLabels.team == 'shop'"
+        message: "Keep the labels: role app, in the namespace labelled team shop."

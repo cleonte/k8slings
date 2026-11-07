@@ -1,0 +1,22 @@
+# networkpolicies4: "and" written as "or".
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: db-from-app
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              role: app
+          namespaceSelector:
+            matchLabels:
+              team: shop
+      ports:
+        - protocol: TCP
+          port: 5432
