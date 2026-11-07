@@ -288,3 +288,7 @@ Code copied or adapted from golings stays under golings' **Apache-2.0** license,
 ## When an exercise is done
 
 `State()` is Done when the check has **passed** (recorded in `.k8slings.json` under `done`, by `Exercise.Run`) and, for manifest and cluster exercises, the `# I AM NOT DONE` marker is gone; a fix exercise is done as soon as it passed. Removing the marker from a file that does not pass leaves it Pending (`MarkerGone()` lets `run` say so). `Format: 2` in the progress file means passes are recorded; a workspace without it is credited once in `List` (`grandfather`: every exercise whose marker is already gone), and `init` stamps the format so a new workspace is never credited. `workspace.Reset` forgets the pass. Tests that need a finished exercise call `exercises.RecordPass`.
+
+## Reviewing new exercises
+
+Before adding an exercise, read the titles and "what you learn" lines of the others in its topic (`head -1 exercises/<topic>/*/README.md`): a new exercise must teach something the topic does not teach yet, not the same fault in different clothes. `TestNoTwoExercisesOfATopicShareATitle` catches an identical title only; a duplicate with another title is still the reviewer's job. v0.12.0 shipped four (`daemonsets4`, `statefulsets5`, `serviceaccounts3`, `lifecycle4`), replaced in the next release. A replaced exercise keeps its name and place, so `k8slings update` can bring it in: a file the learner has not edited is replaced, an edited one is listed as newer.

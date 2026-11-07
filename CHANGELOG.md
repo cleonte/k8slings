@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Four exercises of 0.12.0 repeated an earlier lesson and were **replaced**, keeping their names and places: `daemonsets4` (now a node agent with `hostNetwork` and a read-only `hostPath`; the control-plane toleration is `daemonsets2`), `statefulsets5` (now `persistentVolumeClaimRetentionPolicy`; the governing Service is `statefulsets2`), `serviceaccounts3` (now `imagePullSecrets` on a ServiceAccount; the token is `serviceaccounts1`) and `lifecycle4` (now two init containers that must run in order; shared volumes are `pods6`). `k8slings update` brings the new versions into a folder where you have not edited the old ones, and lists the others as newer. If you had already finished one of the old versions, it counts as done.
+- `troubleshooting20` needs a toleration that names the control-plane taint: a toleration with no key, which tolerates every taint, is refused.
+- `networkpolicies5` needs DNS on TCP port 53 as well as UDP.
+- `troubleshooting14` says that deleting the Pods is an accepted repair, as is `rollout restart`; `troubleshooting19` says that the logs show the port (the debug container is for applications that print nothing).
+
+### Fixed
+
+- Resetting an exercise namespace no longer removes the finalizers of the cluster's own controllers when they are on a subdomain, such as `batch.kubernetes.io/job-tracking` on the Pods of a Job. Every `kubernetes.io` and `k8s.io` domain, subdomains included, is left alone.
+
+### Added
+
+- A test that fails when two exercises of a topic have the same README title.
+
 ## [0.12.0] - 2026-11-07
 
 ### Added
