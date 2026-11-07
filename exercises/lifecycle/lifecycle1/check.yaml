@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Pod, name: web}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.lifecycle) && has(c.lifecycle.preStop) && has(c.lifecycle.preStop.sleep) && c.lifecycle.preStop.sleep.seconds >= 40)"
+        message: "Keep the pre-stop delay: the load balancer needs it to stop sending traffic."
+      - expr: "object.spec.containers.all(c, double(has(object.spec.terminationGracePeriodSeconds) ? object.spec.terminationGracePeriodSeconds : 30) >= double(c.lifecycle.preStop.sleep.seconds) + 5.0)"
+        message: "The grace period ends before the application has had time to shut down after the pre-stop hook."

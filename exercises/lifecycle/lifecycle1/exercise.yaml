@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# lifecycle1: a pre-stop delay longer than the grace period.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  # TODO: what is left of this period when the hook has run?
+  terminationGracePeriodSeconds: 30
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      lifecycle:
+        preStop:
+          sleep:
+            seconds: 40

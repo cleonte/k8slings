@@ -308,6 +308,15 @@ If a Pod's probe depends on something outside the Pod, what do you want to happe
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes"
 
 [[exercises]]
+name = "lifecycle1"
+path = "exercises/lifecycle/lifecycle1"
+topic = "lifecycle"
+mode = "manifest"
+hint = """
+When a Pod is deleted the kubelet starts the clock once, and the pre-stop hook runs inside it. What is left for the application afterwards?"""
+docs = "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/"
+
+[[exercises]]
 name = "resources1"
 path = "exercises/resources/resources1"
 topic = "resources"
