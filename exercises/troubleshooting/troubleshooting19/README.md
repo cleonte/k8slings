@@ -28,6 +28,6 @@ k8slings kubectl -n k8slings-troubleshooting19 debug -it POD --image=busybox:1.3
 
 In a terminal that opens a shell. Without one, start a container that waits (`... debug POD --image=busybox:1.37 --target=web --container=dbg -q -- sleep 600`) and run `kubectl exec POD -c dbg -- netstat -ln`.
 
-What is the application really listening on? (Whichever way you found out, `check.yaml` only cares that the Service reaches it.)
+What is the application really listening on? (Any way of finding out is fine: what counts is that the Service reaches it.)
 
 `k8slings reset troubleshooting19` puts the cluster back as it was.
