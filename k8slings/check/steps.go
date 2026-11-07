@@ -75,11 +75,14 @@ type HTTPStep struct {
 	BodyContains string `json:"body_contains"`
 }
 
-// ExecStep runs a command in a running Pod. With OK false it wants the command
-// to fail (a blocked connection, say); the Pod must be Running first, so a Pod
+// ExecStep runs a command in a running Pod, named by Pod or picked by Selector
+// (a Deployment's Pods have names nobody can write down: the first one that is
+// Running and not being deleted is used). With OK false it wants the command to
+// fail (a blocked connection, say); the Pod must be Running first, so a Pod
 // that has not started cannot pass for "blocked".
 type ExecStep struct {
 	Pod       string   `json:"pod"`
+	Selector  string   `json:"selector"`
 	Container string   `json:"container"`
 	Args      []string `json:"args"`
 	OK        *bool    `json:"ok"` // default true
@@ -165,8 +168,8 @@ func (c *Compiled) compileSteps() error {
 				return bad("http needs a service and a port")
 			}
 		case s.Exec != nil:
-			if s.Exec.Pod == "" || len(s.Exec.Args) == 0 {
-				return bad("exec needs a pod and args")
+			if (s.Exec.Pod == "") == (s.Exec.Selector == "") || len(s.Exec.Args) == 0 {
+				return bad("exec needs args and either a pod or a selector")
 			}
 		case s.CanI != nil:
 			if s.CanI.As == "" || s.CanI.Verb == "" || s.CanI.Resource == "" {
@@ -501,7 +504,31 @@ func stepHTTP(ctx context.Context, kube Kube, ns string, h HTTPStep) string {
 	return ""
 }
 
+// runningPodOf names a Pod that matches the selector, is Running and is not
+// being deleted: while a Deployment rolls out, the old Pods are still there.
+func runningPodOf(ctx context.Context, kube Kube, ns, selector string) (name, problem string) {
+	out, err := kube.Kubectl(ctx, "get", "pods", "-n", ns, "-l", selector, "-o",
+		`jsonpath={range .items[*]}{.metadata.name}{" "}{.status.phase}{" "}{.metadata.deletionTimestamp}{"\n"}{end}`)
+	if err != nil {
+		return "", fmt.Sprintf("cannot list the Pods with %s: %s", selector, firstLine(out))
+	}
+	for _, line := range strings.Split(out, "\n") {
+		f := strings.Fields(line)
+		if len(f) == 2 && f[1] == "Running" {
+			return f[0], ""
+		}
+	}
+	return "", fmt.Sprintf("No Pod with %s is Running yet.", selector)
+}
+
 func stepExec(ctx context.Context, kube Kube, ns string, e ExecStep) string {
+	if e.Selector != "" {
+		name, problem := runningPodOf(ctx, kube, ns, e.Selector)
+		if problem != "" {
+			return problem
+		}
+		e.Pod = name
+	}
 	phase, err := kube.Kubectl(ctx, "get", "pod", e.Pod, "-n", ns, "-o", "jsonpath={.status.phase}")
 	if err != nil {
 		return fmt.Sprintf("Pod %s: %s", e.Pod, firstLine(phase))
