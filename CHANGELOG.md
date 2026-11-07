@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-07
+
 ### Added
 
 - Ten more offline exercises, one for each of ten topics that had only one or two: `probes2` (a startup probe for a slow application), `services2` (a `targetPort` that nothing listens on), `services3` (a node port outside the allowed range), `volumes2` (a mount of a volume the Pod does not have), `daemonsets2` (the control-plane taint key), `scheduling2` (a spread constraint that selects no Pod of its own Deployment), `networkpolicies2` (two `from` entries are OR, one entry with both selectors is AND), `namespaces2` (a Pod in another namespace than its ConfigMap), `deployments3` (a rolling update with `maxSurge` and `maxUnavailable` both zero) and `rbac3` (a Role for the wrong API group). They check what you wrote, so they need no cluster.
@@ -110,7 +112,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/cleonte/k8slings/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/cleonte/k8slings/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/cleonte/k8slings/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/cleonte/k8slings/compare/v0.2.1...v0.3.0
