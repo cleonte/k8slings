@@ -98,6 +98,12 @@ func recordSeed(name string, uids map[string]string) error {
 	})
 }
 
+// forgetSeed drops the recorded UIDs before an exercise is seeded again: if the
+// seeding then fails or is cancelled, the exercise must not look seeded.
+func forgetSeed(name string) error {
+	return updateProgress(func(p *progressData) { delete(p.Seeds, name) })
+}
+
 // hasSeed reports whether this workspace seeded the exercise (and so knows which
 // objects were the original ones).
 func hasSeed(name string) bool {

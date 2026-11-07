@@ -425,3 +425,21 @@ requires = ["multinode"]
 hint = """
 The scheduling event lists, per node, why it was rejected. kubectl get nodes shows the real names. Fix the value in the rule with kubectl patch or kubectl edit."""
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/"
+
+[[exercises]]
+name = "troubleshooting12"
+path = "exercises/troubleshooting/troubleshooting12"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+A Deployment keeps its earlier revisions: kubectl rollout history lists them, and kubectl rollout undo goes back to the previous one. The new Pods are stuck, so look at what they are trying to pull."""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment"
+
+[[exercises]]
+name = "capstone2"
+path = "exercises/capstone/capstone2"
+topic = "capstone"
+mode = "fix"
+hint = """
+There is more than one fault, and they have nothing to do with each other. Take the part the check complains about, look at its Pods or its events, fix just that, and run it again. The check always names the first thing still wrong."""
+docs = "https://kubernetes.io/docs/tasks/debug/debug-application/"

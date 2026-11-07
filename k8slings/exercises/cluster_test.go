@@ -25,17 +25,27 @@ type fakeKube struct {
 	// fix exercises
 	seeded    bool
 	seedCalls int
-	seedSetup string
+	seedSetup string // the steps given to Seed, joined by "|"
+	seedErr   error  // Seed fails with this, and leaves the cluster unseeded
+	seedBlock bool   // Seed waits until its context is cancelled
 	liveUID   string // what the cluster says the UID of an object is
 	flap      bool   // the pod is Running on odd reads and Pending on even ones
 }
 
-func (f *fakeKube) Seed(_ context.Context, ns, name string, setup []byte) error {
+func (f *fakeKube) Seed(ctx context.Context, ns, name string, steps [][]byte) error {
 	f.calls = append(f.calls, "seed "+ns+" "+name)
 	f.seedCalls++
-	f.seedSetup = string(setup)
-	f.seeded = true
-	return nil
+	var parts []string
+	for _, s := range steps {
+		parts = append(parts, string(s))
+	}
+	f.seedSetup = strings.Join(parts, "|")
+	f.seeded = true // the label is put on first, so it stays when the seeding fails
+	if f.seedBlock {
+		<-ctx.Done()
+		return ctx.Err()
+	}
+	return f.seedErr
 }
 func (f *fakeKube) Seeded(context.Context, string, string) bool { return f.seeded }
 func (f *fakeKube) UID(_ context.Context, _, resource string) (string, error) {

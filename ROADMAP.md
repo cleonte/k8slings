@@ -170,7 +170,9 @@ Branch `phase-4-fix`.
 - [x] Troubleshooting topic, first exercise: `troubleshooting1` (CrashLoopBackOff).
 - [x] `troubleshooting2` to `troubleshooting6`: ImagePullBackOff, broken Service selector, Pending (CPU request), failing readiness probe, RBAC denied.
 - [x] `troubleshooting7` to `troubleshooting11`: quota, NetworkPolicy and DNS, OOMKilled, PVC with a missing StorageClass, node affinity.
-- [ ] More troubleshooting exercises: taints, DNS faults; a multi-fault capstone (the prototype's 19 may live here).
+- [x] Multi-step setups (`setup-2.yaml` ...), for exercises that need history: `troubleshooting12` (bad rollout, `rollout undo`).
+- [x] A multi-fault capstone: `capstone2` (three unrelated faults).
+- [ ] More troubleshooting exercises: taints, DNS faults.
 - [ ] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons

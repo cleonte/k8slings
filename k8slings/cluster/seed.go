@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // ExerciseLabel is put on the namespace of a fix exercise once it has been
@@ -13,22 +14,78 @@ import (
 // (which would wipe the learner's repair).
 const ExerciseLabel = "k8slings.io/exercise"
 
+// SetupRolloutTimeout is how long each step of a multi-step setup, except the
+// last, has to finish rolling out before the setup gives up.
+const SetupRolloutTimeout = 90 * time.Second
+
+type progressKey struct{}
+
+// WithProgress returns a context whose long operations (seeding an exercise
+// that takes several steps) report what they are doing to fn, one line at a time.
+func WithProgress(ctx context.Context, fn func(string)) context.Context {
+	return context.WithValue(ctx, progressKey{}, fn)
+}
+
+// Progress reports a line to whoever asked for it with WithProgress.
+func Progress(ctx context.Context, format string, args ...any) {
+	if fn, ok := ctx.Value(progressKey{}).(func(string)); ok && fn != nil {
+		fn(fmt.Sprintf(format, args...))
+	}
+}
+
 // Seed brings the namespace of a fix exercise to its broken state: it empties
-// the namespace, labels it, and applies the setup manifest.
-func (c *Cluster) Seed(ctx context.Context, ns, name string, setup []byte) error {
+// the namespace, labels it, and applies the setup steps in order. Every step
+// except the last has to roll out completely before the next one is applied, so
+// that the cluster has a history (a working revision 1, then a broken revision 2).
+// The last step is the broken state and is not waited for. A failed or cancelled
+// seed leaves the label and records nothing, which the caller treats as "not seeded".
+func (c *Cluster) Seed(ctx context.Context, ns, name string, steps [][]byte) error {
 	if err := checkOwned(ns); err != nil {
 		return err
 	}
+	if len(steps) == 0 {
+		return fmt.Errorf("%s has no setup", name)
+	}
+	Progress(ctx, "setting up %s", name)
 	if err := c.ResetNamespace(ctx, ns); err != nil {
 		return err
 	}
 	if out, err := c.Kubectl(ctx, "label", "namespace", ns, ExerciseLabel+"="+name, "--overwrite"); err != nil {
 		return fmt.Errorf("cannot label namespace %s: %s", ns, firstLine(out))
 	}
-	if out, err := c.Apply(ctx, ns, setup); err != nil {
-		return fmt.Errorf("cannot seed %s: %s", name, firstLine(out))
+	for i, setup := range steps {
+		if len(steps) > 1 {
+			Progress(ctx, "setting up %s: step %d of %d", name, i+1, len(steps))
+		}
+		out, err := c.KubectlInput(ctx, strings.NewReader(string(setup)), "apply", "-n", ns, "-f", "-", "-o", "name")
+		if err != nil {
+			return fmt.Errorf("cannot seed %s: %s", name, firstLine(out))
+		}
+		if i == len(steps)-1 {
+			break
+		}
+		for _, obj := range strings.Fields(out) {
+			if !rolloutKind(obj) {
+				continue
+			}
+			rout, err := c.Kubectl(ctx, "rollout", "status", obj, "-n", ns, fmt.Sprintf("--timeout=%ds", int(SetupRolloutTimeout/time.Second)))
+			if err != nil {
+				if ctx.Err() != nil {
+					return ctx.Err()
+				}
+				return fmt.Errorf("cannot set up %s: step %d of %d did not finish rolling out (%s): %s. Run `k8slings cluster status`, then try `k8slings reset %s`", name, i+1, len(steps), obj, firstLine(rout), name)
+			}
+		}
 	}
 	return nil
+}
+
+// rolloutKind says whether `kubectl rollout status` understands an object
+// named like "deployment.apps/web".
+func rolloutKind(obj string) bool {
+	kind, _, _ := strings.Cut(obj, "/")
+	kind, _, _ = strings.Cut(kind, ".")
+	return kind == "deployment" || kind == "statefulset" || kind == "daemonset"
 }
 
 // Seeded reports whether the namespace is in the state a seed left it in for

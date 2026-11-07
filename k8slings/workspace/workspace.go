@@ -16,7 +16,7 @@ import (
 var ErrExists = errors.New("already exists")
 
 // Init writes the exercises in src to a new folder dest. It refuses to touch
-// a path that already exists. The check.yaml files stay in the binary.
+// a path that already exists. The check.yaml and setup files stay in the binary.
 func Init(src fs.FS, dest string) error {
 	if _, err := os.Stat(dest); err == nil {
 		return fmt.Errorf("%s %w", dest, ErrExists)
@@ -40,8 +40,8 @@ func write(src fs.FS, dest string) error {
 		if d.IsDir() {
 			return os.MkdirAll(target, 0o755)
 		}
-		// check.yaml and setup.yaml stay in the binary: they would give the answer away.
-		if d.Name() == exercises.CheckFile || d.Name() == exercises.SetupFile {
+		// check.yaml and the setup steps stay in the binary: they would give the answer away.
+		if exercises.EmbeddedOnly(name) {
 			return nil
 		}
 		data, err := fs.ReadFile(src, name)

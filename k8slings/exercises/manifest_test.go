@@ -169,11 +169,19 @@ func TestModesAndImages(t *testing.T) {
 				t.Errorf("%s is a cluster exercise and needs steps in its check.yaml", ex.Name)
 			}
 			broken, _ := fs.ReadFile(k8slings.FS, ex.Source())
-			if ex.Mode == exercises.ModeFix {
-				broken, _ = fs.ReadFile(k8slings.FS, ex.SetupPath())
-			}
 			sol, _ := fs.ReadFile(k8slings.Solutions, ex.SolutionPath())
 			sources := [][]byte{broken, sol}
+			if ex.Mode == exercises.ModeFix {
+				sources = [][]byte{sol}
+				files, err := exercises.SetupFiles(k8slings.FS, ex.Path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, f := range files {
+					step, _ := fs.ReadFile(k8slings.FS, f)
+					sources = append(sources, step)
+				}
+			}
 			if shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.sh")); len(shortcuts) > 0 {
 				for _, f := range shortcuts {
 					data, _ := fs.ReadFile(k8slings.Solutions, f)
@@ -194,7 +202,7 @@ func TestModesAndImages(t *testing.T) {
 // brokenOnPurpose are images a fix exercise may name although they are not
 // preloaded: a typo nothing can pull (the lesson), and an image that only a
 // shortcut tries, which the check refuses before anything is pulled.
-var brokenOnPurpose = map[string]bool{"ngnix:1.27": true, "httpd:2.4": true}
+var brokenOnPurpose = map[string]bool{"ngnix:1.27": true, "httpd:2.4": true, "nginx:1.27.99": true}
 
 var rejectedRe = regexp.MustCompile(`^# rejected: "(.+)"$`)
 
@@ -213,23 +221,29 @@ func testFixExercise(t *testing.T, ex exercises.Exercise) {
 		t.Errorf("a fix exercise has no %s: the learner repairs the cluster", exercises.ExerciseFile)
 	}
 
-	setup, err := fs.ReadFile(k8slings.FS, ex.SetupPath())
+	files, err := exercises.SetupFiles(k8slings.FS, ex.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if namespaceRe.Match(setup) {
-		t.Errorf("%s must not set metadata.namespace: k8slings picks it", ex.SetupPath())
-	}
-	objs, err := exercises.ParseObjects(setup)
-	if err != nil || len(objs) == 0 {
-		t.Fatalf("setup does not parse: %v", err)
-	}
 	validator := schema.New(k8slings.Schemas)
-	for _, o := range objs {
-		if _, err := validator.Validate(o); err != nil {
-			var noSchema schema.ErrNoSchema
-			if errors.As(err, &noSchema) {
-				t.Errorf("no embedded schema for %s: add it to scripts/gen-schemas.sh", noSchema)
+	for _, f := range files {
+		setup, err := fs.ReadFile(k8slings.FS, f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if namespaceRe.Match(setup) {
+			t.Errorf("%s must not set metadata.namespace: k8slings picks it", f)
+		}
+		objs, err := exercises.ParseObjects(setup)
+		if err != nil || len(objs) == 0 {
+			t.Fatalf("%s does not parse, or has no objects: %v", f, err)
+		}
+		for _, o := range objs {
+			if _, err := validator.Validate(o); err != nil {
+				var noSchema schema.ErrNoSchema
+				if errors.As(err, &noSchema) {
+					t.Errorf("no embedded schema for %s: add it to scripts/gen-schemas.sh", noSchema)
+				}
 			}
 		}
 	}
@@ -265,6 +279,22 @@ func testFixExercise(t *testing.T, ex exercises.Exercise) {
 		first, _, _ := strings.Cut(string(data), "\n")
 		if !rejectedRe.MatchString(first) {
 			t.Errorf(`%s must start with: # rejected: "what the check says"`, f)
+		}
+	}
+}
+
+// The setup steps of every fix exercise are setup.yaml, setup-2.yaml ... without
+// a gap and within the limit, and are never given to the learner.
+func TestSetupStepsAreConsecutive(t *testing.T) {
+	for _, ex := range load(t) {
+		if ex.Mode != exercises.ModeFix {
+			if _, err := fs.Stat(k8slings.FS, ex.SetupPath()); err == nil {
+				t.Errorf("%s is not a fix exercise and must not have a setup", ex.Name)
+			}
+			continue
+		}
+		if _, err := exercises.SetupFiles(k8slings.FS, ex.Path); err != nil {
+			t.Errorf("%s: %v", ex.Name, err)
 		}
 	}
 }

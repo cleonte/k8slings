@@ -128,6 +128,9 @@ func schemaCheck(env Env) Check {
 func filesCheck(all []exercises.Exercise, env Env) Check {
 	var missing []string
 	for _, e := range all {
+		if exercises.EmbeddedOnly(e.File()) {
+			continue // lives in the binary, never in the workspace
+		}
 		if !env.FileExists(e.File()) {
 			missing = append(missing, e.File())
 		}

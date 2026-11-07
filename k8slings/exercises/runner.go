@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -27,7 +28,7 @@ type Kube interface {
 	Diagnose(ctx context.Context, ns string) []string
 	// For fix exercises: bring a namespace to its broken state, say whether it
 	// is in it, and tell the identity of an object.
-	Seed(ctx context.Context, ns, name string, setup []byte) error
+	Seed(ctx context.Context, ns, name string, steps [][]byte) error
 	Seeded(ctx context.Context, ns, name string) bool
 	UID(ctx context.Context, ns, resource string) (string, error)
 }
@@ -267,12 +268,25 @@ func (e Exercise) Reseed(ctx context.Context, env *Env) error {
 }
 
 func (e Exercise) seed(ctx context.Context, env *Env, c *check.Compiled) error {
-	setup, err := fs.ReadFile(env.Embedded, e.SetupPath())
+	files, err := SetupFiles(env.Embedded, e.Path)
 	if err != nil {
-		return fmt.Errorf("%s has no %s: %w", e.Name, SetupFile, err)
+		return err
+	}
+	var steps [][]byte
+	for _, f := range files {
+		step, err := fs.ReadFile(env.Embedded, f)
+		if err != nil {
+			return fmt.Errorf("%s has no %s: %w", e.Name, path.Base(f), err)
+		}
+		steps = append(steps, step)
 	}
 	ns := e.Namespace()
-	if err := env.Kube.Seed(ctx, ns, e.Name, setup); err != nil {
+	// Until the seeding has finished, nothing may look seeded: a failed or
+	// cancelled run must be started over, not mistaken for the earlier one.
+	if err := forgetSeed(e.Name); err != nil {
+		return err
+	}
+	if err := env.Kube.Seed(ctx, ns, e.Name, steps); err != nil {
 		return err
 	}
 	// Remember which objects were there, so that deleting one and creating it

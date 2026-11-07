@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -47,6 +48,8 @@ example specific exercise : k8slings run pods1`,
 
 // runExercise checks one exercise and reports the result for the learner.
 func runExercise(ctx context.Context, env *exercises.Env, ex exercises.Exercise) error {
+	// Setting up a fix exercise can take a while: say what is going on.
+	ctx = cluster.WithProgress(ctx, func(line string) { color.White("%s…", line) })
 	result, err := ex.Run(ctx, env)
 	if exercises.IsSkipped(err) {
 		color.Yellow(err.Error())

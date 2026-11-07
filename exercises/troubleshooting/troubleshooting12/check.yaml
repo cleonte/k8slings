@@ -1,0 +1,14 @@
+shipped: "rolling out"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2"
+      message: "Keep two replicas: scaling down is not a repair."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].image in ['nginx:1.27', 'nginx:1.27.99']"
+      message: "Go back to what ran yesterday: a different image is not the old release."
+    now: true
+  - rollout: deployment/web

@@ -1,0 +1,26 @@
+shipped: "Deployment web: 0 of 2 replicas are available"
+steps:
+  - unchanged: deployment/web
+  - unchanged: service/web
+  - unchanged: configmap/settings
+  - unchanged: pod/worker
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2"
+      message: "Keep two replicas of web: scaling down is not a repair."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].image in ['nginx:1.27', 'ngnix:1.27']"
+      message: "web runs nginx 1.27: do not swap it for another image."
+    now: true
+  - assert:
+      resource: pod/worker
+      expr: "object.spec.containers[0].image == 'busybox:1.37'"
+      message: "The worker image is fine: do not change it."
+    now: true
+  - rollout: deployment/web
+  - endpoints: {service: web, min: 2, port: 80}
+  - http: {service: web, port: 80, path: /, body_contains: nginx}
+  - ready: {pod: worker}
+  - logs: {pod: worker, contains: "running in production mode"}

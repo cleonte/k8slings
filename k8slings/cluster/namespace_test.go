@@ -278,7 +278,7 @@ func TestOnlyNamespacesOfK8slingsAreEmptiedOrSeeded(t *testing.T) {
 		if err := c.ResetNamespace(context.Background(), ns); err == nil {
 			t.Errorf("ResetNamespace(%q) must be refused", ns)
 		}
-		if err := c.Seed(context.Background(), ns, "x", []byte("kind: ConfigMap")); err == nil {
+		if err := c.Seed(context.Background(), ns, "x", [][]byte{[]byte("kind: ConfigMap")}); err == nil {
 			t.Errorf("Seed(%q) must be refused", ns)
 		}
 		if n := len(f.calls); n != 0 {

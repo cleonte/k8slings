@@ -5,6 +5,7 @@ package exercises
 import (
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -132,6 +133,54 @@ func (e Exercise) File() string {
 		return filepath.FromSlash(path.Join(e.Path, ReadmeFile))
 	}
 	return filepath.FromSlash(path.Join(e.Path, ExerciseFile))
+}
+
+// EmbeddedOnly says whether a file of an exercise folder stays in the binary and
+// is never written to the learner's workspace: the checks, and the setup steps
+// (setup.yaml, setup-2.yaml, ...), because they would give the cause away. Init,
+// reset and doctor all decide with this one function.
+func EmbeddedOnly(name string) bool {
+	base := path.Base(name)
+	return base == CheckFile || base == SetupFile || setupStepRe.MatchString(base)
+}
+
+var setupStepRe = regexp.MustCompile(`^setup-([0-9]+)\.yaml$`)
+
+// MaxSetupSteps is the most steps a fix exercise's setup can have.
+const MaxSetupSteps = 5
+
+// SetupFiles lists the setup steps of the exercise folder dir in fsys, in order:
+// setup.yaml, then setup-2.yaml, setup-3.yaml and so on without a gap. It
+// reports a gap, a file beyond MaxSetupSteps, or a folder without setup.yaml.
+func SetupFiles(fsys fs.FS, dir string) ([]string, error) {
+	files := []string{path.Join(dir, SetupFile)}
+	if _, err := fs.Stat(fsys, files[0]); err != nil {
+		return nil, fmt.Errorf("%s has no %s", dir, SetupFile)
+	}
+	for n := 2; ; n++ {
+		f := path.Join(dir, fmt.Sprintf("setup-%d.yaml", n))
+		if _, err := fs.Stat(fsys, f); err != nil {
+			break
+		}
+		files = append(files, f)
+	}
+	entries, err := fs.ReadDir(fsys, dir)
+	if err != nil {
+		return nil, err
+	}
+	extra := 0
+	for _, e := range entries {
+		if setupStepRe.MatchString(e.Name()) {
+			extra++
+		}
+	}
+	if extra != len(files)-1 {
+		return nil, fmt.Errorf("%s: the setup steps must be setup.yaml, setup-2.yaml, setup-3.yaml ... without a gap", dir)
+	}
+	if len(files) > MaxSetupSteps {
+		return nil, fmt.Errorf("%s has %d setup steps, the most allowed is %d", dir, len(files), MaxSetupSteps)
+	}
+	return files, nil
 }
 
 // SetupPath is the broken state of a fix exercise, in the embedded tree.

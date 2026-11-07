@@ -80,6 +80,9 @@ func (m *Model) lines() []string {
 	case statusStarting:
 		return []string{"Starting…"}
 	case statusRunning:
+		if line := m.setup.Load(); line != nil {
+			return []string{dimStyle.Render(*line + "…"), dimStyle.Render("q stops it: nothing is kept, and the next run starts over.")}
+		}
 		return []string{dimStyle.Render("Checking " + m.exercise.Name + "…")}
 	case statusAllDone:
 		return []string{
