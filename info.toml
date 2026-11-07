@@ -586,6 +586,15 @@ Two Pods of one Deployment ended up on the same node. Which rule keeps replicas 
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity"
 
 [[exercises]]
+name = "scheduling5"
+path = "exercises/scheduling/scheduling5"
+topic = "scheduling"
+mode = "manifest"
+hint = """
+A Pod names its priority class. Does a class of that name exist, and is its value one that a class may have?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"

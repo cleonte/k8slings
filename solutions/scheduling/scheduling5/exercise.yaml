@@ -1,0 +1,17 @@
+# scheduling5: a PriorityClass above the allowed maximum, and a Pod that names another one.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: high-priority
+value: 1000000
+description: "For Pods that must be scheduled before ordinary ones."
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: payments
+spec:
+  priorityClassName: high-priority
+  containers:
+    - name: payments
+      image: nginx:1.27
