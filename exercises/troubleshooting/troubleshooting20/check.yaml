@@ -13,6 +13,11 @@ steps:
       message: "Do not pin the Pod to a node by name: the scheduler decides, and the taint is what has to be dealt with."
     now: true
   - assert:
+      resource: deployment/ctl
+      expr: "!has(object.spec.template.spec.tolerations) || object.spec.template.spec.tolerations.all(t, has(t.key) && t.key != '')"
+      message: "A toleration without a key tolerates every taint: name the taint the node really has."
+    now: true
+  - assert:
       resources: nodes
       selector: node-role.kubernetes.io/control-plane
       expr: "objects.size() >= 1 && objects.all(n, has(n.spec.taints) && n.spec.taints.exists(t, t.key == 'node-role.kubernetes.io/control-plane' && t.effect == 'NoSchedule'))"
