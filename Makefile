@@ -11,7 +11,7 @@ run:
 smoke:
 	@scripts/smoke.sh
 # Needs Docker, kind and kubectl. The packages run one after the other (-p 1), and
-# K8SLINGS_SHARD=i/n runs every n-th exercise (CI uses five shards; locally, K8SLINGS_SHARD=0/5 make cluster-proofs-test
+# K8SLINGS_SHARD=i/n runs the exercises whose name hashes to i (CI uses five shards; locally, K8SLINGS_SHARD=0/5 make cluster-proofs-test
 # checks a fifth in about ten minutes). Without it everything runs on one cluster: about 45 minutes with twenty
 # fix exercises, so the timeout is 100m (it was 40m, then too short). -count=1 because a cached pass of a test that needs a live cluster proves nothing.
 cluster-test:

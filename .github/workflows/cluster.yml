@@ -43,7 +43,7 @@ env:
 jobs:
   cluster:
     # The proofs take about 30 minutes on one cluster, so they run as five
-    # shards, each with its own cluster and every fifth exercise (K8SLINGS_SHARD,
+    # shards, each with its own cluster and the exercises whose name hashes to it (K8SLINGS_SHARD,
     # see k8slings/exercises/shard_test.go). The safety rules are proven by a
     # sixth job, on a cluster of their own, so no shard carries them.
     name: kind cluster (Kubernetes 1.37), ${{ matrix.shard == 'safety' && 'safety rules' || format('shard {0} of 5', matrix.shard) }}
