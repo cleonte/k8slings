@@ -326,6 +326,15 @@ A Job is done when its Pod's containers are all done. Which kind of container is
 docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
 
 [[exercises]]
+name = "lifecycle3"
+path = "exercises/lifecycle/lifecycle3"
+topic = "lifecycle"
+mode = "cluster"
+hint = """
+Containers of a Pod start one after another but do not wait for each other. What can make the kubelet wait for a helper before it starts the next container?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/#sidecar-containers-and-pod-lifecycle"
+
+[[exercises]]
 name = "resources1"
 path = "exercises/resources/resources1"
 topic = "resources"
