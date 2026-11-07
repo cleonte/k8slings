@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-11-07
+
 ### Changed
 
 - Four exercises of 0.12.0 repeated an earlier lesson and were **replaced**, keeping their names and places: `daemonsets4` (now a node agent with `hostNetwork` and a read-only `hostPath`; the control-plane toleration is `daemonsets2`), `statefulsets5` (now `persistentVolumeClaimRetentionPolicy`; the governing Service is `statefulsets2`), `serviceaccounts3` (now `imagePullSecrets` on a ServiceAccount; the token is `serviceaccounts1`) and `lifecycle4` (now two init containers that must run in order; shared volumes are `pods6`). `k8slings update` brings the new versions into a folder where you have not edited the old ones, and lists the others as newer. If you had already finished one of the old versions, it counts as done.
@@ -192,7 +194,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/cleonte/k8slings/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/cleonte/k8slings/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/cleonte/k8slings/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/cleonte/k8slings/compare/v0.9.0...v0.10.0
