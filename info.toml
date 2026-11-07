@@ -317,6 +317,15 @@ When a Pod is deleted the kubelet starts the clock once, and the pre-stop hook r
 docs = "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/"
 
 [[exercises]]
+name = "lifecycle2"
+path = "exercises/lifecycle/lifecycle2"
+topic = "lifecycle"
+mode = "cluster"
+hint = """
+A Job is done when its Pod's containers are all done. Which kind of container is not counted, and where is it declared?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+
+[[exercises]]
 name = "resources1"
 path = "exercises/resources/resources1"
 topic = "resources"

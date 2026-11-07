@@ -1,6 +1,6 @@
 # CLAUDE.md — k8slings
 
-> **Status: usable and proven; two pieces are still to build or to grow.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), <!-- count:exercises -->81<!-- /count --> exercises in <!-- count:topics -->20<!-- /count --> topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. **Fix mode** (Phase 4) is built, with thirteen troubleshooting exercises and a capstone; more of them, and cluster-scoped setups, are next. Sections marked *(target)* describe what is not built yet: the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
+> **Status: usable and proven; two pieces are still to build or to grow.** Manifest mode, cluster mode (the isolated kind cluster, declarative check steps, the runner, image preload), `watch` (full-screen and `--plain`), `doctor` (offline and cluster), <!-- count:exercises -->82<!-- /count --> exercises in <!-- count:topics -->20<!-- /count --> topics, and the release setup (GoReleaser, version watch) are built and proven in CI, including on a real kind cluster. **Fix mode** (Phase 4) is built, with thirteen troubleshooting exercises and a capstone; more of them, and cluster-scoped setups, are next. Sections marked *(target)* describe what is not built yet: the **add-on registry** (Phase 5). See ROADMAP.md for the plan.
 
 ## What this project is
 
