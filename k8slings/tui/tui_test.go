@@ -266,3 +266,12 @@ func TestEditorFailureIsShown(t *testing.T) {
 	m.Update(editDoneMsg{err: errors.New("exit status 1")})
 	want(t, m, "The editor failed: exit status 1")
 }
+
+func TestTheHeaderSaysWhenThereAreNewExercises(t *testing.T) {
+	m := newModel(t)
+	if strings.Contains(screen(m), "k8slings update") {
+		t.Fatal("no new exercises, nothing to say")
+	}
+	m.cfg.NewExercises = 7
+	want(t, m, "7 new exercises: run k8slings update")
+}

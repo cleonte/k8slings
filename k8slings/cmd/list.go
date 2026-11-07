@@ -26,14 +26,17 @@ func ListCmd(infoFile string) *cobra.Command {
 					topic = ex.Topic
 					color.Cyan("\n%s", topic)
 				}
-				mark := "  "
+				mark, tag := "  ", ""
 				if ex.State() == exercises.Done {
 					mark = color.GreenString("✓ ")
 					done++
+				} else if exercises.IsNew(ex.Name) {
+					tag = " " + color.YellowString("new")
 				}
-				fmt.Printf("  %s%-24s %s\n", mark, ex.Name, ex.Mode)
+				fmt.Printf("  %s%-24s %s%s\n", mark, ex.Name, ex.Mode, tag)
 			}
 			fmt.Printf("\n%d of %d exercises done\n", done, len(all))
+			noticeNewExercises()
 			return nil
 		},
 	}

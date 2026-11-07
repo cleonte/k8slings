@@ -44,6 +44,9 @@ type Config struct {
 	// (the caller takes it from $VISUAL or $EDITOR). Without it the key says how
 	// to set one.
 	Editor string
+	// NewExercises is how many exercises this version has that the folder does
+	// not: the header says so, and that `k8slings update` adds them.
+	NewExercises int
 }
 
 type editDoneMsg struct{ err error }

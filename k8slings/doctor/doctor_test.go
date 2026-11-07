@@ -118,3 +118,27 @@ func TestDoctorNeverMissesSetupFilesInTheWorkspace(t *testing.T) {
 		t.Fatalf("a fresh workspace must pass: %v %s", c.Status, c.Detail)
 	}
 }
+
+func TestDoctorWarnsWhenTheFolderLacksExercisesOfThisVersion(t *testing.T) {
+	infoFile := workspace(t, info)
+	find := func(env Env) *Check {
+		for _, c := range Run(context.Background(), infoFile, env) {
+			if c.Name == "Exercise set" {
+				return &c
+			}
+		}
+		return nil
+	}
+	env := DefaultEnv(schemas, nil)
+	if find(env) != nil {
+		t.Fatal("without a way to know, there is no check")
+	}
+	env.Missing = func() []string { return []string{"x1", "x2"} }
+	if c := find(env); c == nil || c.Status != Warn || !strings.Contains(c.Detail, "k8slings update") || !strings.Contains(c.Detail, "x1, x2") {
+		t.Fatalf("got %+v", c)
+	}
+	env.Missing = func() []string { return nil }
+	if c := find(env); c == nil || c.Status != OK {
+		t.Fatalf("got %+v", c)
+	}
+}

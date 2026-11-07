@@ -41,7 +41,9 @@ example specific exercise : k8slings run pods1`,
 				return err
 			}
 
-			return runExercise(cmd.Context(), env, ex)
+			err = runExercise(cmd.Context(), env, ex)
+			noticeNewExercises()
+			return err
 		},
 	}
 }
