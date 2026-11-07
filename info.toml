@@ -200,6 +200,15 @@ Node ports come from a range the cluster chooses. What is the default range, and
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
 
 [[exercises]]
+name = "services4"
+path = "exercises/services/services4"
+topic = "services"
+mode = "manifest"
+hint = """
+The Pod declares port names. Does the Service use one that is really there, spelled the same?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"

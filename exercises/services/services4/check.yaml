@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Service, name: exporter-metrics}
+    assert:
+      - expr: "object.spec.ports.size() == 1 && object.spec.ports[0].port == 9100"
+        message: "The Service keeps exposing port 9100."
+      - expr: "object.spec.ports.all(p, has(p.targetPort))"
+        message: "Say where the traffic goes on the Pod."
+      - expr: "object.spec.ports.all(p, !has(p.targetPort) || p.targetPort == 'metrics' || p.targetPort == 9100)"
+        message: "The Service sends traffic to a port that the container does not declare under that name."
+      - expr: "objects.exists(d, d.kind == 'Deployment' && d.spec.template.spec.containers.exists(c, has(c.ports) && c.ports.exists(cp, cp.name == 'metrics')))"
+        message: "Keep the port of the container: the Service has to follow it."
