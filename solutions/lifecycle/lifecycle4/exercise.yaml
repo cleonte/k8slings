@@ -1,23 +1,29 @@
-# lifecycle4: an init container that works for nobody.
+# lifecycle4: two init containers that run in the wrong order.
 apiVersion: v1
 kind: Pod
 metadata:
   name: app
 spec:
   volumes:
-    - name: shared
+    - name: work
       emptyDir: {}
   initContainers:
-    - name: prepare
+    - name: fetch
       image: busybox:1.37
-      command: ["sh", "-c", "echo ok > /work/ready"]
+      command: ["sh", "-c", "echo 'hello NAME' > /work/page.tmpl"]
       volumeMounts:
-        - name: shared
+        - name: work
+          mountPath: /work
+    - name: render
+      image: busybox:1.37
+      command: ["sh", "-c", "sed 's/NAME/world/' /work/page.tmpl > /work/page.html"]
+      volumeMounts:
+        - name: work
           mountPath: /work
   containers:
     - name: app
       image: busybox:1.37
-      command: ["sh", "-c", "cat /work/ready && sleep 3600"]
+      command: ["sh", "-c", "cat /work/page.html && sleep 3600"]
       volumeMounts:
-        - name: shared
+        - name: work
           mountPath: /work

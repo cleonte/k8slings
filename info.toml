@@ -376,8 +376,8 @@ path = "exercises/lifecycle/lifecycle4"
 topic = "lifecycle"
 mode = "manifest"
 hint = """
-The init container writes into a volume. Does the app container mount that volume too, at the path where it looks?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/"
+Init containers do not wait for each other in any order you did not write. Which one needs the other's file?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/init-containers/#understanding-init-containers"
 
 [[exercises]]
 name = "resources1"
