@@ -1,0 +1,24 @@
+# I AM NOT DONE
+# daemonsets2: a node agent that runs everywhere except the control plane.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-agent
+spec:
+  selector:
+    matchLabels:
+      app: node-agent
+  template:
+    metadata:
+      labels:
+        app: node-agent
+    spec:
+      tolerations:
+        # TODO: no control-plane node carries this taint any more.
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      containers:
+        - name: agent
+          image: busybox:1.37
+          command: ["sleep", "3600"]

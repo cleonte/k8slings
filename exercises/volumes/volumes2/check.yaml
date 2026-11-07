@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.volumeMounts) && c.volumeMounts.size() > 0)"
+        message: "The container has to mount the volume: that is the point of the Pod."
+      - expr: "object.spec.containers.all(c, !has(c.volumeMounts) || c.volumeMounts.all(m, has(object.spec.volumes) && object.spec.volumes.exists(v, v.name == m.name)))"
+        message: "A container mounts a volume that the Pod does not have."
+      - expr: "has(object.spec.volumes) && object.spec.volumes.exists(v, has(v.persistentVolumeClaim) && v.persistentVolumeClaim.claimName == 'app-data')"
+        message: "The data must live on the PersistentVolumeClaim app-data."
+      - expr: "object.spec.containers.all(c, !has(c.volumeMounts) || c.volumeMounts.all(m, m.mountPath == '/var/lib/app'))"
+        message: "The application reads its data from /var/lib/app."

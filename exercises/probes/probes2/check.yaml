@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: slow}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.livenessProbe))"
+        message: "Keep the liveness probe: a container that hangs still has to be restarted."
+      - expr: "object.spec.containers.all(c, has(c.startupProbe))"
+        message: "Nothing holds the liveness probe back while the application starts."
+      - expr: "object.spec.containers.all(c, !has(c.startupProbe) || (has(c.startupProbe.httpGet) && c.startupProbe.httpGet.port == 80) || (has(c.startupProbe.tcpSocket) && c.startupProbe.tcpSocket.port == 80))"
+        message: "The startup probe has to ask something the application really answers."
+      - expr: "object.spec.containers.all(c, !has(c.startupProbe) || (has(c.startupProbe.periodSeconds) ? c.startupProbe.periodSeconds : 10) * (has(c.startupProbe.failureThreshold) ? c.startupProbe.failureThreshold : 3) >= 45)"
+        message: "The startup probe gives up before the application has started: it is allowed periodSeconds x failureThreshold seconds."

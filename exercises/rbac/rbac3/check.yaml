@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: Role, name: deploy-reader}
+    assert:
+      - expr: "has(object.rules) && object.rules.exists(r, 'apps' in r.apiGroups && 'deployments' in r.resources && 'get' in r.verbs && 'list' in r.verbs)"
+        message: "The Role does not allow reading Deployments."
+      - expr: "has(object.rules) && object.rules.all(r, !('*' in r.verbs) && !('*' in r.resources) && !('*' in r.apiGroups))"
+        message: "No wildcards: the account reads Deployments and nothing else."
+      - expr: "has(object.rules) && object.rules.all(r, !('create' in r.verbs) && !('update' in r.verbs) && !('patch' in r.verbs) && !('delete' in r.verbs))"
+        message: "The account only reads."
+  - select: {kind: RoleBinding}
+    assert:
+      - expr: "object.roleRef.name == 'deploy-reader' && object.subjects.exists(s, s.kind == 'ServiceAccount' && s.name == 'ci')"
+        message: "Keep the binding of the Role to the ServiceAccount ci."

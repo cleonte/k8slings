@@ -1,0 +1,28 @@
+# volumes2: a container that mounts a volume the Pod does not have.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      volumeMounts:
+        - name: storage
+          mountPath: /var/lib/app
+  volumes:
+    - name: storage
+      persistentVolumeClaim:
+        claimName: app-data

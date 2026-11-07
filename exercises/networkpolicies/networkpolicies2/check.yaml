@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: NetworkPolicy, name: db-ingress}
+    assert:
+      - expr: "object.spec.podSelector.matchLabels.app == 'db' && has(object.spec.policyTypes) && 'Ingress' in object.spec.policyTypes"
+        message: "Keep the policy about the database Pods and their ingress."
+      - expr: "has(object.spec.ingress) && object.spec.ingress.size() > 0 && object.spec.ingress.all(r, has(r.from) && r.from.size() > 0)"
+        message: "A rule without a source lets everybody in."
+      - expr: "has(object.spec.ingress) && object.spec.ingress.all(r, has(r.from) && r.from.all(f, has(f.namespaceSelector) && has(f.podSelector)))"
+        message: "Some source is wider than 'the api Pods of the backend namespace': it names only a namespace, or only a Pod label."
+      - expr: "has(object.spec.ingress) && object.spec.ingress.all(r, has(r.from) && r.from.all(f, has(f.podSelector) && has(f.podSelector.matchLabels) && f.podSelector.matchLabels.role == 'api' && has(f.namespaceSelector) && has(f.namespaceSelector.matchLabels) && f.namespaceSelector.matchLabels['kubernetes.io/metadata.name'] == 'backend'))"
+        message: "The source has to be the api Pods of the backend namespace."
+      - expr: "has(object.spec.ingress) && object.spec.ingress.all(r, has(r.ports) && r.ports.all(p, p.port == 5432))"
+        message: "Only the database port is to be reachable."

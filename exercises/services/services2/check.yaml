@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Service, name: api}
+    assert:
+      - expr: "object.spec.ports.size() == 1 && object.spec.ports[0].port == 80"
+        message: "Clients keep using port 80 on the Service."
+      - expr: "object.spec.ports.all(p, has(p.targetPort))"
+        message: "Say where the traffic goes on the Pod: without a targetPort it goes to the same number as port."
+      - expr: "object.spec.ports.all(p, !has(p.targetPort) || p.targetPort == 'http' || p.targetPort == 8080)"
+        message: "The Service sends traffic to a port that no container of the Pods listens on."
+      - expr: "objects.exists(d, d.kind == 'Deployment' && object.spec.selector.all(k, d.spec.template.metadata.labels[k] == object.spec.selector[k]))"
+        message: "The Service selector must keep matching the Pods of the Deployment."

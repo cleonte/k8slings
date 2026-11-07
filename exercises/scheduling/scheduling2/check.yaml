@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "object.spec.replicas == 3"
+        message: "The Deployment runs three replicas."
+      - expr: "has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.size() > 0"
+        message: "Keep the spread constraint: it is what spreads the replicas."
+      - expr: "has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.all(c, c.topologyKey == 'kubernetes.io/hostname')"
+        message: "The replicas are to be spread over nodes."
+      - expr: "has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.all(c, has(c.labelSelector) && has(c.labelSelector.matchLabels) && c.labelSelector.matchLabels.size() > 0 && c.labelSelector.matchLabels.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == c.labelSelector.matchLabels[k]))"
+        message: "The constraint counts Pods that are not the Pods of this Deployment: its labelSelector must select them."

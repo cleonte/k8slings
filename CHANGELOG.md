@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Ten more offline exercises, one for each of ten topics that had only one or two: `probes2` (a startup probe for a slow application), `services2` (a `targetPort` that nothing listens on), `services3` (a node port outside the allowed range), `volumes2` (a mount of a volume the Pod does not have), `daemonsets2` (the control-plane taint key), `scheduling2` (a spread constraint that selects no Pod of its own Deployment), `networkpolicies2` (two `from` entries are OR, one entry with both selectors is AND), `namespaces2` (a Pod in another namespace than its ConfigMap), `deployments3` (a rolling update with `maxSurge` and `maxUnavailable` both zero) and `rbac3` (a Role for the wrong API group). They check what you wrote, so they need no cluster.
+
 ## [0.5.0] - 2026-11-07
 
 ### Added

@@ -1,0 +1,26 @@
+# rbac3: a Role that grants reading Deployments in the wrong API group.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ci
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: deploy-reader
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ci-deploy-reader
+subjects:
+  - kind: ServiceAccount
+    name: ci
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: deploy-reader

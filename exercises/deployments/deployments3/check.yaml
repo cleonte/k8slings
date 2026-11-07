@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Deployment, name: shop}
+    assert:
+      - expr: "has(object.spec.strategy) && has(object.spec.strategy.type) && object.spec.strategy.type == 'RollingUpdate'"
+        message: "The Deployment has to keep rolling out Pod by Pod."
+      - expr: "has(object.spec.strategy) && has(object.spec.strategy.rollingUpdate) && has(object.spec.strategy.rollingUpdate.maxUnavailable) && string(object.spec.strategy.rollingUpdate.maxUnavailable) in ['0', '0%']"
+        message: "Capacity must never drop: say it, because the default would let some Pods go."
+      - expr: "has(object.spec.strategy) && has(object.spec.strategy.rollingUpdate) && (!has(object.spec.strategy.rollingUpdate.maxSurge) || !(string(object.spec.strategy.rollingUpdate.maxSurge) in ['0', '0%']))"
+        message: "The rollout may not start an extra Pod, and may not remove one: it can never make progress."
+      - expr: "object.spec.replicas == 3"
+        message: "The Deployment keeps three replicas."

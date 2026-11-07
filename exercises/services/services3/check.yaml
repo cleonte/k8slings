@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Service, name: site}
+    assert:
+      - expr: "has(object.spec.type) && object.spec.type == 'NodePort'"
+        message: "The Service has to stay a NodePort: it is meant to be reachable on the nodes."
+      - expr: "object.spec.ports.size() == 1 && object.spec.ports[0].port == 80"
+        message: "The Service keeps exposing port 80."
+      - expr: "object.spec.ports.all(p, !has(p.nodePort) || (p.nodePort >= 30000 && p.nodePort <= 32767))"
+        message: "A node port has to lie in the range the cluster allows for them."
+      - expr: "object.spec.selector.app == 'site'"
+        message: "Keep the selector: it says which Pods the Service is for."

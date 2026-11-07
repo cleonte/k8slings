@@ -1,0 +1,30 @@
+# namespaces2: a Pod in the wrong namespace, next to a ConfigMap it cannot use.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-a
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: settings
+  namespace: team-a
+data:
+  mode: production
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  namespace: team-a
+spec:
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sleep", "3600"]
+      env:
+        - name: MODE
+          valueFrom:
+            configMapKeyRef:
+              name: settings
+              key: mode

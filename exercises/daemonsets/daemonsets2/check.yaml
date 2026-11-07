@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: DaemonSet, name: node-agent}
+    assert:
+      - expr: "has(object.spec.template.spec.tolerations) && object.spec.template.spec.tolerations.exists(t, (!has(t.key) && has(t.operator) && t.operator == 'Exists') || (has(t.key) && t.key == 'node-role.kubernetes.io/control-plane' && (!has(t.effect) || t.effect == 'NoSchedule') && ((has(t.operator) && t.operator == 'Exists') || ((!has(t.operator) || t.operator == 'Equal') && (!has(t.value) || t.value == '')))))"
+        message: "The Pods do not tolerate the taint of the control-plane nodes."
+      - expr: "!has(object.spec.template.spec.nodeSelector)"
+        message: "Do not narrow the agent down to some nodes: it runs on all of them."
