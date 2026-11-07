@@ -35,7 +35,7 @@ the info.toml that k8slings needs. Use it after installing k8slings.`,
 				return err
 			}
 			color.Green("Created %s with all the exercises.", dest)
-			color.White("\nNext steps:\n  cd %s\n  k8slings run next\n", dest)
+			color.White("\nNext steps:\n  cd %s\n  k8slings watch\n", dest)
 			return nil
 		},
 	}
