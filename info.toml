@@ -597,8 +597,8 @@ path = "exercises/daemonsets/daemonsets4"
 topic = "daemonsets"
 mode = "manifest"
 hint = """
-The control-plane node has a taint. What does a Pod need to be allowed on a tainted node, and how narrow can you make it?"""
-docs = "https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/#how-daemon-pods-are-scheduled"
+Two features of the node are used, and each has a safety setting that goes with it. Which one resolves cluster names, and which one stops the agent from writing?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/#pod-s-dns-policy"
 
 [[exercises]]
 name = "scheduling1"

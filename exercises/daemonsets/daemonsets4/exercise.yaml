@@ -1,20 +1,29 @@
 # I AM NOT DONE
-# daemonsets4: an agent that skips the control plane.
+# daemonsets4: a node agent that uses the node itself.
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: collector
+  name: log-agent
 spec:
   selector:
     matchLabels:
-      app: collector
+      app: log-agent
   template:
     metadata:
       labels:
-        app: collector
+        app: log-agent
     spec:
-      # TODO: nothing lets this Pod onto the control-plane node.
+      hostNetwork: true
+      # TODO: on the host network, how does this Pod resolve cluster names?
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
       containers:
-        - name: collector
+        - name: agent
           image: busybox:1.37
           command: ["sh", "-c", "sleep 3600"]
+          volumeMounts:
+            - name: varlog
+              mountPath: /host/var/log
+              # TODO: the agent only reads the logs.

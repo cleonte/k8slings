@@ -1,22 +1,28 @@
-# daemonsets4: an agent that skips the control plane.
+# daemonsets4: a node agent that uses the node itself.
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: collector
+  name: log-agent
 spec:
   selector:
     matchLabels:
-      app: collector
+      app: log-agent
   template:
     metadata:
       labels:
-        app: collector
+        app: log-agent
     spec:
-      tolerations:
-        - key: node-role.kubernetes.io/control-plane
-          operator: Exists
-          effect: NoSchedule
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      volumes:
+        - name: varlog
+          hostPath:
+            path: /var/log
       containers:
-        - name: collector
+        - name: agent
           image: busybox:1.37
           command: ["sh", "-c", "sleep 3600"]
+          volumeMounts:
+            - name: varlog
+              mountPath: /host/var/log
+              readOnly: true
