@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- When an exercise is not solved, the path to edit now ends with the line of its `# TODO:` comment (`exercises/pods/pods1/exercise.yaml:8`), in `run`, `verify` and the full-screen view. Terminals of editors such as VS Code turn it into a link that opens the file at that line.
 - `k8slings init` now suggests `k8slings watch` as the next step, as the README does, instead of `run next`.
 
 ## [0.7.0] - 2026-11-07

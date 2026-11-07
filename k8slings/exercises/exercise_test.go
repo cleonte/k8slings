@@ -66,3 +66,33 @@ func TestParseObjectsCRLF(t *testing.T) {
 }
 
 func writeFile(name, content string) error { return os.WriteFile(name, []byte(content), 0o644) }
+
+func TestLocationPointsAtTheTodoSoThatATerminalCanLinkToIt(t *testing.T) {
+	t.Chdir(t.TempDir())
+	ex := Exercise{Name: "pods1", Path: "exercises/pods/pods1", Mode: ModeManifest}
+	file := ex.File()
+	if got := ex.Location(); got != file {
+		t.Fatalf("without a file: %q, want %q", got, file)
+	}
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	write := func(s string) {
+		if err := os.WriteFile(file, []byte(s), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("# I AM NOT DONE\nkind: Pod\nspec:\n  # TODO: fix the field\n  contianers: []\n")
+	if got, want := ex.Location(), file+":4"; got != want {
+		t.Fatalf("got %q, want %q", got, want)
+	}
+	write("# I AM NOT DONE\nkind: Pod\n")
+	if got := ex.Location(); got != file {
+		t.Fatalf("without a TODO: %q, want %q", got, file)
+	}
+	// A fix exercise has only its ticket, with no fix site in it.
+	fix := Exercise{Name: "troubleshooting1", Path: "exercises/troubleshooting/troubleshooting1", Mode: ModeFix}
+	if got := fix.Location(); got != fix.File() {
+		t.Fatalf("fix: %q, want %q", got, fix.File())
+	}
+}

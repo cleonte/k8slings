@@ -154,7 +154,7 @@ func (m *Model) resultLines() []string {
 		if m.exercise.Mode == exercises.ModeFix {
 			return append(lines, "", dimStyle.Render("Repair it with k8slings kubectl -n "+m.exercise.Namespace()+" ...; this view looks again every couple of seconds. Press h for a hint."))
 		}
-		return append(lines, "", dimStyle.Render("Edit "+m.exercise.File()+" and save. Press h for a hint."))
+		return append(lines, "", dimStyle.Render("Edit "+m.exercise.Location()+" and save. Press h for a hint."))
 
 	case m.runErr != nil:
 		return []string{errStyle.Render(m.runErr.Error())}
