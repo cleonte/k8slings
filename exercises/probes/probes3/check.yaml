@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Pod, name: api}
+    assert:
+      - expr: "object.spec.containers.all(c, has(c.readinessProbe) && has(c.readinessProbe.httpGet) && c.readinessProbe.httpGet.path == '/ready-db')"
+        message: "The check of the database has to say whether the Pod can take traffic."
+      - expr: "object.spec.containers.all(c, has(c.livenessProbe))"
+        message: "Keep a liveness probe: a process that hangs still has to be restarted."
+      - expr: "object.spec.containers.all(c, !has(c.livenessProbe) || !has(c.livenessProbe.httpGet) || c.livenessProbe.httpGet.path != '/ready-db')"
+        message: "A restart does not bring the database back: the liveness probe must not depend on it."

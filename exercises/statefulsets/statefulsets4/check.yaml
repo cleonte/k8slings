@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: StatefulSet, name: db}
+    assert:
+      - expr: "object.spec.replicas == 3"
+        message: "The StatefulSet keeps three replicas."
+      - expr: "has(object.spec.updateStrategy) && has(object.spec.updateStrategy.type) && object.spec.updateStrategy.type == 'RollingUpdate'"
+        message: "Keep the rolling update: OnDelete is not a canary."
+      - expr: "has(object.spec.updateStrategy) && has(object.spec.updateStrategy.rollingUpdate) && has(object.spec.updateStrategy.rollingUpdate.partition) && object.spec.updateStrategy.rollingUpdate.partition == 2"
+        message: "The update still reaches more than the last Pod."

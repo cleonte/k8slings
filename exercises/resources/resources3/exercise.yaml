@@ -1,0 +1,18 @@
+# I AM NOT DONE
+# resources3: a Burstable Pod that must be Guaranteed.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: payments
+spec:
+  containers:
+    - name: app
+      image: nginx:1.27
+      resources:
+        requests:
+          cpu: 250m
+          # TODO: a request below the limit is Burstable.
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 256Mi

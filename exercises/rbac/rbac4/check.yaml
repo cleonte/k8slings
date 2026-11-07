@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: RoleBinding, name: deployer-pod-lister}
+    assert:
+      - expr: "object.subjects.size() == 1 && object.subjects[0].kind == 'ServiceAccount' && object.subjects[0].name == 'deployer'"
+        message: "The binding is for the ServiceAccount deployer, and for nobody else."
+      - expr: "object.subjects.all(s, s.kind != 'ServiceAccount' || (has(s.namespace) && s.namespace != ''))"
+        message: "A ServiceAccount subject has to say which namespace the account is in."
+      - expr: "object.subjects.all(s, s.kind != 'ServiceAccount' || !has(s.namespace) || objects.exists(a, a.kind == 'ServiceAccount' && a.metadata.name == s.name && a.metadata.namespace == s.namespace))"
+        message: "There is no such ServiceAccount in that namespace."
+      - expr: "object.roleRef.kind == 'Role' && object.roleRef.name == 'pod-lister'"
+        message: "Keep the binding to the Role pod-lister: it is not a ClusterRole."
