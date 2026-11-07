@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"path/filepath"
 	"slices"
 	"sync/atomic"
 	"time"
@@ -39,7 +40,13 @@ type Config struct {
 	// Solutions holds the solutions shown on request, laid out like
 	// solutions/. Without it the solution key says it is not available.
 	Solutions fs.FS
+	// Editor is the command the e key opens the exercise with, e.g. "code -w"
+	// (the caller takes it from $VISUAL or $EDITOR). Without it the key says how
+	// to set one.
+	Editor string
 }
+
+type editDoneMsg struct{ err error }
 
 type status int
 
@@ -201,6 +208,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, m.startRun()
 
+	case editDoneMsg:
+		if msg.err != nil {
+			m.notice = "The editor failed: " + msg.err.Error()
+		}
+
 	case reseedDoneMsg:
 		if msg.err != nil {
 			m.notice = "Reset failed: " + msg.err.Error()
@@ -265,6 +277,8 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.askToShowSolution()
 	case "r":
 		m.askToReset()
+	case "e":
+		return m, m.edit()
 	case "n":
 		return m, m.next()
 	case "c":
@@ -283,6 +297,26 @@ func (m *Model) handleKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 		m.scroll = max(m.scroll-m.available(), 0)
 	}
 	return m, nil
+}
+
+// edit opens the file of the exercise in the editor of the learner (the ticket,
+// for a fix exercise, which has no file to edit) and waits for it, with the
+// screen handed over to it. Saving there runs the exercise again, like any
+// other save.
+func (m *Model) edit() tea.Cmd {
+	if !m.hasExercise() {
+		return nil
+	}
+	file := m.exercise.File()
+	if m.cfg.Root != "" && !filepath.IsAbs(file) {
+		file = filepath.Join(m.cfg.Root, file)
+	}
+	cmd := cluster.EditorCommand(m.cfg.Editor, file)
+	if cmd == nil {
+		m.notice = "Set $VISUAL or $EDITOR to open exercises with e, e.g. EDITOR=vim k8slings watch."
+		return nil
+	}
+	return tea.ExecProcess(cmd, func(err error) tea.Msg { return editDoneMsg{err: err} })
 }
 
 // hasExercise reports whether there is a current exercise to act on.

@@ -53,3 +53,16 @@ func output(ctx context.Context, r Runner, env []string, name string, args ...st
 	err := r.Run(ctx, Cmd{Name: name, Args: args, Env: env, Stdout: &buf, Stderr: &buf})
 	return strings.TrimSpace(buf.String()), err
 }
+
+// EditorCommand is the command that opens file in the editor the learner has
+// set up (such as "code -w", split into words). It is here because this is the
+// only file that may import os/exec; it has nothing to do with a cluster, and
+// the full-screen view runs it with the terminal handed over. It returns nil
+// when no editor is set.
+func EditorCommand(editor, file string) *exec.Cmd {
+	fields := strings.Fields(editor)
+	if len(fields) == 0 {
+		return nil
+	}
+	return exec.Command(fields[0], append(fields[1:], file)...)
+}

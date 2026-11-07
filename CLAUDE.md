@@ -54,7 +54,7 @@ Same set as golings, plus the cluster commands:
 | `cluster up\|down\|status` | Manage the one kind cluster (see "Cluster handling"). `up --single` for one node. (`cluster addon install\|list` arrives with the add-ons, Phase 5.) |
 | `kubectl ...` | Pass-through to kubectl with the k8slings kubeconfig and context forced. The only kubectl a learner needs in the cluster exercises, and in fix mode. |
 
-Keys in the TUI are the golings keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `n` next, `l` list, `c` check all, `f` full output, `q` quit. Check-all runs offline exercises everywhere and cluster/fix exercises only if the cluster is up; the rest are listed as skipped with the reason.
+Keys in the TUI are the golings keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `e` edit (opens the exercise file, or the ticket of a fix exercise, in `$VISUAL` or `$EDITOR`, and waits; the key is only shown when an editor is set; the command is built in `cluster/exec.go` because that is the only file that may import `os/exec`), `n` next, `l` list, `c` check all, `f` full output, `q` quit. Check-all runs offline exercises everywhere and cluster/fix exercises only if the cluster is up; the rest are listed as skipped with the reason.
 
 ### Manifest: `info.toml`
 

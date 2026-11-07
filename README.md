@@ -66,7 +66,7 @@ The cluster is k8slings's own: it has its own kubeconfig, so your `~/.kube/confi
 | `k8slings kubectl ...` | kubectl against the k8slings cluster only. |
 | `k8slings doctor` | Check the workspace, Docker, kind, kubectl and the cluster. |
 
-In `watch`: `h` hint, `s` solution, `r` reset, `n` next, `l` list, `c` check all, `q` quit.
+In `watch`: `h` hint, `s` solution, `r` reset, `e` open the exercise in your editor (`$VISUAL` or `$EDITOR`; for a fix exercise it opens the ticket), `n` next, `l` list, `c` check all, `q` quit.
 
 ![k8slings run](misc/demo.gif)
 
