@@ -218,6 +218,15 @@ What happens to the files that were in a directory when something is mounted on 
 docs = "https://kubernetes.io/docs/concepts/storage/volumes/#using-subpath"
 
 [[exercises]]
+name = "config5"
+path = "exercises/config/config5"
+topic = "config"
+mode = "manifest"
+hint = """
+Everything under data is stored as base64, and the API server decodes it. Which other field takes plain text for you?"""
+docs = "https://kubernetes.io/docs/concepts/configuration/secret/#restriction-names-data"
+
+[[exercises]]
 name = "probes1"
 path = "exercises/probes/probes1"
 topic = "probes"
