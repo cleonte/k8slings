@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: Pod, name: trainer}
+    assert:
+      - expr: "has(object.spec.tolerations) && object.spec.tolerations.size() > 0"
+        message: "The Pod has no toleration: it cannot run on the tainted nodes."
+      - expr: "has(object.spec.tolerations) && object.spec.tolerations.all(t, has(t.key) && t.key != '')"
+        message: "A toleration without a key tolerates every taint: that is far too much for this Pod."
+      - expr: "has(object.spec.tolerations) && object.spec.tolerations.exists(t, has(t.key) && t.key == 'dedicated')"
+        message: "No toleration is for the key of the taint."
+      - expr: "has(object.spec.tolerations) && object.spec.tolerations.exists(t, has(t.key) && t.key == 'dedicated' && ((has(t.operator) && t.operator == 'Exists') || ((!has(t.operator) || t.operator == 'Equal') && has(t.value) && t.value == 'gpu')))"
+        message: "The toleration does not match the value of the taint."
+      - expr: "has(object.spec.tolerations) && object.spec.tolerations.exists(t, has(t.key) && t.key == 'dedicated' && ((has(t.operator) && t.operator == 'Exists') || ((!has(t.operator) || t.operator == 'Equal') && has(t.value) && t.value == 'gpu')) && (!has(t.effect) || t.effect == 'NoSchedule'))"
+        message: "The toleration does not match the effect of the taint."

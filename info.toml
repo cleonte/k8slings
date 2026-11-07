@@ -567,6 +567,15 @@ A spread constraint counts the Pods that its labelSelector selects. Which Pods a
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/"
 
 [[exercises]]
+name = "scheduling3"
+path = "exercises/scheduling/scheduling3"
+topic = "scheduling"
+mode = "manifest"
+hint = """
+A toleration has to match the taint on every part: key, value (with Equal) and effect. Read the taint in the README again, letter by letter."""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
