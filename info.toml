@@ -869,6 +869,15 @@ An environment variable is read once, when the container starts. What makes a De
 docs = "https://kubernetes.io/docs/concepts/configuration/configmap/#configmaps-and-pods"
 
 [[exercises]]
+name = "troubleshooting15"
+path = "exercises/troubleshooting/troubleshooting15"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+A delete is a request: an object with a finalizer waits for whoever owns the finalizer to finish. Who owns this one, and what does 'nobody' do to the wait?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/finalizers/"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"

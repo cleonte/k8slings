@@ -1,0 +1,12 @@
+shipped: "ConfigMap legacy is still there"
+steps:
+  - unchanged: configmap/current
+  - assert:
+      resource: configmap/current
+      expr: "has(object.metadata.finalizers) && 'example.com/cleanup' in object.metadata.finalizers && !has(object.metadata.deletionTimestamp)"
+      message: "The ConfigMap current has to stay as it is, with its finalizer: only legacy is to go."
+    now: true
+  - assert:
+      resources: configmaps
+      expr: "!objects.exists(c, c.metadata.name == 'legacy')"
+      message: "ConfigMap legacy is still there."

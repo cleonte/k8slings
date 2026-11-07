@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: legacy
+  finalizers:
+    - example.com/cleanup
+data:
+  note: the old settings
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: current
+  finalizers:
+    - example.com/cleanup
+data:
+  note: the settings in use
