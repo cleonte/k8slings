@@ -845,7 +845,7 @@ path = "exercises/networkpolicies/networkpolicies5"
 topic = "networkpolicies"
 mode = "manifest"
 hint = """
-Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port and protocol?"""
+Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port, and with which protocols?"""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-and-endport-filtering"
 
 [[exercises]]
