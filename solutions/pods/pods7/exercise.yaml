@@ -1,0 +1,10 @@
+# pods7: an unpinned image with a pull policy that keeps whatever a node has.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+spec:
+  containers:
+    - name: nginx
+      image: nginx:1.27
+      imagePullPolicy: IfNotPresent
