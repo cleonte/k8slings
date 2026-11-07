@@ -391,6 +391,15 @@ Two mounts on one path do not work. Is there a volume type that merges several s
 docs = "https://kubernetes.io/docs/concepts/storage/projected-volumes/"
 
 [[exercises]]
+name = "volumes4"
+path = "exercises/volumes/volumes4"
+topic = "volumes"
+mode = "cluster"
+hint = """
+Read the events of the claim: the provisioner says what it supports. Which access modes can a volume on one node's disk offer?"""
+docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#access-modes"
+
+[[exercises]]
 name = "statefulsets1"
 path = "exercises/statefulsets/statefulsets1"
 topic = "statefulsets"
