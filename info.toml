@@ -227,6 +227,15 @@ Everything under data is stored as base64, and the API server decodes it. Which 
 docs = "https://kubernetes.io/docs/concepts/configuration/secret/#restriction-names-data"
 
 [[exercises]]
+name = "config6"
+path = "exercises/config/config6"
+topic = "config"
+mode = "manifest"
+hint = """
+A Secret of type kubernetes.io/tls has two required keys with fixed names. What does an Ingress or a Pod look for?"""
+docs = "https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets"
+
+[[exercises]]
 name = "probes1"
 path = "exercises/probes/probes1"
 topic = "probes"

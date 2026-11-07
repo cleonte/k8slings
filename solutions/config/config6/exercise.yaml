@@ -1,0 +1,15 @@
+# config6: a TLS Secret whose keys are not the ones TLS Secrets use.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: site-tls
+type: kubernetes.io/tls
+stringData:
+  tls.crt: |
+    -----BEGIN CERTIFICATE-----
+    placeholder, not a real certificate
+    -----END CERTIFICATE-----
+  tls.key: |
+    -----BEGIN PRIVATE KEY-----
+    placeholder, not a real key
+    -----END PRIVATE KEY-----
