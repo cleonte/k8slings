@@ -49,12 +49,17 @@ Same set as golings, plus the cluster commands:
 | `list` | Exercises with state, grouped by topic, with progress. |
 | `verify` | Run every exercise in order and stop at the first that is not done (CI for learners). |
 | `reset <name>` | Restore one exercise from the embedded copy. (Fix mode, when it exists, also re-seeds the cluster setup.) |
+| `update [--dry-run]` | Add the exercises that this binary has and the workspace does not (see "Updating a workspace"). |
 | `solution <name>` | Hidden while the exercise is pending; `--reveal` to look anyway. |
 | `doctor` | Check the environment (see "Doctor"). |
 | `cluster up\|down\|status` | Manage the one kind cluster (see "Cluster handling"). `up --single` for one node. (`cluster addon install\|list` arrives with the add-ons, Phase 5.) |
 | `kubectl ...` | Pass-through to kubectl with the k8slings kubeconfig and context forced. The only kubectl a learner needs in the cluster exercises, and in fix mode. |
 
 Keys in the TUI are the golings keys: `h` hint, `s` solution (asks first), `r` reset (asks first), `e` edit (opens the exercise file, or the ticket of a fix exercise, in `$VISUAL` or `$EDITOR`, and waits; the key is only shown when an editor is set; the command is built in `cluster/exec.go` because that is the only file that may import `os/exec`), `n` next, `l` list, `c` check all, `f` full output, `q` quit. Check-all runs offline exercises everywhere and cluster/fix exercises only if the cluster is up; the rest are listed as skipped with the reason.
+
+### Updating a workspace
+
+`init` copies the exercises once, and every command reads the workspace's own `info.toml`, so a newer binary's new exercises are invisible until `update` adds them. `workspace.Update` compares the embedded `info.toml` with the workspace's **as text** (it splits on `[[exercises]]`, so nothing else in the file is rewritten) and inserts the missing entries each after the one that precedes it in the binary's order; it writes the files of the new exercises (never the embedded-only ones, never over an existing file), keeps `info.toml.bak`, and records them as `new` in `.k8slings.json` (`list` shows the tag). READMEs are replaced by the newer text. An existing exercise file is replaced only when it is certainly untouched: `.k8slings.json` keeps, per exercise, the SHA-256 of the file as k8slings last wrote it (`init`, `update`, `reset`); a file that still has that hash and has a newer version in the binary is replaced, one that does not is only listed. A workspace made before the hashes existed has none, so for it `update` adds and lists nothing. Exercises that a workspace has and the binary no longer knows stay. `run`, `list`, `watch` (the header of the full-screen view) and `doctor` say when the workspace is behind; nothing changes the workspace by itself.
 
 ### Manifest: `info.toml`
 

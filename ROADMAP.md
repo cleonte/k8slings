@@ -192,6 +192,7 @@ Branch per add-on.
 - [x] GoReleaser v2 config (linux, windows, darwin; amd64, arm64), release workflow on `v*` tags using the CHANGELOG section as release notes, `scripts/release-notes.sh`. Verified with a local snapshot build: all six targets, the archives, and the stamped version.
 - [x] README with install, requirements, quick start for offline-only and for cluster, the modes explained, demo GIFs; CONTRIBUTING finalized (releasing); issue templates in place.
 - [ ] Homebrew tap (optional; decide at the time).
+- [x] `k8slings update`: bring new exercises of a newer release into an existing folder.
 - [ ] Docs consistency test green; every exercise proven in CI; v1.0.0 tag.
 
 ## Decided

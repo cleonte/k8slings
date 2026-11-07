@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `k8slings update` adds the exercises of a newer version of k8slings to an exercises folder that an older version made. Before, new exercises never reached an existing folder, because `init` copies them once. The new ones go where they belong in the order of the course (`list` marks them `new`), `info.toml` is kept as `info.toml.bak`, your work is never overwritten, READMEs and exercise files you have not changed are replaced by their newer versions, and `--dry-run` shows what would happen. `run`, `list`, `watch` and `doctor` tell you when your folder is behind. For a folder made by an older version (before this one) it can add exercises, but not tell which files you changed, so it leaves them alone.
+
 ## [0.10.0] - 2026-11-07
 
 ### Added

@@ -62,6 +62,7 @@ The cluster is k8slings's own: it has its own kubeconfig, so your `~/.kube/confi
 | `k8slings verify` | Check every exercise in order. |
 | `k8slings solution <name>` | Show the solution (hidden until you solve it; `--reveal` to look anyway). |
 | `k8slings reset <name>` | Restore an exercise to its original, broken state. |
+| `k8slings update` | Add the exercises of a newer version of k8slings to your folder, without touching your work. `--dry-run` to look first. |
 | `k8slings cluster up` / `down` / `status` | Create, inspect and delete the local kind cluster. |
 | `k8slings kubectl ...` | kubectl against the k8slings cluster only. |
 | `k8slings doctor` | Check the workspace, Docker, kind, kubectl and the cluster. |
@@ -73,6 +74,17 @@ In `watch`: `h` hint, `s` solution, `r` reset, `e` open the exercise in your edi
 Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to edit. Look for the `# TODO:` comment.
 
 When an exercise is not solved, the path to edit is printed with the line of the `# TODO:` comment (`exercises/pods/pods1/exercise.yaml:8`). In the terminal of VS Code, Cmd+click (Ctrl+click on Linux and Windows) opens the file at that line.
+
+### After you install a newer version
+
+Your exercises folder is a copy made by the version you had when you ran `init`, so a newer k8slings does not show you its new exercises by itself. `run`, `list`, `watch` and `doctor` tell you when the folder is behind (one line, or a note in the header of the full-screen view). Then:
+
+```sh
+k8slings update --dry-run   # what would change
+k8slings update
+```
+
+`update` adds the new exercises to the folder and to `info.toml`, each one where it belongs in the order of the course (`k8slings list` marks them `new`), and keeps your old `info.toml` as `info.toml.bak`. It never overwrites a file you may have worked on. READMEs are replaced with their newer text, and so is an exercise file you have not changed since k8slings wrote it; if you have changed a file that has a newer version, `update` lists it, and `k8slings reset <name>` brings the new one and loses your changes. A folder made by a version that did not have `update` yet cannot tell a changed file from an old one, so for it `update` only adds. Your progress is kept.
 
 ### When the cluster is broken for real
 
