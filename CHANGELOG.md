@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- Four more troubleshooting exercises: `troubleshooting14` (the flag was changed in the ConfigMap, and no Pod sees it: environment variables are read once, `rollout restart`), `troubleshooting15` (a delete that never finishes: a finalizer nobody handles), `troubleshooting16` (a slow starter killed by its liveness probe) and `troubleshooting17` (a CronJob that never runs because it is suspended).
+
+### Changed
+
+- `lifecycle2` and `scheduling4` refuse their cheats at once, before anything is applied. `scheduling4` also refuses a *preferred* anti-affinity or a spread that only schedules anyway: they only work when the scheduler happens to agree.
+- Resetting an exercise (and so starting one) works when an object in its namespace carries a finalizer that no controller handles; before, the reset hung for a minute and failed.
+- Contributors: a cluster exercise can ship `shortcut-*.yaml` (a cheat as an exercise file, refused at once, proven by `TestClusterSolutions`); `make cluster-test` has a longer timeout (the full run takes about 40 minutes with twenty fix exercises).
+
 ## [0.9.0] - 2026-11-07
 
 ### Added
