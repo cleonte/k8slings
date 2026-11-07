@@ -408,6 +408,15 @@ How does a Pod of a Job know which item is its own? Which completion mode hands 
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#completion-mode"
 
 [[exercises]]
+name = "jobs6"
+path = "exercises/jobs/jobs6"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Two fields end a Job's story: one stops a run that hangs, one cleans up after a run that is over. Which is which, and are they set?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"

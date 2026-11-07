@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Job, name: nightly}
+    assert:
+      - expr: "has(object.spec.activeDeadlineSeconds) && object.spec.activeDeadlineSeconds == 300"
+        message: "A run that hangs has to be stopped after five minutes."
+      - expr: "has(object.spec.ttlSecondsAfterFinished) && object.spec.ttlSecondsAfterFinished == 3600"
+        message: "A finished Job has to be removed after one hour."
