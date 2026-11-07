@@ -21,6 +21,11 @@ import (
 //
 //	go test -tags cluster -run TestRealCluster -timeout 20m ./k8slings/cluster/
 func TestRealCluster(t *testing.T) {
+	// CI splits the proofs into shards (see exercises/shard_test.go); the safety
+	// rules are proven once, by the first.
+	if shard := os.Getenv("K8SLINGS_SHARD"); shard != "" && !strings.HasPrefix(shard, "0/") {
+		t.Skip("proven by shard 0/")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Minute)
 	defer cancel()
 
