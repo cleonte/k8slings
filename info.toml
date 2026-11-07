@@ -181,6 +181,15 @@ How long must a Pod be ready to count as available, and how long may a rollout t
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds"
 
 [[exercises]]
+name = "deployments5"
+path = "exercises/deployments/deployments5"
+topic = "deployments"
+mode = "manifest"
+hint = """
+With a volume that only one Pod may use, can a rolling update start the new Pod while the old one is still there?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
+
+[[exercises]]
 name = "services1"
 path = "exercises/services/services1"
 topic = "services"
