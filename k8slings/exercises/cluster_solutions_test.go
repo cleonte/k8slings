@@ -80,12 +80,11 @@ func TestClusterSolutions(t *testing.T) {
 	solve := &exercises.Env{Embedded: k8slings.FS, Validator: validator, Kube: cl}
 	broken := &exercises.Env{Embedded: k8slings.FS, Validator: validator, Kube: cl, Timeout: 15 * time.Second}
 
-	seen := 0
 	for _, ex := range load(t) {
 		if ex.Mode != exercises.ModeCluster {
 			continue
 		}
-		if seen++; !inShard(t, seen-1) {
+		if !inShard(t, ex.Name) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {
@@ -213,12 +212,11 @@ func TestFixSolutions(t *testing.T) {
 		return ""
 	}
 
-	seen := 0
 	for _, ex := range load(t) {
 		if ex.Mode != exercises.ModeFix {
 			continue
 		}
-		if seen++; !inShard(t, seen-1) {
+		if !inShard(t, ex.Name) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {
