@@ -330,3 +330,24 @@ func TestReleaseFinalizersRefusesNamespacesThatAreNotOurs(t *testing.T) {
 		t.Fatal("a refused namespace must not be touched")
 	}
 }
+
+func TestBuiltinFinalizer(t *testing.T) {
+	for f, want := range map[string]bool{
+		"kubernetes.io/pvc-protection":                       true,
+		"batch.kubernetes.io/job-tracking":                   true, // on every Pod of a Job
+		"service.kubernetes.io/load-balancer-cleanup":        true,
+		"gateway.networking.k8s.io/gateway-exists-finalizer": true,
+		"kubernetes":                  true,
+		"orphan":                      true,
+		"foregroundDeletion":          true,
+		"example.com/cleanup":         false,
+		"cleanup.example.com":         false,
+		"notkubernetes.io/x":          false,
+		"example.com/kubernetes.io/x": false,
+		"kubernetes.io.example.com/x": false,
+	} {
+		if got := builtinFinalizer(f); got != want {
+			t.Errorf("builtinFinalizer(%q) = %v, want %v", f, got, want)
+		}
+	}
+}
