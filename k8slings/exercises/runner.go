@@ -142,7 +142,13 @@ func (e Exercise) Run(ctx context.Context, env *Env) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("cannot read %s: %w", e.File(), err)
 	}
-	return e.RunSource(ctx, env, src)
+	res, err := e.RunSource(ctx, env, src)
+	if err == nil {
+		if err := markPassed(e.Name); err != nil {
+			return Result{}, fmt.Errorf("it passes, but cannot save your progress in %s: %w", ProgressFile, err)
+		}
+	}
+	return res, err
 }
 
 // RunSource checks src as if it were the content of the exercise file.
@@ -241,7 +247,7 @@ func (e Exercise) runFix(ctx context.Context, env *Env, c *check.Compiled) (Resu
 		}
 		return Result{}, failed
 	}
-	if err := markFixDone(e.Name); err != nil {
+	if err := markPassed(e.Name); err != nil {
 		return Result{}, fmt.Errorf("fixed, but cannot save your progress in %s: %w", ProgressFile, err)
 	}
 	return Result{Exercise: e}, nil

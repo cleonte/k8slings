@@ -284,3 +284,7 @@ Code copied or adapted from golings stays under golings' **Apache-2.0** license,
 - Commit messages and PR descriptions carry no `Co-Authored-By` or "Generated with" trailers.
 - When unsure about a format, read the golings code (`../golings/golings/exercises/`), then an existing k8slings example, then follow them.
 - Changes to this file and ROADMAP.md that alter a decision go in their own commit, with the reason.
+
+## When an exercise is done
+
+`State()` is Done when the check has **passed** (recorded in `.k8slings.json` under `done`, by `Exercise.Run`) and, for manifest and cluster exercises, the `# I AM NOT DONE` marker is gone; a fix exercise is done as soon as it passed. Removing the marker from a file that does not pass leaves it Pending (`MarkerGone()` lets `run` say so). `Format: 2` in the progress file means passes are recorded; a workspace without it is credited once in `List` (`grandfather`: every exercise whose marker is already gone), and `init` stamps the format so a new workspace is never credited. `workspace.Reset` forgets the pass. Tests that need a finished exercise call `exercises.RecordPass`.

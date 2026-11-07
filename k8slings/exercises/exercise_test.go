@@ -3,6 +3,7 @@ package exercises
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -28,8 +29,14 @@ func TestStateAndMarkDone(t *testing.T) {
 	if err := ex.MarkDone(); err != nil {
 		t.Fatal(err)
 	}
+	if ex.State() != Pending {
+		t.Fatal("removing the marker of an exercise that has not passed must not finish it")
+	}
+	if err := markPassed(ex.Name); err != nil {
+		t.Fatal(err)
+	}
 	if ex.State() != Done {
-		t.Fatal("the exercise should be done after the marker is removed")
+		t.Fatal("the exercise should be done once it has passed and the marker is removed")
 	}
 	if got, _ := os.ReadFile(ex.File()); string(got) != "kind: Pod\n" {
 		t.Fatalf("only the marker line should go, got %q", got)
@@ -94,5 +101,39 @@ func TestLocationPointsAtTheTodoSoThatATerminalCanLinkToIt(t *testing.T) {
 	fix := Exercise{Name: "troubleshooting1", Path: "exercises/troubleshooting/troubleshooting1", Mode: ModeFix}
 	if got := fix.Location(); got != fix.File() {
 		t.Fatalf("fix: %q, want %q", got, fix.File())
+	}
+}
+
+func TestRemovingTheMarkerOfAFailingFileDoesNotFinishTheExercise(t *testing.T) {
+	ex := writeExercise(t, "kind: Pod\n") // no marker, and nothing has passed
+	if ex.State() != Pending || !ex.MarkerGone() {
+		t.Fatalf("state=%v markerGone=%v: want pending, marker gone", ex.State(), ex.MarkerGone())
+	}
+}
+
+func TestWorkspacesFromBeforePassesWereRecordedKeepTheirFinishedExercises(t *testing.T) {
+	ex := writeExercise(t, "kind: Pod\n") // finished the old way: the marker is gone
+	if err := os.WriteFile(ProgressFile, []byte("{}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	info := "[[exercises]]\\nname='x'\\npath='exercises/t/x'\\ntopic='t'\\nmode='manifest'\\nhint='h'\\n"
+	if err := os.WriteFile("info.toml", []byte(strings.ReplaceAll(info, "\\n", "\n")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := List("info.toml"); err != nil {
+		t.Fatal(err)
+	}
+	if ex.State() != Done {
+		t.Fatal("an exercise finished before the upgrade must stay done")
+	}
+	// Only once: the marker taken out afterwards, without a pass, does not count.
+	other := Exercise{Name: "y", Path: "exercises/t/y", Topic: "t", Mode: ModeManifest, Hint: "h"}
+	_ = os.MkdirAll(filepath.Dir(other.File()), 0o755)
+	_ = os.WriteFile(other.File(), []byte("kind: Pod\n"), 0o644)
+	if _, err := List("info.toml"); err != nil {
+		t.Fatal(err)
+	}
+	if other.State() != Pending {
+		t.Fatal("the credit is given once, when the workspace is upgraded")
 	}
 }

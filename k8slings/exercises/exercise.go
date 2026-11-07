@@ -89,7 +89,11 @@ func List(infoFile string) ([]Exercise, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ParseInfo(data)
+	all, err := ParseInfo(data)
+	if err == nil {
+		grandfather(all)
+	}
+	return all, err
 }
 
 // Find returns the exercise called name.
@@ -230,19 +234,29 @@ const (
 
 func (s State) String() string { return [...]string{"Pending", "Done"}[s-1] }
 
-// State is Pending while the exercise file has the marker (or is missing).
+// State is Done when the check has passed (a fix exercise), or has passed and
+// the learner has removed the marker (the others). Taking the marker out of a
+// file that does not pass yet does not skip the exercise.
 func (e Exercise) State() State {
-	if e.Mode == ModeFix {
-		if fixDone(e.Name) {
-			return Done
-		}
+	if !passed(e.Name) {
 		return Pending
+	}
+	if e.Mode == ModeFix {
+		return Done
+	}
+	if e.MarkerGone() {
+		return Done
+	}
+	return Pending
+}
+
+// MarkerGone reports whether the exercise file exists without the marker line.
+func (e Exercise) MarkerGone() bool {
+	if e.Mode == ModeFix {
+		return false
 	}
 	data, err := os.ReadFile(e.File())
-	if err != nil || notDoneRegex.Match(data) {
-		return Pending
-	}
-	return Done
+	return err == nil && !notDoneRegex.Match(data)
 }
 
 // MarkDone removes the marker line, which is what a learner does by hand.

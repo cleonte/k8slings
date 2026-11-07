@@ -33,6 +33,11 @@ func Init(src fs.FS, dest string) error {
 		_ = os.RemoveAll(dest)
 		return err
 	}
+	// A new workspace records passes from the start.
+	if err := exercises.StampFormat(dest); err != nil {
+		_ = os.RemoveAll(dest)
+		return err
+	}
 	return nil
 }
 
@@ -112,6 +117,7 @@ func Reset(src fs.FS, root, name string) (string, error) {
 		}
 		// The file is the original again: a later update may replace it safely.
 		_ = exercises.RecordOriginals(root, map[string]string{ex.Name: hashOf(original)}, nil)
+		_ = exercises.ForgetPassed(root, ex.Name) // it has to pass again
 		return path.Clean(ex.Source()), nil
 	}
 	return "", exercises.ErrExerciseNotFound

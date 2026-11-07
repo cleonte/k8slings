@@ -19,6 +19,9 @@ func printFailure(ex exercises.Exercise, err error) {
 	for _, line := range failed.Lines {
 		color.Red("  • %s", line)
 	}
+	if ex.MarkerGone() && ex.State() == exercises.Pending {
+		color.Yellow("\nThe 'I AM NOT DONE' line is gone, but %s has not passed yet, so it still counts as pending.", ex.Name)
+	}
 	if len(failed.Details) > 0 {
 		fmt.Println()
 		for _, line := range failed.Details {
