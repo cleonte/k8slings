@@ -173,7 +173,7 @@ Branch `phase-4-fix`.
 - [x] Multi-step setups (`setup-2.yaml` ...), for exercises that need history: `troubleshooting12` (bad rollout, `rollout undo`).
 - [x] A multi-fault capstone: `capstone2` (three unrelated faults).
 - [ ] More troubleshooting exercises: taints, DNS faults.
-- [ ] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
+- [x] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons
 

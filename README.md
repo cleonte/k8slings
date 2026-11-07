@@ -72,6 +72,18 @@ In `watch`: `h` hint, `s` solution, `r` reset, `n` next, `l` list, `c` check all
 
 Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to edit. Look for the `# TODO:` comment.
 
+### When the cluster is broken for real
+
+A fix exercise (the troubleshooting topic and the capstone) breaks the cluster on purpose, so it is easy to make it worse than it was. What to do:
+
+- **The exercise is in a worse state than you want, or you want to start it over:** `k8slings reset <name>` breaks it again from the beginning and forgets that it was done. In `watch`, press `r`.
+- **Nothing is seeded behind your back.** The first `run` or `watch` on a pending exercise sets it up (some take up to a minute, and `q` or ctrl+c stops it cleanly; the next run starts over). After that k8slings never seeds it again by itself, because that would wipe your repair. `verify` and `c` (check all) skip exercises that you have not started.
+- **Done is kept.** Once an exercise has passed it stays done, even if you break the cluster again later.
+- **The cluster itself is in trouble** (a node is NotReady, Pods in `kube-system` crash, `kubectl` hangs): `k8slings cluster status` and `k8slings doctor` say what is wrong and how to fix the common causes, such as the Docker inotify limits.
+- **Start from a fresh cluster:** `k8slings cluster down && k8slings cluster up`. Your progress is kept (it lives in `.k8slings.json` in your exercises folder). An exercise you had started is set up again by its next `run`, since its namespace is gone.
+
+All of this only ever touches the `k8slings` kind cluster and its own namespaces (`k8slings-<exercise>`), never the cluster in your `~/.kube/config`.
+
 ## Status
 
 k8slings is young. The offline and cluster exercises described above work and are proven in CI on every change, including on a real kind cluster. Still to come, see the [roadmap](ROADMAP.md): more troubleshooting exercises (there is one so far), Kustomize, and exercises that need add-ons (HPA, Ingress and the Gateway API).
