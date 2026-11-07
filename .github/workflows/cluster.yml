@@ -42,18 +42,18 @@ env:
 
 jobs:
   cluster:
-    # The proofs take about 25 minutes on one cluster, so they run as three
-    # shards, each with its own cluster and every third exercise (K8SLINGS_SHARD,
+    # The proofs take about 30 minutes on one cluster, so they run as four
+    # shards, each with its own cluster and every fourth exercise (K8SLINGS_SHARD,
     # see k8slings/exercises/shard_test.go). Shard 0 also proves the safety rules.
-    name: kind cluster (Kubernetes 1.37), shard ${{ matrix.shard }} of 3
+    name: kind cluster (Kubernetes 1.37), shard ${{ matrix.shard }} of 4
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2]
+        shard: [0, 1, 2, 3]
     env:
-      K8SLINGS_SHARD: ${{ matrix.shard }}/3
+      K8SLINGS_SHARD: ${{ matrix.shard }}/4
     steps:
     - uses: actions/checkout@v7
 
@@ -88,7 +88,7 @@ jobs:
       if: always()
       run: |
         d="${{ steps.tests.outputs.duration }}"
-        echo "### Cluster tests, shard ${{ matrix.shard }} of 3" >> "$GITHUB_STEP_SUMMARY"
+        echo "### Cluster tests, shard ${{ matrix.shard }} of 4" >> "$GITHUB_STEP_SUMMARY"
         echo "Took ${d:-?} seconds (budget per shard: about 600 s; see CLAUDE.md)." >> "$GITHUB_STEP_SUMMARY"
         grep -E "fails as intended|solution passes|^--- |^\s+--- " cluster-test.log >> "$GITHUB_STEP_SUMMARY" || true
 
