@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-07
+
 ### Added
 
 - `e` in the full-screen `watch` opens the exercise in your editor (`$VISUAL`, or else `$EDITOR`) and waits until you close it; for a fix exercise it opens the ticket. Without an editor set, the key says how to set one. Same key as in golings.
@@ -133,7 +135,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.7.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/cleonte/k8slings/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/cleonte/k8slings/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/cleonte/k8slings/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/cleonte/k8slings/compare/v0.4.0...v0.5.0
