@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->77<!-- /count --> exercises in <!-- count:topics -->18<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
+You get <!-- count:exercises -->78<!-- /count --> exercises in <!-- count:topics -->19<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -15,7 +15,7 @@ Each exercise is a Kubernetes manifest that is broken in one small way (the last
 
 - **Fix exercises** break the cluster on purpose and hand you a ticket, as in a real incident: Pods that keep restarting, a Service with no endpoints. There is no file to edit. You look around and repair it with `kubectl` (`k8slings kubectl ...` is `kubectl` for the k8slings cluster), and `watch` turns green by itself when it works. Deleting the broken thing and creating a new one does not count: k8slings notices.
 
-What you will practise: Pods, labels and selectors, namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, requests, limits and quotas, Jobs, volumes and claims, scheduling, RBAC, network policies, and a capstone: a broken stack to debug like a real incident.
+What you will practise: Pods, labels and selectors, namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, requests, limits and quotas, Jobs, volumes and claims, scheduling, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
 
 ## Install
 

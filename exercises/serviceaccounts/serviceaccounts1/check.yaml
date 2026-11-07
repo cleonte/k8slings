@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: reporter}
+    assert:
+      - expr: "has(object.spec.serviceAccountName) && object.spec.serviceAccountName == 'reporter'"
+        message: "The Pod keeps using its own ServiceAccount: do not switch to another one."
+      - expr: "(has(object.spec.automountServiceAccountToken) && object.spec.automountServiceAccountToken == false) || (!has(object.spec.automountServiceAccountToken) && objects.exists(sa, sa.kind == 'ServiceAccount' && sa.metadata.name == object.spec.serviceAccountName && has(sa.automountServiceAccountToken) && sa.automountServiceAccountToken == false))"
+        message: "The Pod still gets a ServiceAccount token mounted."
+  - select: {kind: ServiceAccount, name: reporter}
+    assert:
+      - expr: "has(object.automountServiceAccountToken) && object.automountServiceAccountToken == false"
+        message: "Keep the default of the ServiceAccount: its other Pods must not get a token either."

@@ -1,0 +1,17 @@
+# serviceaccounts1: a Pod that mounts a token although its ServiceAccount turns it off.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: reporter
+automountServiceAccountToken: false
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: reporter
+spec:
+  serviceAccountName: reporter
+  containers:
+    - name: reporter
+      image: busybox:1.37
+      command: ["sleep", "3600"]

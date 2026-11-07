@@ -551,6 +551,15 @@ A ServiceAccount is named by two things. What is the second one, and why does a 
 docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#referring-to-subjects"
 
 [[exercises]]
+name = "serviceaccounts1"
+path = "exercises/serviceaccounts/serviceaccounts1"
+topic = "serviceaccounts"
+mode = "manifest"
+hint = """
+A setting on the ServiceAccount is only the default. Who gets the last word, and which account does this Pod really use?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#opt-out-of-api-credential-automounting"
+
+[[exercises]]
 name = "networkpolicies2"
 path = "exercises/networkpolicies/networkpolicies2"
 topic = "networkpolicies"
