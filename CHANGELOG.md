@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-07
+
 ### Added
 
 - Five scheduling and disruption exercises, and a new topic, `disruption`: `scheduling3` (a toleration that does not match its taint), `scheduling4` (replicas pulled together by `podAffinity` where `podAntiAffinity` was meant; it runs on the cluster and needs the two workers), `scheduling5` (a PriorityClass above the allowed maximum and a Pod that names another one), `disruption1` (a PodDisruptionBudget that forbids every disruption) and `disruption2` (a budget whose status says no eviction is ever allowed; it runs on the cluster).
@@ -145,7 +147,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/cleonte/k8slings/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/cleonte/k8slings/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/cleonte/k8slings/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/cleonte/k8slings/compare/v0.5.0...v0.6.0
