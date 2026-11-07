@@ -604,6 +604,15 @@ A budget says how many Pods may be missing at once. What does a budget that dema
 docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/"
 
 [[exercises]]
+name = "disruption2"
+path = "exercises/disruption/disruption2"
+topic = "disruption"
+mode = "cluster"
+hint = """
+The disruption controller computes how many disruptions the budget allows right now, and writes it into the status. What number does the status say?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/disruptions/"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
