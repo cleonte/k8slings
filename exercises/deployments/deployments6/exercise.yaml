@@ -1,0 +1,21 @@
+# I AM NOT DONE
+# deployments6: a Deployment that keeps no history, and counts a Pod available at once.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 3
+  # TODO: what does a rollback have to go back to?
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: shop
+  template:
+    metadata:
+      labels:
+        app: shop
+    spec:
+      containers:
+        - name: shop
+          image: nginx:1.27

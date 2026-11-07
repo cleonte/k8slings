@@ -181,6 +181,24 @@ How long must a Pod be ready to count as available, and how long may a rollout t
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#progress-deadline-seconds"
 
 [[exercises]]
+name = "deployments5"
+path = "exercises/deployments/deployments5"
+topic = "deployments"
+mode = "manifest"
+hint = """
+With a volume that only one Pod may use, can a rolling update start the new Pod while the old one is still there?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
+
+[[exercises]]
+name = "deployments6"
+path = "exercises/deployments/deployments6"
+topic = "deployments"
+mode = "manifest"
+hint = """
+How many old ReplicaSets does a Deployment keep, and what does undo need from them?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#clean-up-policy"
+
+[[exercises]]
 name = "services1"
 path = "exercises/services/services1"
 topic = "services"
@@ -308,6 +326,33 @@ If a Pod's probe depends on something outside the Pod, what do you want to happe
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-readiness-probes"
 
 [[exercises]]
+name = "lifecycle1"
+path = "exercises/lifecycle/lifecycle1"
+topic = "lifecycle"
+mode = "manifest"
+hint = """
+When a Pod is deleted the kubelet starts the clock once, and the pre-stop hook runs inside it. What is left for the application afterwards?"""
+docs = "https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/"
+
+[[exercises]]
+name = "lifecycle2"
+path = "exercises/lifecycle/lifecycle2"
+topic = "lifecycle"
+mode = "cluster"
+hint = """
+A Job is done when its Pod's containers are all done. Which kind of container is not counted, and where is it declared?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/"
+
+[[exercises]]
+name = "lifecycle3"
+path = "exercises/lifecycle/lifecycle3"
+topic = "lifecycle"
+mode = "cluster"
+hint = """
+Containers of a Pod start one after another but do not wait for each other. What can make the kubelet wait for a helper before it starts the next container?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/pods/sidecar-containers/#sidecar-containers-and-pod-lifecycle"
+
+[[exercises]]
 name = "resources1"
 path = "exercises/resources/resources1"
 topic = "resources"
@@ -361,6 +406,42 @@ mode = "manifest"
 hint = """
 Which concurrencyPolicy skips a run while the previous one is still going? And how many finished Jobs do you really need to keep?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy"
+
+[[exercises]]
+name = "jobs4"
+path = "exercises/jobs/jobs4"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Two numbers shape a Job: how many Pods must succeed, and how many run at the same time. Which is which?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs"
+
+[[exercises]]
+name = "jobs5"
+path = "exercises/jobs/jobs5"
+topic = "jobs"
+mode = "manifest"
+hint = """
+How does a Pod of a Job know which item is its own? Which completion mode hands it a number?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#completion-mode"
+
+[[exercises]]
+name = "jobs6"
+path = "exercises/jobs/jobs6"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Two fields end a Job's story: one stops a run that hangs, one cleans up after a run that is over. Which is which, and are they set?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#job-termination-and-cleanup"
+
+[[exercises]]
+name = "jobs7"
+path = "exercises/jobs/jobs7"
+topic = "jobs"
+mode = "manifest"
+hint = """
+A failed Pod usually counts against the backoff limit. Which rule makes one exit code harmless and another one fatal, and what does it need from the Pod?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-failure-policy"
 
 [[exercises]]
 name = "volumes1"
@@ -455,6 +536,15 @@ mode = "manifest"
 hint = """
 Control-plane nodes carry a taint. Which key does it have in a current cluster, and is the old one still the same?"""
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+[[exercises]]
+name = "daemonsets3"
+path = "exercises/daemonsets/daemonsets3"
+topic = "daemonsets"
+mode = "manifest"
+hint = """
+An update of a DaemonSet takes the agent off some nodes while it runs. What decides how many nodes at once?"""
+docs = "https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/"
 
 [[exercises]]
 name = "scheduling1"

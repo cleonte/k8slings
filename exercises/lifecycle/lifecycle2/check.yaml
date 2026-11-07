@@ -1,0 +1,16 @@
+shipped: "Job report has not completed"
+steps:
+  - assert:
+      resource: job/report
+      expr: "has(object.status.succeeded) && object.status.succeeded >= 1"
+      message: "Job report has not completed: its Pod is still running."
+  - assert:
+      resource: job/report
+      expr: "has(object.spec.template.spec.initContainers) && object.spec.template.spec.initContainers.exists(c, c.name == 'log-shipper' && has(c.restartPolicy) && c.restartPolicy == 'Always')"
+      message: "The log shipper has to keep running next to the work, and stop with it."
+      now: true
+  - assert:
+      resource: job/report
+      expr: "object.spec.template.spec.containers.size() == 1 && object.spec.template.spec.containers[0].name == 'report'"
+      message: "Only the report is a main container."
+      now: true

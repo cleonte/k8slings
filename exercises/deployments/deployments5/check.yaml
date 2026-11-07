@@ -1,0 +1,13 @@
+objects:
+  - select: {kind: PersistentVolumeClaim, name: data}
+    assert:
+      - expr: "object.spec.accessModes == ['ReadWriteOncePod']"
+        message: "Do not touch the claim: it is right to allow one Pod only."
+  - select: {kind: Deployment, name: db}
+    assert:
+      - expr: "object.spec.replicas == 1"
+        message: "The Deployment keeps one replica."
+      - expr: "has(object.spec.strategy) && has(object.spec.strategy.type) && ((object.spec.strategy.type == 'Recreate' && !has(object.spec.strategy.rollingUpdate)) || (object.spec.strategy.type == 'RollingUpdate' && has(object.spec.strategy.rollingUpdate) && has(object.spec.strategy.rollingUpdate.maxSurge) && string(object.spec.strategy.rollingUpdate.maxSurge) in ['0', '0%'] && has(object.spec.strategy.rollingUpdate.maxUnavailable) && !(string(object.spec.strategy.rollingUpdate.maxUnavailable) in ['0', '0%'])))"
+        message: "The rollout can start a second Pod while the first one still holds the claim."
+      - expr: "object.spec.template.spec.volumes.exists(v, has(v.persistentVolumeClaim) && v.persistentVolumeClaim.claimName == 'data')"
+        message: "The data has to stay on the claim."

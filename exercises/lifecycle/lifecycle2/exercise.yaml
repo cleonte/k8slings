@@ -1,0 +1,19 @@
+# I AM NOT DONE
+# lifecycle2: a Job whose log shipper is an ordinary container, so the Pod never ends.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: report
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: report
+          image: busybox:1.37
+          command: ["sh", "-c", "echo working; sleep 5; echo done"]
+        # TODO: nothing ever stops this container.
+        - name: log-shipper
+          image: busybox:1.37
+          command: ["sh", "-c", "while true; do echo shipping logs; sleep 2; done"]

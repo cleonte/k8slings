@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Job, name: slices}
+    assert:
+      - expr: "has(object.spec.completionMode) && object.spec.completionMode == 'Indexed'"
+        message: "The Pods do not get a completion index."
+      - expr: "object.spec.template.spec.containers.all(c, c.command.exists(w, w.contains('JOB_COMPLETION_INDEX')))"
+        message: "Keep the worker: it is what reads the index."
+      - expr: "has(object.spec.completions) && object.spec.completions == 3 && has(object.spec.parallelism) && object.spec.parallelism == 3"
+        message: "The work is split in three slices, all at once."

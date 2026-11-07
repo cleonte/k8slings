@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: DaemonSet, name: node-agent}
+    assert:
+      - expr: "has(object.spec.updateStrategy) && has(object.spec.updateStrategy.type) && object.spec.updateStrategy.type == 'RollingUpdate'"
+        message: "Keep the rolling update: OnDelete would leave every update to hand."
+      - expr: "has(object.spec.updateStrategy) && has(object.spec.updateStrategy.rollingUpdate) && has(object.spec.updateStrategy.rollingUpdate.maxUnavailable)"
+        message: "Say how many nodes may be without the agent during an update."
+      - expr: "has(object.spec.updateStrategy) && has(object.spec.updateStrategy.rollingUpdate) && has(object.spec.updateStrategy.rollingUpdate.maxUnavailable) && (object.spec.updateStrategy.rollingUpdate.maxUnavailable == 1 || object.spec.updateStrategy.rollingUpdate.maxUnavailable == 2 || string(object.spec.updateStrategy.rollingUpdate.maxUnavailable).matches('^([1-9]|[1-4][0-9]|50)%$'))"
+        message: "The update can take the agent off all, or nearly all, of the nodes at once."

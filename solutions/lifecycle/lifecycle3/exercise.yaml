@@ -1,0 +1,29 @@
+# lifecycle3: an application that starts before the helper it needs, and crashes.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+spec:
+  volumes:
+    - name: shared
+      emptyDir: {}
+  initContainers:
+    - name: helper
+      image: busybox:1.37
+      restartPolicy: Always
+      command: ["sh", "-c", "sleep 4; touch /shared/ready; sleep 3600"]
+      volumeMounts:
+        - name: shared
+          mountPath: /shared
+      startupProbe:
+        exec:
+          command: ["test", "-f", "/shared/ready"]
+        periodSeconds: 1
+        failureThreshold: 30
+  containers:
+    - name: app
+      image: busybox:1.37
+      command: ["sh", "-c", "test -f /shared/ready || { echo helper not ready; exit 1; }; echo started; sleep 3600"]
+      volumeMounts:
+        - name: shared
+          mountPath: /shared

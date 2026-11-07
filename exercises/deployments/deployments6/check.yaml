@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: Deployment, name: shop}
+    assert:
+      - expr: "has(object.spec.revisionHistoryLimit) && object.spec.revisionHistoryLimit >= 2"
+        message: "A rollback to either of the last two versions needs their ReplicaSets to be kept."
+      - expr: "has(object.spec.minReadySeconds) && object.spec.minReadySeconds >= 10"
+        message: "A new Pod has to stay Ready for ten seconds before it counts as available."
+      - expr: "object.spec.replicas == 3"
+        message: "The Deployment keeps three replicas."

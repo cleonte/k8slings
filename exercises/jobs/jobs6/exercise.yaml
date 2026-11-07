@@ -1,0 +1,16 @@
+# I AM NOT DONE
+# jobs6: a Job that can hang for an hour, and is never cleaned up.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nightly
+spec:
+  # TODO: a hung run is stopped after an hour; a finished Job is kept for ever.
+  activeDeadlineSeconds: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: task
+          image: busybox:1.37
+          command: ["sh", "-c", "echo running the nightly task"]

@@ -1,0 +1,15 @@
+shipped: "had to restart"
+steps:
+  - assert:
+      resource: pod/app
+      expr: "object.spec.containers.exists(c, c.name == 'app' && c.command == ['sh', '-c', 'test -f /shared/ready || { echo helper not ready; exit 1; }; echo started; sleep 3600'])"
+      message: "The application is not what has to change."
+    now: true
+  - assert:
+      resource: pod/app
+      expr: "has(object.status.containerStatuses) && object.status.containerStatuses.all(s, s.ready && s.restartCount == 0) && has(object.status.initContainerStatuses) && object.status.initContainerStatuses.all(s, s.restartCount == 0)"
+      message: "The Pod is not Ready yet, or a container had to restart: the application started before the helper it needs."
+  - assert:
+      resource: pod/app
+      expr: "has(object.spec.initContainers) && object.spec.initContainers.exists(c, c.name == 'helper' && has(c.restartPolicy) && c.restartPolicy == 'Always' && has(c.startupProbe))"
+      message: "The helper has to be a native sidecar with a startup probe: the kubelet then waits for it."

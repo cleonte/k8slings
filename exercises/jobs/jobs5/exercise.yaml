@@ -1,0 +1,17 @@
+# I AM NOT DONE
+# jobs5: Pods that are meant to get an index, in a Job that does not give one.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: slices
+spec:
+  completions: 3
+  parallelism: 3
+  # TODO: where does JOB_COMPLETION_INDEX come from?
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: worker
+          image: busybox:1.37
+          command: ["sh", "-c", "echo working on slice $JOB_COMPLETION_INDEX of 3"]
