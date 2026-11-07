@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ctl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ctl
+  template:
+    metadata:
+      labels:
+        app: ctl
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      containers:
+        - name: ctl
+          image: busybox:1.37
+          command: ["sleep", "3600"]

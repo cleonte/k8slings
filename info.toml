@@ -914,6 +914,16 @@ There is no shell to exec into, and no tool to look around with. How do you get 
 docs = "https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/#ephemeral-container"
 
 [[exercises]]
+name = "troubleshooting20"
+path = "exercises/troubleshooting/troubleshooting20"
+topic = "troubleshooting"
+mode = "fix"
+requires = ["multinode"]
+hint = """
+The scheduler's event says how many nodes it refused and why. Which of those reasons is about a taint, and what lets a Pod past a taint?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"
