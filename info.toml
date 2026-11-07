@@ -576,6 +576,16 @@ A toleration has to match the taint on every part: key, value (with Equal) and e
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
 
 [[exercises]]
+name = "scheduling4"
+path = "exercises/scheduling/scheduling4"
+topic = "scheduling"
+mode = "cluster"
+requires = ["multinode"]
+hint = """
+Two Pods of one Deployment ended up on the same node. Which rule keeps replicas apart, and is the one in the file that rule?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"

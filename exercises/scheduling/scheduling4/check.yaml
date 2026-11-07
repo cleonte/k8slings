@@ -1,0 +1,13 @@
+shipped: "run on the same node"
+steps:
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 2"
+      message: "Keep two replicas: fewer is not a way to keep them apart."
+    now: true
+  - rollout: deployment/web
+  - assert:
+      resources: pods
+      selector: app=web
+      expr: "objects.size() == 2 && objects.all(p, has(p.spec.nodeName)) && objects[0].spec.nodeName != objects[1].spec.nodeName"
+      message: "The two Pods of web run on the same node."
