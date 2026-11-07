@@ -1,18 +1,15 @@
 shipped: "run on the same node"
+objects:
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "object.spec.replicas == 2"
+        message: "Keep two replicas: fewer is not a way to keep them apart."
+      - expr: "(has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.podAffinity) && has(object.spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution) && object.spec.template.spec.affinity.podAffinity.requiredDuringSchedulingIgnoredDuringExecution.exists(t, t.topologyKey == 'kubernetes.io/hostname' && has(t.labelSelector) && has(t.labelSelector.matchLabels) && t.labelSelector.matchLabels.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == t.labelSelector.matchLabels[k]))) || (has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.podAntiAffinity) && has(object.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution) && object.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution.exists(t, t.topologyKey == 'kubernetes.io/hostname' && has(t.labelSelector) && has(t.labelSelector.matchLabels) && t.labelSelector.matchLabels.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == t.labelSelector.matchLabels[k]))) || (has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.exists(c, c.topologyKey == 'kubernetes.io/hostname' && c.whenUnsatisfiable == 'DoNotSchedule' && has(c.labelSelector) && has(c.labelSelector.matchLabels) && c.labelSelector.matchLabels.all(k, k in object.spec.template.metadata.labels && object.spec.template.metadata.labels[k] == c.labelSelector.matchLabels[k])))"
+        message: "Something has to keep the replicas apart, and it has to be a rule that is required, on nodes, for the Pods of this Deployment: a preferred rule only works when the scheduler happens to agree."
 steps:
-  - assert:
-      resource: deployment/web
-      expr: "object.spec.replicas == 2"
-      message: "Keep two replicas: fewer is not a way to keep them apart."
-    now: true
   - rollout: deployment/web
   - assert:
       resources: pods
       selector: app=web
       expr: "objects.size() == 2 && objects.all(p, has(p.spec.nodeName)) && objects[0].spec.nodeName != objects[1].spec.nodeName"
       message: "The two Pods of web run on the same node."
-  - assert:
-      resource: deployment/web
-      expr: "(has(object.spec.template.spec.affinity) && has(object.spec.template.spec.affinity.podAntiAffinity)) || (has(object.spec.template.spec.topologySpreadConstraints) && object.spec.template.spec.topologySpreadConstraints.size() > 0)"
-      message: "Something has to keep the replicas apart: a rule, not the luck of the scheduler."
-      now: true

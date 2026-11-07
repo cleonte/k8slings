@@ -1,16 +1,13 @@
 shipped: "Job report has not completed"
+objects:
+  - select: {kind: Job, name: report}
+    assert:
+      - expr: "(object.spec.template.spec.containers + (has(object.spec.template.spec.initContainers) ? object.spec.template.spec.initContainers : [])).exists(c, c.name == 'log-shipper' && c.command == ['sh', '-c', 'while true; do echo shipping logs; sleep 2; done'])"
+        message: "The log shipper has to keep running, and as it is: it is not what has to change."
+      - expr: "object.spec.template.spec.containers.exists(c, c.name == 'report' && c.command == ['sh', '-c', 'echo working; sleep 5; echo done'])"
+        message: "The report is not what has to change, and it is the only main container that does the work."
 steps:
   - assert:
       resource: job/report
       expr: "has(object.status.succeeded) && object.status.succeeded >= 1"
       message: "Job report has not completed: its Pod is still running."
-  - assert:
-      resource: job/report
-      expr: "has(object.spec.template.spec.initContainers) && object.spec.template.spec.initContainers.exists(c, c.name == 'log-shipper' && has(c.restartPolicy) && c.restartPolicy == 'Always')"
-      message: "The log shipper has to keep running next to the work, and stop with it."
-      now: true
-  - assert:
-      resource: job/report
-      expr: "object.spec.template.spec.containers.size() == 1 && object.spec.template.spec.containers[0].name == 'report'"
-      message: "Only the report is a main container."
-      now: true

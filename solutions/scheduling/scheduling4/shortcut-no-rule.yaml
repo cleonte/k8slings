@@ -1,0 +1,19 @@
+# rejected: "Something has to keep the replicas apart"
+# scheduling4: replicas pulled together by a rule that was meant to push them apart.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.27

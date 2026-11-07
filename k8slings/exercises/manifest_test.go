@@ -142,6 +142,24 @@ var imageRe = regexp.MustCompile(`(?m)(?:^\s*(?:-\s*)?image:\s*["']?|--image=|se
 // Cluster exercises need steps (what to wait for), manifest exercises must not
 // have any, and every image a cluster exercise runs is preloaded into the nodes
 // so that no exercise depends on a registry.
+// A cluster exercise may have shortcut-*.yaml: a way to cheat, as an exercise
+// file, which the proof must see refused. Each says what the check must say.
+func TestClusterShortcutsDeclareWhatTheyAreRefusedWith(t *testing.T) {
+	for _, ex := range load(t) {
+		shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.yaml"))
+		if len(shortcuts) > 0 && ex.Mode != exercises.ModeCluster {
+			t.Errorf("%s: shortcut-*.yaml is for cluster exercises; fix exercises use shortcut-*.sh", ex.Name)
+		}
+		for _, f := range shortcuts {
+			data, _ := fs.ReadFile(k8slings.Solutions, f)
+			first, _, _ := strings.Cut(string(data), "\n")
+			if !rejectedRe.MatchString(first) {
+				t.Errorf(`%s must start with: # rejected: "what the check says"`, f)
+			}
+		}
+	}
+}
+
 func TestModesAndImages(t *testing.T) {
 	preloaded := map[string]bool{}
 	for _, img := range cluster.PreloadImages {
@@ -185,7 +203,8 @@ func TestModesAndImages(t *testing.T) {
 					sources = append(sources, step)
 				}
 			}
-			if shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.sh")); len(shortcuts) > 0 {
+			for _, pattern := range []string{"shortcut-*.sh", "shortcut-*.yaml"} {
+				shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), pattern))
 				for _, f := range shortcuts {
 					data, _ := fs.ReadFile(k8slings.Solutions, f)
 					sources = append(sources, data)

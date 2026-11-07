@@ -1,0 +1,12 @@
+shipped: "on its schedule"
+steps:
+  - unchanged: cronjob/cleanup
+  - assert:
+      resource: cronjob/cleanup
+      expr: "object.spec.schedule == '* * * * *'"
+      message: "Keep the schedule: running every minute is what was asked for."
+    now: true
+  - assert:
+      resources: jobs
+      expr: "objects.exists(j, has(j.metadata.ownerReferences) && j.metadata.ownerReferences.exists(o, o.kind == 'CronJob' && o.name == 'cleanup') && !(has(j.metadata.annotations) && 'cronjob.kubernetes.io/instantiate' in j.metadata.annotations) && has(j.status.succeeded) && j.status.succeeded >= 1)"
+      message: "No Job that the CronJob cleanup made on its schedule has succeeded yet."

@@ -1,0 +1,24 @@
+shipped: "had to restart"
+shipped_details: "Liveness probe failed"
+steps:
+  - unchanged: deployment/web
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.replicas == 1"
+      message: "Keep one replica of web."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "object.spec.template.spec.containers[0].command == ['sh', '-c', 'mkdir /www && echo ok > /www/index.html && sleep 20 && httpd -f -p 8080 -h /www']"
+      message: "The application is not what has to change: do not touch its command."
+    now: true
+  - assert:
+      resource: deployment/web
+      expr: "has(object.spec.template.spec.containers[0].livenessProbe)"
+      message: "Keep the liveness probe: a container that hangs still has to be restarted."
+    now: true
+  - assert:
+      resources: pods
+      selector: app=web
+      expr: "objects.filter(p, !has(p.metadata.deletionTimestamp)).size() >= 1 && objects.filter(p, !has(p.metadata.deletionTimestamp)).all(p, has(p.status.containerStatuses) && p.status.containerStatuses.all(s, s.restartCount == 0 && s.ready))"
+      message: "The Pod of web is not Ready yet, or a container had to restart: the application is killed before it has started."

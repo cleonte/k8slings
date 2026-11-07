@@ -138,6 +138,34 @@ func TestClusterSolutions(t *testing.T) {
 				t.Fatalf("the solution must pass: %v", err)
 			}
 			t.Logf("solution passes in %s", time.Since(start).Round(time.Second))
+
+			// Ways to cheat (shortcut-*.yaml, first line `# rejected: "text"`) must be
+			// refused, and at once: the refusal comes from the static part of the
+			// check, before anything is applied, so it must not wait for a timeout.
+			shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.yaml"))
+			for _, f := range shortcuts {
+				t.Run(path.Base(f), func(t *testing.T) {
+					data, err := fs.ReadFile(k8slings.Solutions, f)
+					if err != nil {
+						t.Fatal(err)
+					}
+					first, _, _ := strings.Cut(string(data), "\n")
+					m := rejectedRe.FindStringSubmatch(first)
+					if m == nil {
+						t.Fatalf(`%s must start with: # rejected: "what the check says"`, f)
+					}
+					begin := time.Now()
+					_, err = ex.RunSource(ctx, broken, data)
+					var refused *exercises.FailedError
+					if !errors.As(err, &refused) || !strings.Contains(refused.Lines[0], m[1]) {
+						t.Fatalf("the shortcut must be refused with %q, got %v", m[1], err)
+					}
+					if took := time.Since(begin); took > 10*time.Second {
+						t.Fatalf("refused after %s: a cheat is refused at once, by the static part of the check", took.Round(time.Second))
+					}
+					t.Logf("refused at once: %s", refused.Lines[0])
+				})
+			}
 		})
 	}
 }
@@ -147,9 +175,12 @@ func TestClusterSolutions(t *testing.T) {
 // the solution script repairs it and the check passes, and each shortcut script
 // (a way to cheat) is refused with the message it declares.
 //
-//	go test -tags cluster -run TestFixSolutions -timeout 30m ./k8slings/exercises/
+//	go test -tags cluster -run TestFixSolutions -timeout 100m ./k8slings/exercises/
+//
+// All of them on one cluster take about 40 minutes with twenty exercises (each
+// is two minutes or so), so the context is 70 minutes; K8SLINGS_SHARD splits them.
 func TestFixSolutions(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 70*time.Minute)
 	defer cancel()
 
 	cl := proofCluster(t, ctx)
@@ -200,7 +231,12 @@ func TestFixSolutions(t *testing.T) {
 
 			// Start clean: a cluster kept from an earlier run still has the namespace
 			// labelled as seeded, and this run has no progress file.
-			if out, err := cl.Kubectl(ctx, "delete", "namespace", ex.Namespace(), "--ignore-not-found", "--wait=true"); err != nil {
+			// An exercise may leave a finalizer that nothing handles (a delete that never
+			// finishes): the namespace would stay Terminating for ever.
+			if err := cl.ReleaseFinalizers(ctx, ex.Namespace()); err != nil {
+				t.Fatalf("cannot release what holds the namespace: %v", err)
+			}
+			if out, err := cl.Kubectl(ctx, "delete", "namespace", ex.Namespace(), "--ignore-not-found", "--wait=true", "--timeout=3m"); err != nil {
 				t.Fatalf("cannot clear the namespace: %s", out)
 			}
 

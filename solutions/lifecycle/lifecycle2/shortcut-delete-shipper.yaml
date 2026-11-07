@@ -1,0 +1,14 @@
+# rejected: "The log shipper has to keep running"
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: report
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: report
+          image: busybox:1.37
+          command: ["sh", "-c", "echo working; sleep 5; echo done"]

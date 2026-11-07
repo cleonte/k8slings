@@ -2,6 +2,7 @@ package cluster
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -68,6 +69,9 @@ func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 		return err
 	}
 	_, _ = c.Kubectl(ctx, "create", "namespace", ns) // AlreadyExists is fine
+	if err := c.ReleaseFinalizers(ctx, ns); err != nil {
+		return err
+	}
 
 	// Controllers go first, and without touching their Pods (--cascade=orphan):
 	// that is instant, and from then on nothing can create new Pods. Deleting the
@@ -106,6 +110,53 @@ func (c *Cluster) ResetNamespace(ctx context.Context, ns string) error {
 		}
 	}
 	return fmt.Errorf("the default ServiceAccount of namespace %s did not come back", ns)
+}
+
+// builtinFinalizer says whether a finalizer belongs to the cluster itself
+// (pvc-protection, foregroundDeletion ...), which handles it.
+func builtinFinalizer(f string) bool {
+	return strings.HasPrefix(f, "kubernetes.io/") || f == "kubernetes" || f == "orphan" || f == "foregroundDeletion"
+}
+
+// ReleaseFinalizers removes, from every object of the namespace, the finalizers
+// that no controller of the cluster handles. An exercise may leave one on an
+// object on purpose (a delete that never finishes), and the object would then
+// block emptying the namespace, and deleting it, for ever. The finalizers of the
+// cluster itself stay, so a claim is still released the proper way. It only ever
+// touches namespaces k8slings owns.
+func (c *Cluster) ReleaseFinalizers(ctx context.Context, ns string) error {
+	if err := checkOwned(ns); err != nil {
+		return err
+	}
+	out, err := c.Kubectl(ctx, "get", c.namespacedKinds(ctx), "-n", ns, "--ignore-not-found", "-o",
+		`jsonpath={range .items[?(@.metadata.finalizers)]}{.kind}/{.metadata.name}{"\t"}{.metadata.finalizers}{"\n"}{end}`)
+	if err != nil && strings.TrimSpace(out) == "" {
+		return nil // nothing to read: there is nothing to release
+	}
+	for _, line := range strings.Split(out, "\n") {
+		object, list, found := strings.Cut(line, "\t")
+		if !found {
+			continue
+		}
+		var all []string
+		if json.Unmarshal([]byte(list), &all) != nil {
+			continue
+		}
+		kept := []string{}
+		for _, f := range all {
+			if builtinFinalizer(f) {
+				kept = append(kept, f)
+			}
+		}
+		if len(kept) == len(all) {
+			continue
+		}
+		patch, _ := json.Marshal(map[string]any{"metadata": map[string]any{"finalizers": kept}})
+		if out, err := c.Kubectl(ctx, "patch", object, "-n", ns, "--type=merge", "-p", string(patch)); err != nil && !strings.Contains(out, "NotFound") {
+			return fmt.Errorf("cannot release the finalizers of %s in %s: %s", object, ns, firstLine(out))
+		}
+	}
+	return nil
 }
 
 // controllerKinds are the resources that create Pods.
