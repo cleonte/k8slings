@@ -390,6 +390,15 @@ Which concurrencyPolicy skips a run while the previous one is still going? And h
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#concurrency-policy"
 
 [[exercises]]
+name = "jobs4"
+path = "exercises/jobs/jobs4"
+topic = "jobs"
+mode = "manifest"
+hint = """
+Two numbers shape a Job: how many Pods must succeed, and how many run at the same time. Which is which?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"

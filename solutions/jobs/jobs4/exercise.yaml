@@ -1,0 +1,15 @@
+# jobs4: six tasks, two at a time, with the two numbers the wrong way round.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batch
+spec:
+  completions: 6
+  parallelism: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: task
+          image: busybox:1.37
+          command: ["sh", "-c", "echo processing one item"]

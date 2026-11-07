@@ -1,0 +1,17 @@
+# I AM NOT DONE
+# jobs4: six tasks, two at a time, with the two numbers the wrong way round.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: batch
+spec:
+  # TODO: which number is how many in all, and which is how many at once?
+  completions: 2
+  parallelism: 6
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: task
+          image: busybox:1.37
+          command: ["sh", "-c", "echo processing one item"]

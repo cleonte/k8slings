@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Job, name: batch}
+    assert:
+      - expr: "has(object.spec.completions) && object.spec.completions == 6"
+        message: "The Job has to run six tasks to completion in all."
+      - expr: "has(object.spec.parallelism) && object.spec.parallelism == 2"
+        message: "No more than two tasks may run at the same time."
