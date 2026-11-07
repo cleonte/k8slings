@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 )
@@ -22,15 +23,23 @@ type progressData struct {
 	Done map[string]time.Time `json:"done,omitempty"`
 	// Seeds maps a fix exercise to the UIDs of the objects it seeded, by "kind/name".
 	Seeds map[string]map[string]string `json:"seeds,omitempty"`
+	// Originals maps an exercise to the SHA-256 of its file as k8slings wrote it
+	// (init, update). It is how `update` tells a file the learner has not touched
+	// (safe to replace with a newer version) from one with their work in it.
+	Originals map[string]string `json:"originals,omitempty"`
+	// New lists the exercises that `update` added, so that `list` can mark them.
+	New []string `json:"new,omitempty"`
 }
 
 // The file is read and written by several commands and by the full-screen view,
 // so access in one process is serialised, and a write replaces the file whole.
 var progressMu sync.Mutex
 
-func readProgress() progressData {
+func readProgress() progressData { return readProgressIn(".") }
+
+func readProgressIn(dir string) progressData {
 	var p progressData
-	data, err := os.ReadFile(ProgressFile)
+	data, err := os.ReadFile(filepath.Join(dir, ProgressFile))
 	if err != nil {
 		return p
 	}
@@ -39,12 +48,14 @@ func readProgress() progressData {
 	return p
 }
 
-func writeProgress(p progressData) error {
+func writeProgress(p progressData) error { return writeProgressIn(".", p) }
+
+func writeProgressIn(dir string, p progressData) error {
 	data, err := json.MarshalIndent(p, "", "  ")
 	if err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(filepath.Dir(ProgressFile), ".k8slings-*.tmp")
+	tmp, err := os.CreateTemp(dir, ".k8slings-*.tmp")
 	if err != nil {
 		return err
 	}
@@ -56,7 +67,7 @@ func writeProgress(p progressData) error {
 	if err := tmp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(tmp.Name(), ProgressFile)
+	return os.Rename(tmp.Name(), filepath.Join(dir, ProgressFile))
 }
 
 func updateProgress(f func(*progressData)) error {
@@ -119,4 +130,42 @@ func seedUID(name, resource string) (string, bool) {
 	defer progressMu.Unlock()
 	uid, ok := readProgress().Seeds[name][resource]
 	return uid, ok
+}
+
+// Originals returns the recorded hashes of the exercise files written into the
+// workspace in dir.
+func Originals(dir string) map[string]string {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	return readProgressIn(dir).Originals
+}
+
+// RecordOriginals remembers the hashes of exercise files that k8slings has just
+// written into the workspace in dir, and which exercises `update` has just added.
+func RecordOriginals(dir string, hashes map[string]string, added []string) error {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	p := readProgressIn(dir)
+	if p.Originals == nil {
+		p.Originals = map[string]string{}
+	}
+	for name, h := range hashes {
+		p.Originals[name] = h
+	}
+	for _, name := range added {
+		if !slices.Contains(p.New, name) {
+			p.New = append(p.New, name)
+		}
+	}
+	return writeProgressIn(dir, p)
+}
+
+// IsNew reports whether `update` added the exercise to this workspace.
+func IsNew(name string) bool { return IsNewIn(".", name) }
+
+// IsNewIn is IsNew for the workspace in dir.
+func IsNewIn(dir, name string) bool {
+	progressMu.Lock()
+	defer progressMu.Unlock()
+	return slices.Contains(readProgressIn(dir).New, name)
 }

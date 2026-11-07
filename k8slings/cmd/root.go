@@ -42,6 +42,7 @@ func NewRootCmd(version string) *cobra.Command {
 	rootCmd.AddCommand(ResetCmd(k8slings.FS, "."))
 	rootCmd.AddCommand(RunCmd(infoFile))
 	rootCmd.AddCommand(SolutionCmd(infoFile, k8slings.Solutions))
+	rootCmd.AddCommand(UpdateCmd(k8slings.FS, "."))
 	rootCmd.AddCommand(VerifyCmd(infoFile))
 	rootCmd.AddCommand(WatchCmd(infoFile))
 

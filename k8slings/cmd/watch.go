@@ -52,6 +52,7 @@ again) or q (quit).`,
 				return runTUI(ctx, changes)
 			}
 
+			noticeNewExercises()
 			watchLoop(cmd.InOrStdin(), changes, watchActions{
 				run:  func() { _ = runNext(ctx, infoFile) },
 				list: func() { _ = ListCmd(infoFile).RunE(nil, nil) },

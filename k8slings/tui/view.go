@@ -31,6 +31,10 @@ func (m *Model) header() string {
 		title += "  " + warnStyle.Render(fmt.Sprintf("%d skipped (see k8slings doctor)", m.skipped))
 	}
 
+	if m.cfg.NewExercises > 0 {
+		title += "  " + warnStyle.Render(fmt.Sprintf("%d new exercises: run k8slings update", m.cfg.NewExercises))
+	}
+
 	current := ""
 	if m.status == statusRunning || m.status == statusFinished {
 		current = fmt.Sprintf("%s  %s", m.exercise.Name, dimStyle.Render(m.exercise.File()))

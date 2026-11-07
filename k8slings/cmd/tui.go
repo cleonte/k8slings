@@ -7,17 +7,19 @@ import (
 
 	"github.com/cleonte/k8slings"
 	"github.com/cleonte/k8slings/k8slings/tui"
+	"github.com/cleonte/k8slings/k8slings/workspace"
 )
 
 func runTUI(ctx context.Context, changes <-chan []string) error {
 	return tui.Run(ctx, tui.Config{
-		InfoFile:  infoFile,
-		Changes:   changes,
-		Env:       newEnv(),
-		Source:    k8slings.FS,
-		Root:      ".",
-		Solutions: k8slings.Solutions,
-		Editor:    editorCommand(),
+		InfoFile:     infoFile,
+		Changes:      changes,
+		Env:          newEnv(),
+		Source:       k8slings.FS,
+		Root:         ".",
+		Solutions:    k8slings.Solutions,
+		Editor:       editorCommand(),
+		NewExercises: len(workspace.Missing(k8slings.FS, ".")),
 	})
 }
 

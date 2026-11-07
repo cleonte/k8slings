@@ -44,6 +44,9 @@ type Env struct {
 	Schemas fs.FS
 	// Cluster is the k8slings cluster, for the cluster half. Nil skips it.
 	Cluster *cluster.Cluster
+	// Missing lists the exercises of this version that the folder does not have
+	// yet. Nil skips the check.
+	Missing func() []string
 }
 
 func DefaultEnv(schemas fs.FS, cl *cluster.Cluster) Env {
@@ -85,10 +88,19 @@ func offlineChecks(infoFile string, env Env) []Check {
 			Detail: fmt.Sprintf("can't read %s: %v (run k8slings from the folder that holds it, or create one with `k8slings init`)", infoFile, err),
 		})
 	}
-	return append(checks,
+	checks = append(checks,
 		Check{Name: "Exercise manifest", Status: OK, Detail: fmt.Sprintf("%s lists %d exercises", infoFile, len(all))},
 		filesCheck(all, env),
 	)
+	if env.Missing != nil {
+		if missing := env.Missing(); len(missing) > 0 {
+			checks = append(checks, Check{Name: "Exercise set", Status: Warn,
+				Detail: fmt.Sprintf("this version of k8slings has %d exercises that the folder does not have yet (%s): run `k8slings update`", len(missing), strings.Join(missing[:min(len(missing), 5)], ", "))})
+		} else {
+			checks = append(checks, Check{Name: "Exercise set", Status: OK, Detail: "the folder has every exercise of this version"})
+		}
+	}
+	return checks
 }
 
 // Ready reports whether a group has no failures and no warnings.

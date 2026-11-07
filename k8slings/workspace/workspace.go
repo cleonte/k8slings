@@ -27,7 +27,34 @@ func Init(src fs.FS, dest string) error {
 		_ = os.RemoveAll(dest)
 		return err
 	}
+	// Remember what was written, so that a later `update` can tell a file the
+	// learner has not touched from one with their work in it.
+	if err := recordOriginals(src, dest); err != nil {
+		_ = os.RemoveAll(dest)
+		return err
+	}
 	return nil
+}
+
+func recordOriginals(src fs.FS, dest string) error {
+	raw, err := fs.ReadFile(src, "info.toml")
+	if err != nil {
+		return nil // nothing is listed, so there is nothing to remember
+	}
+	all, err := exercises.ParseInfo(raw)
+	if err != nil {
+		return nil
+	}
+	hashes := map[string]string{}
+	for _, e := range all {
+		if e.Mode == exercises.ModeFix {
+			continue
+		}
+		if data, err := fs.ReadFile(src, e.Source()); err == nil {
+			hashes[e.Name] = hashOf(data)
+		}
+	}
+	return exercises.RecordOriginals(dest, hashes, nil)
 }
 
 func write(src fs.FS, dest string) error {
@@ -80,7 +107,12 @@ func Reset(src fs.FS, root, name string) (string, error) {
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			return "", err
 		}
-		return path.Clean(ex.Source()), os.WriteFile(target, original, 0o644)
+		if err := os.WriteFile(target, original, 0o644); err != nil {
+			return "", err
+		}
+		// The file is the original again: a later update may replace it safely.
+		_ = exercises.RecordOriginals(root, map[string]string{ex.Name: hashOf(original)}, nil)
+		return path.Clean(ex.Source()), nil
 	}
 	return "", exercises.ErrExerciseNotFound
 }

@@ -6,8 +6,10 @@ import (
 	"io/fs"
 	"strings"
 
+	"github.com/cleonte/k8slings"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/doctor"
+	"github.com/cleonte/k8slings/k8slings/workspace"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
@@ -31,7 +33,9 @@ The exit code is non-zero only when something that should work is broken.`,
 			if c, err := cluster.Default(); err == nil {
 				cl = c
 			}
-			checks := doctor.Run(cmd.Context(), infoFile, doctor.DefaultEnv(schemas, cl))
+			denv := doctor.DefaultEnv(schemas, cl)
+			denv.Missing = func() []string { return workspace.Missing(k8slings.FS, ".") }
+			checks := doctor.Run(cmd.Context(), infoFile, denv)
 
 			group := ""
 			for _, c := range checks {
