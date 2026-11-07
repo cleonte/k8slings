@@ -896,6 +896,15 @@ A CronJob can be told not to create Jobs at all. Which field, and what does a Jo
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-suspension"
 
 [[exercises]]
+name = "troubleshooting18"
+path = "exercises/troubleshooting/troubleshooting18"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+The Job gave up, and its logs say why. What can you change in a Job that already ran, and what has to be made again?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-backoff-failure-policy"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"

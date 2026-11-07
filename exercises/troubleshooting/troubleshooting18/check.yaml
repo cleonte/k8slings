@@ -1,0 +1,23 @@
+shipped: "Job migrate has not succeeded"
+shipped_details: "backoff limit"
+steps:
+  - unchanged: configmap/migrate-script
+  - assert:
+      resource: configmap/migrate-script
+      expr: "object.data['migrate.sh'].contains('migration complete')"
+      message: "Do not change the ConfigMap: the script is right."
+    now: true
+  - assert:
+      resource: job/migrate
+      expr: "has(object.status.succeeded) && object.status.succeeded >= 1"
+      message: "Job migrate has not succeeded: it ran out of retries, or has not finished."
+  - assert:
+      resource: job/migrate
+      expr: "object.spec.template.spec.containers.exists(c, ((has(c.command) ? c.command : []) + (has(c.args) ? c.args : [])).exists(w, w.contains('/scripts/migrate.sh')))"
+      message: "The Job has to run the migration script of the ConfigMap, not something else."
+    now: true
+  - assert:
+      resource: job/migrate
+      expr: "object.spec.template.spec.volumes.exists(v, has(v.configMap) && v.configMap.name == 'migrate-script')"
+      message: "The script has to come from the ConfigMap migrate-script."
+    now: true
