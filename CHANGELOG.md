@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- `e` in the full-screen `watch` opens the exercise in your editor (`$VISUAL`, or else `$EDITOR`) and waits until you close it; for a fix exercise it opens the ticket. Without an editor set, the key says how to set one. Same key as in golings.
+
 ### Changed
 
 - `k8slings init` now suggests `k8slings watch` as the next step, as the README does, instead of `run next`.

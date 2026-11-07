@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -228,3 +229,40 @@ func TestQuit(t *testing.T) {
 }
 
 func writeFile(name, content string) error { return os.WriteFile(name, []byte(content), 0o644) }
+
+func TestEditWithoutAnEditorSaysHowToSetOne(t *testing.T) {
+	m := newModel(t)
+	_, cmd := m.Update(tea.KeyPressMsg{Code: 'e', Text: "e"})
+	if cmd != nil {
+		t.Fatal("there is nothing to run without an editor")
+	}
+	want(t, m, "Set $VISUAL or $EDITOR")
+	if strings.Contains(screen(m), "e edit") {
+		t.Fatal("the key is not offered without an editor")
+	}
+}
+
+func TestEditIsOfferedAndOpensTheExerciseFile(t *testing.T) {
+	m := newModel(t)
+	m.cfg.Editor = "myeditor --wait"
+	want(t, m, "e edit")
+	_, cmd := m.Update(tea.KeyPressMsg{Code: 'e', Text: "e"})
+	if cmd == nil {
+		t.Fatal("e must hand the screen to the editor")
+	}
+}
+
+func TestEditNeedsAnExercise(t *testing.T) {
+	m := newModel(t)
+	m.cfg.Editor = "myeditor"
+	m.status = statusAllDone
+	if _, cmd := m.Update(tea.KeyPressMsg{Code: 'e', Text: "e"}); cmd != nil {
+		t.Fatal("no exercise, nothing to edit")
+	}
+}
+
+func TestEditorFailureIsShown(t *testing.T) {
+	m := newModel(t)
+	m.Update(editDoneMsg{err: errors.New("exit status 1")})
+	want(t, m, "The editor failed: exit status 1")
+}
