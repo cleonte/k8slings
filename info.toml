@@ -887,6 +887,15 @@ How long does the application need before it answers, and how long does the live
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes"
 
 [[exercises]]
+name = "troubleshooting17"
+path = "exercises/troubleshooting/troubleshooting17"
+topic = "troubleshooting"
+mode = "fix"
+hint = """
+A CronJob can be told not to create Jobs at all. Which field, and what does a Job made by hand not prove?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-suspension"
+
+[[exercises]]
 name = "capstone2"
 path = "exercises/capstone/capstone2"
 topic = "capstone"
