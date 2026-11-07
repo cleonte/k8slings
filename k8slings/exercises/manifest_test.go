@@ -162,6 +162,9 @@ func TestModesAndImages(t *testing.T) {
 				t.Errorf("%s is a manifest exercise, so its check.yaml must not have steps", ex.Name)
 			}
 		case exercises.ModeCluster, exercises.ModeFix:
+			if c.ShippedDetails != "" && c.Shipped == "" {
+				t.Errorf("%s has shipped_details without shipped: it adds to the first problem, it does not replace it", ex.Name)
+			}
 			if c.Shipped == "" {
 				t.Errorf("%s is a cluster exercise: its check.yaml needs `shipped:`, what the first problem of the unsolved exercise says", ex.Name)
 			}

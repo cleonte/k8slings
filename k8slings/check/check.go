@@ -23,6 +23,11 @@ type File struct {
 	// exercise fails *for the reason it teaches*: failing is not enough, because
 	// a slow cluster fails every exercise. Required for cluster exercises.
 	Shipped string `json:"shipped"`
+	// ShippedDetails is optional: a fragment the diagnosis of the namespace (Pods,
+	// warnings) must show for the exercise as shipped. For exercises whose first
+	// problem is a generic "0 of 1 replicas are available", it proves the cause.
+	// Only the tests use it; it never changes whether an exercise passes.
+	ShippedDetails string `json:"shipped_details"`
 	// Steps are the checks against the live cluster (cluster mode). They are
 	// read-only and are polled until all of them pass, see steps.go.
 	Steps []Step `json:"steps"`

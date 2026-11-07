@@ -159,3 +159,13 @@ func TestParseQuantity(t *testing.T) {
 		}
 	}
 }
+
+func TestShippedDetailsIsLoaded(t *testing.T) {
+	f, err := Load([]byte("shipped: \"0 of 1 replicas are available\"\nshipped_details: \"OOMKilled\"\nsteps:\n  - unchanged: deployment/web\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f.Shipped == "" || f.ShippedDetails != "OOMKilled" {
+		t.Fatalf("got shipped %q, details %q", f.Shipped, f.ShippedDetails)
+	}
+}

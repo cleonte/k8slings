@@ -213,6 +213,16 @@ func TestFixSolutions(t *testing.T) {
 				return strings.Contains(shipped, compiled.Shipped), shipped
 			})
 			t.Logf("fails as intended: %s", shipped)
+			// A generic first problem ("0 of 1 replicas are available") does not say
+			// why: the diagnosis does (events come a little later than the failure).
+			if want := compiled.ShippedDetails; want != "" {
+				var diagnosis string
+				until(t, time.Minute, "the cause in the diagnosis", func() (bool, string) {
+					diagnosis = strings.Join(cl.Diagnose(ctx, ex.Namespace()), "\n")
+					return strings.Contains(diagnosis, want), diagnosis
+				})
+				t.Logf("and the diagnosis says: %s", want)
+			}
 			// It must keep failing: a broken exercise that passes now and then
 			// (a crash-looping container is briefly Ready) is a false repair.
 			for i := range 12 {
