@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Pod, name: app}
+    assert:
+      - expr: "has(object.metadata.namespace)"
+        message: "Name the namespace of the Pod: here it is the lesson."
+      - expr: "objects.exists(c, c.kind == 'ConfigMap' && c.metadata.name == 'settings' && has(c.metadata.namespace) && c.metadata.namespace == object.metadata.namespace)"
+        message: "The Pod and the ConfigMap it reads are not in the same namespace."
+      - expr: "objects.exists(n, n.kind == 'Namespace' && n.metadata.name == object.metadata.namespace)"
+        message: "The Pod must be in a namespace that this file creates."
+      - expr: "object.spec.containers.all(c, has(c.env) && c.env.exists(e, has(e.valueFrom) && has(e.valueFrom.configMapKeyRef)))"
+        message: "The Pod must keep reading its mode from the ConfigMap."

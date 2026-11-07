@@ -1,0 +1,27 @@
+# I AM NOT DONE
+# scheduling2: a spread constraint that selects no Pod of its own Deployment.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              # TODO: no Pod of this Deployment has this label.
+              app: webapp
+      containers:
+        - name: web
+          image: nginx:1.27

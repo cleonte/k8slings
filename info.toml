@@ -99,6 +99,15 @@ Compare the Pod's namespace with the name of the Namespace object, letter by let
 docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
 
 [[exercises]]
+name = "namespaces2"
+path = "exercises/namespaces/namespaces2"
+topic = "namespaces"
+mode = "manifest"
+hint = """
+Which objects belong to a namespace, and which of them can reach across to another?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/"
+
+[[exercises]]
 name = "deployments1"
 path = "exercises/deployments/deployments1"
 topic = "deployments"
@@ -118,6 +127,15 @@ Which strategy type replaces Pods gradually? Then set how many may be missing an
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy"
 
 [[exercises]]
+name = "deployments3"
+path = "exercises/deployments/deployments3"
+topic = "deployments"
+mode = "manifest"
+hint = """
+A rollout needs room to move: it may start extra Pods, remove Pods, or both. What does a rollout that may do neither do?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment"
+
+[[exercises]]
 name = "services1"
 path = "exercises/services/services1"
 topic = "services"
@@ -126,6 +144,24 @@ timeout = "60s"
 hint = """
 Which port does nginx listen on? targetPort is the port of the Pod, not of the Service."""
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
+
+[[exercises]]
+name = "services2"
+path = "exercises/services/services2"
+topic = "services"
+mode = "manifest"
+hint = """
+A Service sends traffic to a port of the Pods, not to a port of the Service. Which port does the container listen on?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#defining-a-service"
+
+[[exercises]]
+name = "services3"
+path = "exercises/services/services3"
+topic = "services"
+mode = "manifest"
+hint = """
+Node ports come from a range the cluster chooses. What is the default range, and what happens if you name no port at all?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport"
 
 [[exercises]]
 name = "config1"
@@ -152,6 +188,15 @@ topic = "probes"
 mode = "manifest"
 hint = """
 Which port does nginx listen on, and what does it answer at /?"""
+docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+
+[[exercises]]
+name = "probes2"
+path = "exercises/probes/probes2"
+topic = "probes"
+mode = "manifest"
+hint = """
+A liveness probe starts counting as soon as the container starts. What lets a slow starter finish starting first?"""
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
 
 [[exercises]]
@@ -211,6 +256,15 @@ Ask the cluster which StorageClasses exist, and read the events of the claim. Th
 docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims"
 
 [[exercises]]
+name = "volumes2"
+path = "exercises/volumes/volumes2"
+topic = "volumes"
+mode = "manifest"
+hint = """
+Two lists are involved: what the Pod has (volumes) and where the container puts it (volumeMounts). What ties them together?"""
+docs = "https://kubernetes.io/docs/concepts/storage/persistent-volumes/#claims-as-volumes"
+
+[[exercises]]
 name = "statefulsets1"
 path = "exercises/statefulsets/statefulsets1"
 topic = "statefulsets"
@@ -241,6 +295,15 @@ Control-plane nodes are tainted. Which toleration lets a Pod run there?"""
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
 
 [[exercises]]
+name = "daemonsets2"
+path = "exercises/daemonsets/daemonsets2"
+topic = "daemonsets"
+mode = "manifest"
+hint = """
+Control-plane nodes carry a taint. Which key does it have in a current cluster, and is the old one still the same?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/"
+
+[[exercises]]
 name = "scheduling1"
 path = "exercises/scheduling/scheduling1"
 topic = "scheduling"
@@ -250,6 +313,15 @@ requires = ["multinode"]
 hint = """
 Compare the labels of the nodes (kubectl get nodes --show-labels) with what the Pod asks for. An affinity expression can also say that a label must be absent: DoesNotExist."""
 docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity"
+
+[[exercises]]
+name = "scheduling2"
+path = "exercises/scheduling/scheduling2"
+topic = "scheduling"
+mode = "manifest"
+hint = """
+A spread constraint counts the Pods that its labelSelector selects. Which Pods are those supposed to be?"""
+docs = "https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/"
 
 [[exercises]]
 name = "security1"
@@ -315,6 +387,24 @@ timeout = "45s"
 hint = """
 Compare the policy's selectors with the labels of the client, and its port with the port nginx listens on."""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/"
+
+[[exercises]]
+name = "rbac3"
+path = "exercises/rbac/rbac3"
+topic = "rbac"
+mode = "manifest"
+hint = """
+A rule names the API group of the resource. Which group is Deployment in?"""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole"
+
+[[exercises]]
+name = "networkpolicies2"
+path = "exercises/networkpolicies/networkpolicies2"
+topic = "networkpolicies"
+mode = "manifest"
+hint = """
+Look at the dashes under from. How many entries are there, and are two entries an 'and' or an 'or'?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#behavior-of-to-and-from-selectors"
 
 [[exercises]]
 name = "capstone1"
