@@ -399,6 +399,15 @@ Two numbers shape a Job: how many Pods must succeed, and how many run at the sam
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#parallel-jobs"
 
 [[exercises]]
+name = "jobs5"
+path = "exercises/jobs/jobs5"
+topic = "jobs"
+mode = "manifest"
+hint = """
+How does a Pod of a Job know which item is its own? Which completion mode hands it a number?"""
+docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#completion-mode"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"
