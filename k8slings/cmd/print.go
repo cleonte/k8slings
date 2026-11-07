@@ -29,7 +29,7 @@ func printFailure(ex exercises.Exercise, err error) {
 		color.White("\nRepair it with: k8slings kubectl -n %s ...", ex.Namespace())
 		color.White("The ticket is in %s", ex.File())
 	} else {
-		color.White("\nEdit %s", ex.File())
+		color.White("\nEdit %s", ex.Location())
 	}
 	color.White("Need a nudge? k8slings hint %s", ex.Name)
 }

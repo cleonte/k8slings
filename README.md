@@ -72,6 +72,8 @@ In `watch`: `h` hint, `s` solution, `r` reset, `e` open the exercise in your edi
 
 Each exercise folder has a `README.md` with the lesson and an `exercise.yaml` to edit. Look for the `# TODO:` comment.
 
+When an exercise is not solved, the path to edit is printed with the line of the `# TODO:` comment (`exercises/pods/pods1/exercise.yaml:8`). In the terminal of VS Code, Cmd+click (Ctrl+click on Linux and Windows) opens the file at that line.
+
 ### When the cluster is broken for real
 
 A fix exercise (the troubleshooting topic and the capstone) breaks the cluster on purpose, so it is easy to make it worse than it was. What to do:

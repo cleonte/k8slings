@@ -121,6 +121,29 @@ func NextPending(infoFile string, av Availability) (Exercise, error) {
 	return Exercise{}, ErrNoPending
 }
 
+var todoLineRe = regexp.MustCompile(`#\s*TODO:`)
+
+// Location is File with the line of the first `# TODO:` comment added
+// ("exercises/pods/pods1/exercise.yaml:7"), which the terminal of an editor such
+// as VS Code turns into a link that opens the file at the fix site. Without a
+// file, or a TODO in it, it is File.
+func (e Exercise) Location() string {
+	file := e.File()
+	if e.Mode == ModeFix {
+		return file
+	}
+	data, err := os.ReadFile(file)
+	if err != nil {
+		return file
+	}
+	for i, line := range strings.Split(string(data), "\n") {
+		if todoLineRe.MatchString(line) {
+			return fmt.Sprintf("%s:%d", file, i+1)
+		}
+	}
+	return file
+}
+
 // Namespace is the namespace a cluster exercise runs in: one per exercise, so
 // that cleaning up is trivial and exercises cannot disturb each other.
 func (e Exercise) Namespace() string { return cluster.NamespacePrefix + e.Name }
