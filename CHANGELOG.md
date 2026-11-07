@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `k8slings init` now suggests `k8slings watch` as the next step, as the README does, instead of `run next`.
+
 ## [0.7.0] - 2026-11-07
 
 ### Added
