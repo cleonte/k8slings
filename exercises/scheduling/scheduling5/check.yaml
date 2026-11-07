@@ -1,0 +1,15 @@
+objects:
+  - select: {kind: PriorityClass, name: high-priority}
+    assert:
+      - expr: "object.value > 0"
+        message: "The class must outrank ordinary Pods, whose priority is 0."
+      - expr: "object.value <= 1000000000"
+        message: "A user-defined priority class may not be above one billion."
+      - expr: "!has(object.globalDefault) || object.globalDefault == false"
+        message: "Do not make it the default: it would give every Pod without a class this priority."
+  - select: {kind: Pod, name: payments}
+    assert:
+      - expr: "has(object.spec.priorityClassName)"
+        message: "The Pod does not name a priority class."
+      - expr: "objects.exists(c, c.kind == 'PriorityClass' && c.metadata.name == object.spec.priorityClassName)"
+        message: "The Pod names a priority class that this file does not create."

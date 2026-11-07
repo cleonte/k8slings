@@ -8,8 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
+- Five scheduling and disruption exercises, and a new topic, `disruption`: `scheduling3` (a toleration that does not match its taint), `scheduling4` (replicas pulled together by `podAffinity` where `podAntiAffinity` was meant; it runs on the cluster and needs the two workers), `scheduling5` (a PriorityClass above the allowed maximum and a Pod that names another one), `disruption1` (a PodDisruptionBudget that forbids every disruption) and `disruption2` (a budget whose status says no eviction is ever allowed; it runs on the cluster).
 - Ten workload exercises, and a new topic, `lifecycle`: `lifecycle1` (a pre-stop delay longer than the grace period), `lifecycle2` (a Job that never ends because of its log shipper; the fix is a native sidecar; it runs on the cluster), `lifecycle3` (an application that starts before the helper it needs; native sidecar with a startup probe; it runs on the cluster), `jobs4` (`completions` and `parallelism`), `jobs5` (an Indexed Job), `jobs6` (`activeDeadlineSeconds` and `ttlSecondsAfterFinished`), `jobs7` (`podFailurePolicy`), `deployments5` (a rollout that waits for itself on a ReadWriteOncePod claim), `deployments6` (`revisionHistoryLimit` and `minReadySeconds`) and `daemonsets3` (a DaemonSet update that can take the agent off every node).
 - Eleven basics exercises, and a new topic, `serviceaccounts`: `config5` (a Secret with plain text where base64 belongs), `config6` (a TLS Secret with the wrong key names), `pods7` (an unpinned image with `IfNotPresent`), `pods8` (the downward API), `services4` (a `targetPort` name the container does not declare), `services5` (an ExternalName that is a URL), `volumes3` (three volumes on one path, merged into a projected volume), `volumes4` (a ReadWriteMany claim that the default StorageClass cannot provide; it runs on the cluster), `labels5` (`matchExpressions` with an operator that needs values), `serviceaccounts1` (a token that is mounted although the ServiceAccount turns it off) and `serviceaccounts2` (a projected token below the minimum lifetime).
+
+### Changed
+
+- CI: the cluster job runs as four shards instead of three. Contributors only.
 
 ## [0.8.0] - 2026-11-07
 

@@ -1,0 +1,17 @@
+# I AM NOT DONE
+# scheduling3: a toleration for a taint that no node has.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: trainer
+spec:
+  tolerations:
+    # TODO: compare each part of this with the taint dedicated=gpu:NoSchedule.
+    - key: dedicated
+      operator: Equal
+      value: gpus
+      effect: NoExecute
+  containers:
+    - name: trainer
+      image: busybox:1.37
+      command: ["sleep", "3600"]

@@ -1,0 +1,15 @@
+shipped: "allows no disruption"
+steps:
+  - rollout: deployment/web
+  - assert:
+      resource: pdb/web
+      expr: "has(object.status.disruptionsAllowed) && object.status.disruptionsAllowed >= 1"
+      message: "The PodDisruptionBudget web allows no disruption: every eviction of a Pod of web is refused."
+  - assert:
+      resource: pdb/web
+      expr: "object.status.expectedPods == 3 && object.status.currentHealthy == 3"
+      message: "The budget does not cover the three Pods of web."
+  - assert:
+      resource: pdb/web
+      expr: "object.status.disruptionsAllowed < object.status.expectedPods"
+      message: "The budget allows every Pod to go at once: it protects nothing."
