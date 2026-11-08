@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl5: which Pod runs where.
+# TODO: print name and node of every Pod with jsonpath.
+kubectl get pods -o wide

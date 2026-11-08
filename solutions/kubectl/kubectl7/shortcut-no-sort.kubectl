@@ -1,0 +1,2 @@
+# rejected: "Let kubectl sort"
+kubectl get services -o name

@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl4: the images of every container.
+# TODO: print name: images for every Deployment, with jsonpath.
+kubectl get deployments

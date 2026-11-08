@@ -1,0 +1,2 @@
+# rejected: "Do not name a Pod"
+kubectl get pods web-0 -o 'custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,RESTARTS:.status.containerStatuses[0].restartCount'

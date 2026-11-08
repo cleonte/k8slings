@@ -1,0 +1,11 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'output' in flags && flags['output'].startsWith('jsonpath=')"
+      message: "Use -o jsonpath."
+    - expr: "positional.size() == 1"
+      message: "Do not name a Pod: print them all."
+  variant_steps:
+    - assert: {resource: pod/visitor, expr: "object.status.phase == 'Running'", message: "visitor is not Running yet"}
+steps:
+  - rollout: deployment/web

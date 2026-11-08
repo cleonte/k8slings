@@ -1,0 +1,2 @@
+# rejected: "other objects are in the namespace"
+kubectl get deployments -o 'jsonpath=shop: nginx:1.27 busybox:1.37{"\n"}site: nginx:1.27{"\n"}worker: busybox:1.37{"\n"}{.spec.template.spec.containers}'

@@ -1,0 +1,2 @@
+# rejected: "Keep the header row"
+kubectl get pods --no-headers -o 'custom-columns=NAME:.metadata.name,IMAGE:.spec.containers[0].image,RESTARTS:.status.containerStatuses[0].restartCount'

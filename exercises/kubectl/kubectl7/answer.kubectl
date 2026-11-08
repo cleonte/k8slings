@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl7: sorted by a field.
+# TODO: sort the Services by port, and print only their names.
+kubectl get services -o name

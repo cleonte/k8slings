@@ -1,0 +1,9 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'sort-by' in flags"
+      message: "Let kubectl sort: use --sort-by."
+    - expr: "positional.size() == 1"
+      message: "Do not name the Services: they are listed, then sorted."
+    - expr: "'output' in flags && flags['output'] == 'name'"
+      message: "Print the names with -o name."

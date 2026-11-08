@@ -1,0 +1,1 @@
+kubectl get pods -o 'jsonpath={range .items[*]}{.metadata.name} {.spec.nodeName}{"\n"}{end}'
