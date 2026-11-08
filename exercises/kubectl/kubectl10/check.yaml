@@ -1,0 +1,5 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "verb == 'explain' && positional.size() == 1 && positional[0].endsWith('maxSurge')"
+      message: "Ask for the field itself, down to maxSurge."

@@ -1,0 +1,2 @@
+# rejected: "The Deployment has to run nginx:1.27"
+kubectl create deployment web --image=nginx --replicas=3 --dry-run=client -o yaml

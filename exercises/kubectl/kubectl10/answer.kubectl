@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl10: the manual of a field.
+# TODO: ask for the documentation of that one field.
+kubectl explain deployment.spec.strategy

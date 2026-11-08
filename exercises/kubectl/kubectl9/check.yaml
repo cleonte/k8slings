@@ -1,0 +1,17 @@
+shipped: "The Service has to forward to port 8080"
+objects:
+  - select: {kind: Service, name: web}
+    assert:
+      - expr: "object.spec.ports.size() == 1 && object.spec.ports[0].port == 80"
+        message: "The Service has to listen on port 80."
+      - expr: "object.spec.ports[0].targetPort == 8080"
+        message: "The Service has to forward to port 8080 of the Pods."
+      - expr: "has(object.spec.selector) && object.spec.selector.app == 'web'"
+        message: "The Service has to select the Pods labelled app=web."
+query:
+  compare: manifest
+  command:
+    - expr: "verb == 'create service'"
+      message: "Generate the Service with kubectl create service."
+    - expr: "flags['output'] == 'yaml'"
+      message: "Print YAML: -o yaml."

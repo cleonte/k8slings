@@ -1,0 +1,2 @@
+# rejected: "The Service has to listen on port 80"
+kubectl create service clusterip web --tcp=8080:80 --dry-run=client -o yaml

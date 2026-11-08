@@ -543,6 +543,35 @@ Which field holds a Service's port? It is in a list, so you need an index. And t
 docs = "https://kubernetes.io/docs/reference/kubectl/quick-reference/#viewing-and-finding-resources"
 
 [[exercises]]
+name = "kubectl8"
+path = "exercises/kubectl/kubectl8"
+topic = "kubectl"
+mode = "query"
+offline = true
+hint = """
+kubectl create deployment NAME --image=... has a flag for the replicas, and another that turns the output into YAML. What does --dry-run=client do?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/quick-reference/#creating-objects"
+
+[[exercises]]
+name = "kubectl9"
+path = "exercises/kubectl/kubectl9"
+topic = "kubectl"
+mode = "query"
+offline = true
+hint = """
+--tcp takes two numbers separated by a colon. Which one is the port of the Service, and which is the port of the container?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_clusterip/"
+
+[[exercises]]
+name = "kubectl10"
+path = "exercises/kubectl/kubectl10"
+topic = "kubectl"
+mode = "query"
+hint = """
+Follow the path from the kind: deployment, then spec, then the strategy, then the part about a rolling update. Put dots between the names."""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_explain/"
+
+[[exercises]]
 name = "volumes1"
 path = "exercises/volumes/volumes1"
 topic = "volumes"
