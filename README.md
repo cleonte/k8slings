@@ -8,7 +8,7 @@ You get <!-- count:exercises -->128<!-- /count --> exercises in <!-- count:topic
 
 ## How it works
 
-Each exercise is a Kubernetes manifest that is broken in one small way (the last one, in four). Edit it until `k8slings` is happy, then delete the `# I AM NOT DONE` line at the top and move on. An exercise counts as done only when its check has passed and the line is gone: deleting the line from a file that does not pass yet does not skip it. Every exercise has a short lesson, a hint, and a link to the Kubernetes documentation.
+Most exercises are a Kubernetes manifest that is broken in one small way (the last one, in four). Edit it until `k8slings` is happy, then delete the `# I AM NOT DONE` line at the top and move on. An exercise counts as done only when its check has passed and the line is gone: deleting the line from a file that does not pass yet does not skip it. Every exercise has a short lesson, a hint, and a link to the Kubernetes documentation.
 
 - **Manifest exercises** run offline. Your YAML is validated against the Kubernetes 1.37 schema (a misspelled `contianers:` is caught, with a message you can read) and checked with a few assertions about what you wrote.
 - **Cluster exercises** are applied to a local [kind](https://kind.sigs.k8s.io/) cluster of their own and checked against what really happens: a rollout completes, a Service has endpoints, a request gets through, a network policy keeps an intruder out, a ServiceAccount may or may not delete Pods. When it does not work yet, you see the Pods and the warnings of the cluster. Without the cluster, these exercises are skipped and the rest carry on.

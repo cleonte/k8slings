@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-08
+
 ### Added
 
 - **Query mode**, a fourth kind of exercise: you write one `kubectl` command in `answer.kubectl`, and k8slings runs it on its own cluster and compares what it prints with what was asked for. The text is never run in a shell: a tokenizer reads the safe part of POSIX quoting, only read-only verbs (`get`, `describe`, `explain`, `logs`, `events`, `auth can-i`, `api-resources`, and `create ... --dry-run=client`) and the flags listed for each are accepted, and `-n` is the exercise's own namespace. The output is compared with the reference answer's on the same cluster state, and then once more with more objects in the namespace, so typing in today's names does not pass. Some exercises check the printed YAML as a manifest instead; those need no cluster, only `kubectl`.
@@ -199,7 +201,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.12.1...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/cleonte/k8slings/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/cleonte/k8slings/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/cleonte/k8slings/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/cleonte/k8slings/compare/v0.10.0...v0.11.0
