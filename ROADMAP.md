@@ -173,6 +173,7 @@ Branch `phase-4-fix`.
 - [x] Multi-step setups (`setup-2.yaml` ...), for exercises that need history: `troubleshooting12` (bad rollout, `rollout undo`).
 - [x] A multi-fault capstone: `capstone2` (three unrelated faults).
 - [x] More troubleshooting exercises: DNS (`troubleshooting13`), a taint (`troubleshooting20`), finalizers, CronJobs, Jobs, a shell-less container and more (`troubleshooting14` to `19`).
+- [x] Query mode (a fourth mode: the learner writes one kubectl command, checked by its output against a reference answer, with a variant of the state against hard-coding) and a `kubectl` topic of 13 exercises. Not built: `describe`/`events` output as an expected output (it carries ages), exercises that need a second command.
 - [x] Docs for fix mode: what to do when you break the cluster for real (`cluster down && cluster up`, `reset`).
 
 ## Phase 5 — Advanced topics and add-ons

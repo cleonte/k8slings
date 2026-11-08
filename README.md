@@ -17,7 +17,7 @@ Each exercise is a Kubernetes manifest that is broken in one small way (the last
 
 - **Query exercises** have you write a `kubectl` command: select Pods by label, print a table with `custom-columns`, pull a value out with `jsonpath`, sort, ask `explain`, generate YAML with `--dry-run=client`. You write one command in `answer.kubectl`, and k8slings runs it on its own cluster (read-only commands only; never in a shell) and compares what it prints with the expected output, once for the cluster as it is and once with more objects in it, so typing in today's names does not pass. Quote as you would in a POSIX shell (`-o jsonpath='{.items[*].metadata.name}'`); PowerShell quotes differently, so use single quotes as shown. A few of these need only `kubectl` and no cluster.
 
-What you will practise: Pods, labels and selectors, namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
+What you will practise: Pods, labels and selectors, the kubectl you use every day (selectors, jsonpath, custom columns, sorting, explain, generating YAML), namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
 
 ## Install
 
