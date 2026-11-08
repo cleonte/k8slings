@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl13: which Pods are ready.
+# TODO: print name and Ready status of every Pod, with a filter on the conditions.
+kubectl get pods

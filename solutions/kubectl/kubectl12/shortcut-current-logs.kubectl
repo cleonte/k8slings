@@ -1,0 +1,2 @@
+# rejected: "Ask for the previous container"
+kubectl logs worker

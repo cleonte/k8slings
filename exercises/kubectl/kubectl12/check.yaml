@@ -1,0 +1,9 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "verb == 'logs' && flags['previous'] == 'true'"
+      message: "Ask for the previous container: --previous."
+    - expr: "positional == ['worker']"
+      message: "Ask for the Pod worker."
+steps:
+  - assert: {resource: pod/worker, expr: "object.status.containerStatuses[0].restartCount == 1 && object.status.phase == 'Running'", message: "worker has not restarted yet"}

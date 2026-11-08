@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl11: what may this account do.
+# TODO: ask for the whole list of what ci may do, as ci.
+kubectl auth can-i get deployments --as system:serviceaccount:k8slings-kubectl11:ci

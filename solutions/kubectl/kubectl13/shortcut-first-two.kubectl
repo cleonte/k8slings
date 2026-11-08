@@ -1,0 +1,2 @@
+# rejected: "other objects are in the namespace"
+kubectl get pods -o 'jsonpath={range .items[0:2]}{.metadata.name} {.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}'

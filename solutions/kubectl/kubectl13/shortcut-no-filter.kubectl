@@ -1,0 +1,2 @@
+# rejected: "Filter the conditions"
+kubectl get pods -o 'jsonpath={range .items[*]}{.metadata.name} {.status.conditions[1].status}{"\n"}{end}'

@@ -1,0 +1,1 @@
+kubectl auth can-i --list --as system:serviceaccount:k8slings-kubectl11:ci

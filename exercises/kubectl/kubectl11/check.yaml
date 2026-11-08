@@ -1,0 +1,11 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "verb == 'auth can-i' && flags['list'] == 'true'"
+      message: "Ask for the whole list: --list."
+    - expr: "flags['as'] == 'system:serviceaccount:k8slings-kubectl11:ci'"
+      message: "Ask as the ServiceAccount ci of this namespace: --as system:serviceaccount:<namespace>:ci."
+  variant_steps:
+    - can_i: {as: ci, verb: get, resource: configmaps}
+steps:
+  - can_i: {as: ci, verb: get, resource: deployments.apps}

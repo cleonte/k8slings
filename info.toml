@@ -905,6 +905,33 @@ hint = """
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account"
 
 [[exercises]]
+name = "kubectl11"
+path = "exercises/kubectl/kubectl11"
+topic = "kubectl"
+mode = "query"
+hint = """
+auth can-i has a flag that lists instead of answering, and a flag that changes who is asking. What is the full user name of a ServiceAccount?"""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access"
+
+[[exercises]]
+name = "kubectl12"
+path = "exercises/kubectl/kubectl12"
+topic = "kubectl"
+mode = "query"
+hint = """
+The restarted container has its own logs. Which flag of kubectl logs asks for the one before it?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_logs/"
+
+[[exercises]]
+name = "kubectl13"
+path = "exercises/kubectl/kubectl13"
+topic = "kubectl"
+mode = "query"
+hint = """
+The Ready condition is one element of a list. Which part of the jsonpath picks the element whose type is Ready?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/jsonpath/"
+
+[[exercises]]
 name = "networkpolicies2"
 path = "exercises/networkpolicies/networkpolicies2"
 topic = "networkpolicies"

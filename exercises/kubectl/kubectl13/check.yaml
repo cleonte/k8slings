@@ -1,0 +1,14 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'output' in flags && flags['output'].startsWith('jsonpath=')"
+      message: "Use -o jsonpath."
+    - expr: "flags['output'].contains('@.type')"
+      message: "Filter the conditions: [?(@.type==\"Ready\")]."
+    - expr: "positional.size() == 1"
+      message: "Do not name a Pod: print them all."
+  variant_steps:
+    - assert: {resource: pod/late, expr: "object.status.phase == 'Running'", message: "late is not Running yet"}
+steps:
+  - assert: {resource: pod/ok, expr: "object.status.phase == 'Running'", message: "ok is not Running yet"}
+  - assert: {resource: pod/notready, expr: "object.status.phase == 'Running'", message: "notready is not Running yet"}
