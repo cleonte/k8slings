@@ -47,11 +47,21 @@ type Env struct {
 	// Missing lists the exercises of this version that the folder does not have
 	// yet. Nil skips the check.
 	Missing func() []string
+	// HasKubectl says whether kubectl is installed. The query exercises that
+	// need no cluster (kubectl create --dry-run=client) run with it alone. Nil
+	// skips the check.
+	HasKubectl func() bool
 }
 
 func DefaultEnv(schemas fs.FS, cl *cluster.Cluster) Env {
 	return Env{
 		Cluster: cl,
+		HasKubectl: func() bool {
+			if cl != nil && cl.Runner != nil {
+				return cl.Runner.Has("kubectl")
+			}
+			return cluster.ExecRunner{}.Has("kubectl")
+		},
 		FileExists: func(path string) bool {
 			_, err := os.Stat(path)
 			return err == nil
@@ -92,6 +102,9 @@ func offlineChecks(infoFile string, env Env) []Check {
 		Check{Name: "Exercise manifest", Status: OK, Detail: fmt.Sprintf("%s lists %d exercises", infoFile, len(all))},
 		filesCheck(all, env),
 	)
+	if c, ok := kubectlCheck(all, env); ok {
+		checks = append(checks, c)
+	}
 	if env.Missing != nil {
 		if missing := env.Missing(); len(missing) > 0 {
 			checks = append(checks, Check{Name: "Exercise set", Status: Warn,
@@ -101,6 +114,25 @@ func offlineChecks(infoFile string, env Env) []Check {
 		}
 	}
 	return checks
+}
+
+// kubectlCheck is for the query exercises that need no cluster: they run
+// `kubectl create ... --dry-run=client`, so kubectl has to be installed even
+// where there is no Docker and no kind.
+func kubectlCheck(all []exercises.Exercise, env Env) (Check, bool) {
+	n := 0
+	for _, e := range all {
+		if e.Mode == exercises.ModeQuery && e.Offline {
+			n++
+		}
+	}
+	if n == 0 || env.HasKubectl == nil {
+		return Check{}, false
+	}
+	if env.HasKubectl() {
+		return Check{Name: "kubectl", Status: OK, Detail: fmt.Sprintf("found (it runs the %d query exercise(s) that need no cluster)", n)}, true
+	}
+	return Check{Name: "kubectl", Status: Warn, Detail: fmt.Sprintf("not found: the %d query exercise(s) that need no cluster are skipped until it is installed (https://kubernetes.io/docs/tasks/tools/)", n)}, true
 }
 
 // Ready reports whether a group has no failures and no warnings.
@@ -162,7 +194,7 @@ func filesCheck(all []exercises.Exercise, env Env) Check {
 func modesCheck(all []exercises.Exercise, clusterReady bool) Check {
 	needs := 0
 	for _, e := range all {
-		if e.Mode != exercises.ModeManifest {
+		if e.Mode != exercises.ModeManifest && !(e.Mode == exercises.ModeQuery && e.Offline) {
 			needs++
 		}
 	}

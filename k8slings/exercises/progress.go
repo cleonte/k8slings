@@ -17,6 +17,10 @@ func (e Exercise) SkipReason(av Availability) string {
 		if !av.Cluster {
 			return "needs the cluster: run `k8slings cluster up`"
 		}
+	case ModeQuery:
+		if !e.Offline && !av.Cluster {
+			return "needs the cluster: run `k8slings cluster up`"
+		}
 	}
 	for _, need := range e.Requires {
 		switch need {

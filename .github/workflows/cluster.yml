@@ -17,6 +17,7 @@ on:
       - "info.toml"
       - "k8slings/cluster/**"
       - "k8slings/check/**"
+      - "k8slings/query/**"
       - "k8slings/exercises/**"
       - "k8slings/cmd/**"
       - "go.mod"

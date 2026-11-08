@@ -31,6 +31,8 @@ type File struct {
 	// Steps are the checks against the live cluster (cluster mode). They are
 	// read-only and are polled until all of them pass, see steps.go.
 	Steps []Step `json:"steps"`
+	// Query is set for a query exercise (see query.go).
+	Query *QuerySpec `json:"query"`
 }
 
 // SchemaMode is "strict" or "off". YAML 1.1 reads an unquoted `off` as the
@@ -76,9 +78,11 @@ type Assertion struct {
 // Compiled is a check whose expressions have all been compiled.
 type Compiled struct {
 	File
-	env   *cel.Env
-	progs [][]cel.Program
-	steps []compiledStep
+	env          *cel.Env
+	progs        [][]cel.Program
+	steps        []compiledStep
+	variantSteps []compiledStep
+	commandProgs []cel.Program
 }
 
 // Load parses and compiles a check.yaml. Authoring mistakes (bad YAML, a
@@ -129,7 +133,11 @@ func Load(data []byte) (*Compiled, error) {
 		}
 		c.progs = append(c.progs, progs)
 	}
-	if err := c.compileSteps(); err != nil {
+	var err2 error
+	if c.steps, err2 = c.compileStepList(f.Steps, "steps"); err2 != nil {
+		return nil, err2
+	}
+	if err := c.compileQuery(); err != nil {
 		return nil, err
 	}
 	return c, nil

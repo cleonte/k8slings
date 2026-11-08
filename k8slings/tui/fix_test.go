@@ -28,6 +28,10 @@ func (f *fakeCluster) ResetNamespace(context.Context, string) error       { retu
 func (f *fakeCluster) Apply(context.Context, string, []byte) (string, error) {
 	return "", nil
 }
+func (f *fakeCluster) Delete(context.Context, string, []byte) error { return nil }
+func (f *fakeCluster) Query(context.Context, []string, bool) (cluster.QueryResult, error) {
+	return cluster.QueryResult{}, nil
+}
 func (f *fakeCluster) Nodes(context.Context) (int, error)        { return 3, nil }
 func (f *fakeCluster) Diagnose(context.Context, string) []string { return nil }
 func (f *fakeCluster) Seeded(context.Context, string, string) bool {

@@ -223,6 +223,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		cmd := m.startRun()
 		m.notice = "Reset " + m.exercise.Name + ": the cluster is broken again."
+		if m.exercise.Mode == exercises.ModeQuery {
+			m.notice = "Reset " + m.exercise.Name + ": your answer and its cluster state are back."
+		}
 		return m, cmd
 
 	default:
@@ -401,6 +404,11 @@ func (m *Model) reset() tea.Cmd {
 	if err != nil {
 		m.notice = "Reset failed: " + err.Error()
 		return nil
+	}
+	if ex := m.exercise; ex.Mode == exercises.ModeQuery && !ex.Offline && m.cfg.Env != nil {
+		// The file is back; the state it queries is seeded again too.
+		env := m.cfg.Env
+		return func() tea.Msg { return reseedDoneMsg{err: ex.Reseed(context.Background(), env)} }
 	}
 	cmd := m.startRun()
 	m.notice = "Reset " + path + " to its original state."

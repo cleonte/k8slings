@@ -9,6 +9,7 @@ import (
 	"testing/fstest"
 	"time"
 
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/schema"
 )
 
@@ -30,6 +31,24 @@ type fakeKube struct {
 	seedBlock bool   // Seed waits until its context is cancelled
 	liveUID   string // what the cluster says the UID of an object is
 	flap      bool   // the pod is Running on odd reads and Pending on even ones
+
+	// query exercises
+	queryFn func(args []string, offline bool) (cluster.QueryResult, error)
+	deleted [][]byte // the manifests given to Delete
+}
+
+func (f *fakeKube) Delete(_ context.Context, ns string, manifest []byte) error {
+	f.calls = append(f.calls, "delete "+ns)
+	f.deleted = append(f.deleted, manifest)
+	return nil
+}
+
+func (f *fakeKube) Query(_ context.Context, args []string, offline bool) (cluster.QueryResult, error) {
+	f.calls = append(f.calls, "query "+strings.Join(args, " "))
+	if f.queryFn == nil {
+		return cluster.QueryResult{}, nil
+	}
+	return f.queryFn(args, offline)
 }
 
 func (f *fakeKube) Seed(ctx context.Context, ns, name string, steps [][]byte) error {

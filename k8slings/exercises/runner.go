@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/cleonte/k8slings/k8slings/check"
+	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/schema"
 	"sigs.k8s.io/yaml"
 )
@@ -24,6 +25,10 @@ type Kube interface {
 	Verify(ctx context.Context) error
 	ResetNamespace(ctx context.Context, ns string) error
 	Apply(ctx context.Context, ns string, manifest []byte) (string, error)
+	// Delete removes the objects of a manifest, and waits until they are gone.
+	Delete(ctx context.Context, ns string, manifest []byte) error
+	// Query runs a read-only kubectl command that the query package has checked.
+	Query(ctx context.Context, args []string, offline bool) (cluster.QueryResult, error)
 	Nodes(ctx context.Context) (int, error)
 	Diagnose(ctx context.Context, ns string) []string
 	// For fix exercises: bring a namespace to its broken state, say whether it
@@ -37,7 +42,10 @@ type Kube interface {
 // check.yaml files, which are never written to the workspace), the schemas and,
 // for cluster exercises, the cluster.
 type Env struct {
-	Embedded  fs.FS // the k8slings.FS: info.toml and exercises/
+	Embedded fs.FS // the k8slings.FS: info.toml and exercises/
+	// Solutions is the embedded solutions/ tree. A query exercise needs it when it
+	// runs: the reference answer is what the learner's command is compared with.
+	Solutions fs.FS
 	Validator *schema.Validator
 	// Kube is nil when there is no cluster support; cluster exercises are then skipped.
 	Kube Kube
@@ -153,7 +161,7 @@ func (e Exercise) Run(ctx context.Context, env *Env) (Result, error) {
 
 // RunSource checks src as if it were the content of the exercise file.
 func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, error) {
-	if e.Mode == ModeCluster || e.Mode == ModeFix {
+	if e.Mode == ModeCluster || e.Mode == ModeFix || e.Mode == ModeQuery {
 		if reason := e.SkipReason(env.Availability(ctx)); reason != "" {
 			return Result{}, &SkippedError{fmt.Sprintf("%s %s", e.Name, reason)}
 		}
@@ -168,6 +176,9 @@ func (e Exercise) RunSource(ctx context.Context, env *Env, src []byte) (Result, 
 	}
 	if e.Mode == ModeFix {
 		return e.runFix(ctx, env, c)
+	}
+	if e.Mode == ModeQuery {
+		return e.runQuery(ctx, env, c, src)
 	}
 	objs, err := ParseObjects(src)
 	if err != nil {
@@ -256,8 +267,8 @@ func (e Exercise) runFix(ctx context.Context, env *Env, c *check.Compiled) (Resu
 // Reseed puts a fix exercise back into its broken state, and forgets that it
 // was fixed. It is what `reset` does for exercises that have no file.
 func (e Exercise) Reseed(ctx context.Context, env *Env) error {
-	if e.Mode != ModeFix {
-		return fmt.Errorf("%s is not a fix exercise", e.Name)
+	if e.Mode != ModeFix && !(e.Mode == ModeQuery && !e.Offline) {
+		return fmt.Errorf("%s has no cluster state to put back", e.Name)
 	}
 	raw, err := fs.ReadFile(env.Embedded, e.CheckPath())
 	if err != nil {
@@ -269,6 +280,12 @@ func (e Exercise) Reseed(ctx context.Context, env *Env) error {
 	}
 	if env.Kube == nil || env.Kube.Verify(ctx) != nil {
 		return &SkippedError{fmt.Sprintf("%s needs the cluster: run `k8slings cluster up`", e.Name)}
+	}
+	if e.Mode == ModeQuery {
+		if !e.hasSetup(env) {
+			return nil // nothing to put back
+		}
+		return e.seedQuery(ctx, env, c)
 	}
 	return e.seed(ctx, env, c)
 }

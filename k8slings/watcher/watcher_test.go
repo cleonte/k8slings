@@ -71,6 +71,19 @@ func TestSaveIsReportedOnce(t *testing.T) {
 	expectQuiet(t, changes)
 }
 
+// A query exercise is answered in answer.kubectl: saving it must re-run the check.
+func TestSavingAnAnswerOfAQueryExerciseIsReported(t *testing.T) {
+	dir, changes, _ := start(t)
+	file := filepath.Join(dir, "answer.kubectl")
+	write(t, file, "kubectl get pods\n")
+	if batch := next(t, changes); len(batch) != 1 || batch[0] != file {
+		t.Fatalf("got %v, want [%s]", batch, file)
+	}
+	write(t, filepath.Join(dir, ".answer.kubectl.swp"), "x\n")
+	write(t, filepath.Join(dir, ".answer.kubectl"), "x\n")
+	expectQuiet(t, changes)
+}
+
 func TestAtomicSaveByRename(t *testing.T) {
 	dir, changes, _ := start(t)
 	file := filepath.Join(dir, "exercise.yaml")
