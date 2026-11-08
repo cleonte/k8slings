@@ -17,7 +17,7 @@ const infoFile = "info.toml"
 // newEnv is what running exercises needs. The cluster is there for cluster
 // exercises; without a cluster they are skipped, never failed.
 func newEnv() *exercises.Env {
-	env := &exercises.Env{Embedded: k8slings.FS, Validator: schema.New(k8slings.Schemas)}
+	env := &exercises.Env{Embedded: k8slings.FS, Solutions: k8slings.Solutions, Validator: schema.New(k8slings.Schemas)}
 	if cl, err := cluster.Default(); err == nil {
 		env.Kube = cl
 	}

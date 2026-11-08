@@ -18,6 +18,8 @@ func ResetCmd(src fs.FS, root string) *cobra.Command {
 the binary, which also brings back the 'I AM NOT DONE' line. Your changes to that
 file are lost.
 
+For a query exercise: the same, and its cluster state is set up again.
+
 For a fix exercise (nothing to edit, you repair the cluster): breaks the cluster
 again, as it was when you started, and forgets that you had fixed it.`,
 		Args:          cobra.ExactArgs(1),
@@ -41,9 +43,34 @@ again, as it was when you started, and forgets that you had fixed it.`,
 				return err
 			}
 			color.Green("Restored %s", p)
+			if ex, ok := queryExercise(src, args[0]); ok && !ex.Offline {
+				if err := ex.Reseed(cmd.Context(), newEnv()); err != nil {
+					color.Yellow("%s", err)
+					return nil // the file is back; the state is made on the next run
+				}
+				color.White("The cluster state of %s is set up again.", ex.Name)
+			}
 			return nil
 		},
 	}
+}
+
+// queryExercise finds the named exercise in the embedded manifest, if it is a query exercise.
+func queryExercise(src fs.FS, name string) (exercises.Exercise, bool) {
+	data, err := fs.ReadFile(src, "info.toml")
+	if err != nil {
+		return exercises.Exercise{}, false
+	}
+	all, err := exercises.ParseInfo(data)
+	if err != nil {
+		return exercises.Exercise{}, false
+	}
+	for _, ex := range all {
+		if ex.Name == name && ex.Mode == exercises.ModeQuery {
+			return ex, true
+		}
+	}
+	return exercises.Exercise{}, false
 }
 
 // fixExercise finds the named exercise in the embedded manifest, if it is a fix exercise.

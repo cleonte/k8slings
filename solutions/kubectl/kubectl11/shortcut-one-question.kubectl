@@ -1,0 +1,2 @@
+# rejected: "Ask for the whole list"
+kubectl auth can-i get deployments --as system:serviceaccount:k8slings-kubectl11:ci

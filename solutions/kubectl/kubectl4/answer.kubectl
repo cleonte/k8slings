@@ -1,0 +1,1 @@
+kubectl get deployments -o 'jsonpath={range .items[*]}{.metadata.name}: {.spec.template.spec.containers[*].image}{"\n"}{end}'

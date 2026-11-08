@@ -1,0 +1,2 @@
+# rejected: "Do not name a Deployment"
+kubectl get deployment shop -o 'jsonpath={.metadata.name}: {.spec.template.spec.containers[*].image}{"\n"}'

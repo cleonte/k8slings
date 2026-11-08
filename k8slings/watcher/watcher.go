@@ -110,10 +110,11 @@ func addTree(w *fsnotify.Watcher, root string) error {
 	})
 }
 
-// isExerciseFile is true for YAML files, leaving out the backups, swap files
-// and temporary files editors create next to them.
+// isExerciseFile is true for the files a learner edits: YAML, and the
+// answer.kubectl of a query exercise. The backups, swap files and temporary
+// files editors create next to them are left out.
 func isExerciseFile(name string) bool {
 	base := filepath.Base(name)
-	yaml := strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml")
-	return yaml && !strings.HasPrefix(base, ".") && !strings.HasPrefix(base, "#")
+	edited := strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml") || strings.HasSuffix(base, ".kubectl")
+	return edited && !strings.HasPrefix(base, ".") && !strings.HasPrefix(base, "#")
 }

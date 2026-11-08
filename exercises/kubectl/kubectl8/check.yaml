@@ -1,0 +1,13 @@
+shipped: "The Deployment has to run three replicas"
+objects:
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "object.spec.replicas == 3"
+        message: "The Deployment has to run three replicas."
+      - expr: "object.spec.template.spec.containers.size() == 1 && object.spec.template.spec.containers[0].image == 'nginx:1.27'"
+        message: "The Deployment has to run nginx:1.27."
+query:
+  compare: manifest
+  command:
+    - expr: "verb == 'create deployment'"
+      message: "Generate the Deployment with kubectl create deployment."

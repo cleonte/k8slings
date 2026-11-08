@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl8: generate a Deployment.
+# TODO: generate the Deployment with kubectl create, as YAML.
+kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml

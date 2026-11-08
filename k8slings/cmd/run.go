@@ -69,7 +69,11 @@ func runExercise(ctx context.Context, env *exercises.Env, ex exercises.Exercise)
 		color.Green("✅ %s is repaired. Well done.\n", ex.Name)
 		return nil
 	}
-	color.Green("✅ %s passes (%d objects checked).\n", result.Exercise.Name, result.Objects)
+	if ex.Mode == exercises.ModeQuery {
+		color.Green("✅ %s passes: your command prints what was asked for.\n", ex.Name)
+	} else {
+		color.Green("✅ %s passes (%d objects checked).\n", result.Exercise.Name, result.Objects)
+	}
 	if ex.State() == exercises.Pending {
 		color.White("Remove the 'I AM NOT DONE' line from %s to keep going.", ex.File())
 		return fmt.Errorf("exercise is still pending")

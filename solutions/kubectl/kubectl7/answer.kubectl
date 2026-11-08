@@ -1,0 +1,1 @@
+kubectl get services --sort-by='.spec.ports[0].port' -o name

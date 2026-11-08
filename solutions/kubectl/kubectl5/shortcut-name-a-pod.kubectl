@@ -1,0 +1,2 @@
+# rejected: "Do not name a Pod"
+kubectl get pods web-0 -o 'jsonpath={.metadata.name} {.spec.nodeName}{"\n"}'

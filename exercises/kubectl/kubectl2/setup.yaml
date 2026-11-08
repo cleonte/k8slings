@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+        tier: frontend
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: web
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+        tier: frontend
+        canary: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: api
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cache
+  template:
+    metadata:
+      labels:
+        app: cache
+        tier: cache
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: cache
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+        tier: data
+        canary: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: db
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]

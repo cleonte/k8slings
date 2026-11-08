@@ -1,0 +1,15 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'field-selector' in flags"
+      message: "Let the cluster choose the Pods: use --field-selector."
+    - expr: "positional.size() == 1"
+      message: "Do not name a Pod."
+    - expr: "'output' in flags && flags['output'] == 'name'"
+      message: "Print the names with -o name."
+  variant_steps:
+    - assert: {resource: pod/late, expr: "object.status.phase == 'Pending'", message: "late is not Pending yet"}
+steps:
+  - assert: {resource: pod/ok, expr: "object.status.phase == 'Running'", message: "ok is not Running yet"}
+  - assert: {resource: pod/done, expr: "object.status.phase == 'Succeeded'", message: "done is not Succeeded yet"}
+  - assert: {resource: pod/stuck, expr: "object.status.phase == 'Pending'", message: "stuck is not Pending yet"}

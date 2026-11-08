@@ -153,6 +153,51 @@ A quota limits the namespace it is in. Which namespace is this one in?"""
 docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
 
 [[exercises]]
+name = "kubectl1"
+path = "exercises/kubectl/kubectl1"
+topic = "kubectl"
+mode = "query"
+hint = """
+A selector goes after -l. How do you say "the label app has the value web"? And which -o format prints only the kind and the name?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors"
+
+[[exercises]]
+name = "kubectl2"
+path = "exercises/kubectl/kubectl2"
+topic = "kubectl"
+mode = "query"
+hint = """
+Put the whole selector in single quotes. Which keyword means "one of these values", and how do you say "has no such label"?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#set-based-requirement"
+
+[[exercises]]
+name = "kubectl3"
+path = "exercises/kubectl/kubectl3"
+topic = "kubectl"
+mode = "query"
+hint = """
+Not everything you can select on is a label. Which field of a Pod says whether it is Running, and how do you say "is not"?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/"
+
+[[exercises]]
+name = "kubectl4"
+path = "exercises/kubectl/kubectl4"
+topic = "kubectl"
+mode = "query"
+hint = """
+Loop over .items with range, print the name, then the images of every element of containers. Where in the Deployment are the containers?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/jsonpath/"
+
+[[exercises]]
+name = "kubectl5"
+path = "exercises/kubectl/kubectl5"
+topic = "kubectl"
+mode = "query"
+hint = """
+Loop over the Pods with range ... end. Inside it, the name is .metadata.name; where does a Pod say which node it is on?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/jsonpath/"
+
+[[exercises]]
 name = "deployments1"
 path = "exercises/deployments/deployments1"
 topic = "deployments"
@@ -478,6 +523,53 @@ mode = "manifest"
 hint = """
 A failed Pod usually counts against the backoff limit. Which rule makes one exit code harmless and another one fatal, and what does it need from the Pod?"""
 docs = "https://kubernetes.io/docs/concepts/workloads/controllers/job/#pod-failure-policy"
+
+[[exercises]]
+name = "kubectl6"
+path = "exercises/kubectl/kubectl6"
+topic = "kubectl"
+mode = "query"
+hint = """
+Each column is HEADER:path, and the paths are the ones you see in -o yaml. The restart count lives in the status of the container, not in its spec."""
+docs = "https://kubernetes.io/docs/reference/kubectl/#custom-columns"
+
+[[exercises]]
+name = "kubectl7"
+path = "exercises/kubectl/kubectl7"
+topic = "kubectl"
+mode = "query"
+hint = """
+Which field holds a Service's port? It is in a list, so you need an index. And the sort key is a jsonpath that starts with a dot."""
+docs = "https://kubernetes.io/docs/reference/kubectl/quick-reference/#viewing-and-finding-resources"
+
+[[exercises]]
+name = "kubectl8"
+path = "exercises/kubectl/kubectl8"
+topic = "kubectl"
+mode = "query"
+offline = true
+hint = """
+kubectl create deployment NAME --image=... has a flag for the replicas, and another that turns the output into YAML. What does --dry-run=client do?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/quick-reference/#creating-objects"
+
+[[exercises]]
+name = "kubectl9"
+path = "exercises/kubectl/kubectl9"
+topic = "kubectl"
+mode = "query"
+offline = true
+hint = """
+--tcp takes two numbers separated by a colon. Which one is the port of the Service, and which is the port of the container?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_create/kubectl_create_service_clusterip/"
+
+[[exercises]]
+name = "kubectl10"
+path = "exercises/kubectl/kubectl10"
+topic = "kubectl"
+mode = "query"
+hint = """
+Follow the path from the kind: deployment, then spec, then the strategy, then the part about a rolling update. Put dots between the names."""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_explain/"
 
 [[exercises]]
 name = "volumes1"
@@ -811,6 +903,33 @@ mode = "manifest"
 hint = """
 `deploy` fails because nobody gave it the secret. What do `build` and `deploy` have in common that you can put it on instead?"""
 docs = "https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account"
+
+[[exercises]]
+name = "kubectl11"
+path = "exercises/kubectl/kubectl11"
+topic = "kubectl"
+mode = "query"
+hint = """
+auth can-i has a flag that lists instead of answering, and a flag that changes who is asking. What is the full user name of a ServiceAccount?"""
+docs = "https://kubernetes.io/docs/reference/access-authn-authz/authorization/#checking-api-access"
+
+[[exercises]]
+name = "kubectl12"
+path = "exercises/kubectl/kubectl12"
+topic = "kubectl"
+mode = "query"
+hint = """
+The restarted container has its own logs. Which flag of kubectl logs asks for the one before it?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/generated/kubectl_logs/"
+
+[[exercises]]
+name = "kubectl13"
+path = "exercises/kubectl/kubectl13"
+topic = "kubectl"
+mode = "query"
+hint = """
+The Ready condition is one element of a list. Which part of the jsonpath picks the element whose type is Ready?"""
+docs = "https://kubernetes.io/docs/reference/kubectl/jsonpath/"
 
 [[exercises]]
 name = "networkpolicies2"

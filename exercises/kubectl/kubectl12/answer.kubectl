@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl12: what the last run said.
+# TODO: print the logs of the previous container of worker.
+kubectl logs worker

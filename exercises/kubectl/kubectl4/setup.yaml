@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shop
+  template:
+    metadata:
+      labels:
+        app: shop
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: app
+          image: nginx:1.27
+          command: [sh, -c, "while :; do sleep 3600; done"]
+        - name: sidecar
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: site
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: site
+  template:
+    metadata:
+      labels:
+        app: site
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: site
+          image: nginx:1.27
+          command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+        - name: worker
+          image: busybox:1.37
+          command: [sh, -c, "while :; do sleep 3600; done"]

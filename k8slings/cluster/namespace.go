@@ -199,6 +199,20 @@ func (c *Cluster) Apply(ctx context.Context, ns string, manifest []byte) (string
 	return c.KubectlInput(ctx, strings.NewReader(string(manifest)), "apply", "-n", ns, "-f", "-")
 }
 
+// Delete deletes the objects of a manifest from the namespace of an exercise and
+// waits until they are gone. It is how a query exercise takes back the extra
+// objects of its variant. Only namespaces k8slings owns.
+func (c *Cluster) Delete(ctx context.Context, ns string, manifest []byte) error {
+	if err := checkOwned(ns); err != nil {
+		return err
+	}
+	out, err := c.KubectlInput(ctx, strings.NewReader(string(manifest)), "delete", "-n", ns, "-f", "-", "--ignore-not-found", "--wait=true", "--timeout=60s")
+	if err != nil {
+		return fmt.Errorf("cannot delete the objects of %s: %s", ns, firstLine(out))
+	}
+	return nil
+}
+
 // Nodes returns how many nodes the cluster has.
 func (c *Cluster) Nodes(ctx context.Context) (int, error) {
 	out, err := c.Kubectl(ctx, "get", "nodes", "-o", "name")

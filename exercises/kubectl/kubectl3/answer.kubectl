@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl3: the Pods that are not Running.
+# TODO: filter on the phase of the Pods, and print their names.
+kubectl get pods -o name

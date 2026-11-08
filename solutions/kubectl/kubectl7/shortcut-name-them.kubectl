@@ -1,0 +1,2 @@
+# rejected: "Do not name the Services"
+kubectl get services api db cache web -o name

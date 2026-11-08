@@ -1,0 +1,2 @@
+# rejected: "other objects are in the namespace"
+kubectl get pods -l 'app=web,pod-template-hash' -o name

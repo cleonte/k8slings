@@ -121,72 +121,73 @@ func (s Step) kinds() int {
 	return n
 }
 
-func (c *Compiled) compileSteps() error {
-	for i, s := range c.File.Steps {
+func (c *Compiled) compileStepList(list []Step, label string) ([]compiledStep, error) {
+	var out []compiledStep
+	for i, s := range list {
 		bad := func(format string, args ...any) error {
-			return fmt.Errorf("check.yaml: steps[%d]: %s", i, fmt.Sprintf(format, args...))
+			return fmt.Errorf("check.yaml: %s[%d]: %s", label, i, fmt.Sprintf(format, args...))
 		}
 		if s.kinds() != 1 {
-			return bad("a step has exactly one of rollout, ready, assert, endpoints, http, exec, can_i, logs")
+			return nil, bad("a step has exactly one of rollout, ready, assert, endpoints, http, exec, can_i, logs")
 		}
 		cs := compiledStep{Step: s}
 		switch {
 		case s.Rollout != "":
 			if kind, name, ok := strings.Cut(s.Rollout, "/"); !ok || name == "" || !strings.Contains("deployment statefulset daemonset", kind) {
-				return bad("rollout wants deployment/<name>, statefulset/<name> or daemonset/<name>")
+				return nil, bad("rollout wants deployment/<name>, statefulset/<name> or daemonset/<name>")
 			}
 		case s.Ready != nil:
 			if (s.Ready.Pod == "") == (s.Ready.Selector == "") {
-				return bad("ready wants a pod or a selector")
+				return nil, bad("ready wants a pod or a selector")
 			}
 		case s.Assert != nil:
 			a := s.Assert
 			if (a.Resource == "") == (a.Resources == "") {
-				return bad("assert wants resource (kind/name) or resources (a kind)")
+				return nil, bad("assert wants resource (kind/name) or resources (a kind)")
 			}
 			if strings.TrimSpace(a.Message) == "" {
-				return bad("assert needs a message")
+				return nil, bad("assert needs a message")
 			}
 			ast, iss := c.env.Compile(a.Expr)
 			if iss.Err() != nil {
-				return bad("assert: %v", iss.Err())
+				return nil, bad("assert: %v", iss.Err())
 			}
 			if ast.OutputType() != cel.BoolType && ast.OutputType() != cel.DynType {
-				return bad("assert must be a boolean expression")
+				return nil, bad("assert must be a boolean expression")
 			}
 			prg, err := c.env.Program(ast)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			cs.prog = prg
 		case s.Endpoints != nil:
 			if s.Endpoints.Service == "" {
-				return bad("endpoints needs a service")
+				return nil, bad("endpoints needs a service")
 			}
 		case s.HTTP != nil:
 			if s.HTTP.Service == "" || s.HTTP.Port == 0 {
-				return bad("http needs a service and a port")
+				return nil, bad("http needs a service and a port")
 			}
 		case s.Exec != nil:
 			if (s.Exec.Pod == "") == (s.Exec.Selector == "") || len(s.Exec.Args) == 0 {
-				return bad("exec needs args and either a pod or a selector")
+				return nil, bad("exec needs args and either a pod or a selector")
 			}
 		case s.CanI != nil:
 			if s.CanI.As == "" || s.CanI.Verb == "" || s.CanI.Resource == "" {
-				return bad("can_i needs as, verb and resource")
+				return nil, bad("can_i needs as, verb and resource")
 			}
 		case s.Logs != nil:
 			if s.Logs.Pod == "" || s.Logs.Contains == "" {
-				return bad("logs needs a pod and contains")
+				return nil, bad("logs needs a pod and contains")
 			}
 		case s.Unchanged != "":
 			if kind, name, ok := strings.Cut(s.Unchanged, "/"); !ok || kind == "" || name == "" {
-				return bad("unchanged wants kind/name, such as deployment/web")
+				return nil, bad("unchanged wants kind/name, such as deployment/web")
 			}
 		}
-		c.steps = append(c.steps, cs)
+		out = append(out, cs)
 	}
-	return nil
+	return out, nil
 }
 
 // HasSteps reports whether the check has cluster steps.
@@ -222,7 +223,17 @@ func (c *Compiled) UnchangedResources() []string {
 // them do. It only reads from the cluster. seeds is only needed by
 // `unchanged` steps, which are for fix exercises; it may be nil otherwise.
 func (c *Compiled) RunSteps(ctx context.Context, kube Kube, ns string, seeds Seeds) Problem {
-	for _, s := range c.steps {
+	return runStepList(ctx, c.steps, kube, ns, seeds)
+}
+
+// RunVariantSteps is RunSteps for the variant of a query exercise: what has to
+// hold after its extra objects have been added.
+func (c *Compiled) RunVariantSteps(ctx context.Context, kube Kube, ns string) Problem {
+	return runStepList(ctx, c.variantSteps, kube, ns, nil)
+}
+
+func runStepList(ctx context.Context, steps []compiledStep, kube Kube, ns string, seeds Seeds) Problem {
+	for _, s := range steps {
 		if msg := s.run(ctx, kube, ns, seeds); msg != "" {
 			return Problem{Message: msg, Final: s.Now || (s.Assert != nil && s.Assert.Now)}
 		}

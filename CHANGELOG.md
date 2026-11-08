@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Query mode**, a fourth kind of exercise: you write one `kubectl` command in `answer.kubectl`, and k8slings runs it on its own cluster and compares what it prints with what was asked for. The text is never run in a shell: a tokenizer reads the safe part of POSIX quoting, only read-only verbs (`get`, `describe`, `explain`, `logs`, `events`, `auth can-i`, `api-resources`, and `create ... --dry-run=client`) and the flags listed for each are accepted, and `-n` is the exercise's own namespace. The output is compared with the reference answer's on the same cluster state, and then once more with more objects in the namespace, so typing in today's names does not pass. Some exercises check the printed YAML as a manifest instead; those need no cluster, only `kubectl`.
+- The `kubectl` topic, 13 query exercises in three places of the course: label and set-based selectors, `--field-selector`, `-o jsonpath` with `range` and filters, `custom-columns`, `--sort-by`, generating a Deployment and a Service, `kubectl explain`, `auth can-i --list --as`, and `logs --previous`.
+
 ## [0.12.1] - 2026-11-07
 
 ### Changed

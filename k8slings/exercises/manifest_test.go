@@ -51,6 +51,10 @@ func TestManifest(t *testing.T) {
 				testFixExercise(t, ex)
 				return
 			}
+			if ex.Mode == exercises.ModeQuery {
+				testQueryExercise(t, ex)
+				return
+			}
 			for _, f := range []string{"README.md", exercises.ExerciseFile, exercises.CheckFile} {
 				if _, err := fs.Stat(k8slings.FS, path.Join(ex.Path, f)); err != nil {
 					t.Errorf("missing %s: %v", f, err)
@@ -148,7 +152,13 @@ func TestClusterShortcutsDeclareWhatTheyAreRefusedWith(t *testing.T) {
 	for _, ex := range load(t) {
 		shortcuts, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), "shortcut-*.yaml"))
 		if len(shortcuts) > 0 && ex.Mode != exercises.ModeCluster {
-			t.Errorf("%s: shortcut-*.yaml is for cluster exercises; fix exercises use shortcut-*.sh", ex.Name)
+			t.Errorf("%s: shortcut-*.yaml is for cluster exercises; fix exercises use shortcut-*.sh, query exercises shortcut-*.kubectl", ex.Name)
+		}
+		for pattern, mode := range map[string]string{"shortcut-*.sh": exercises.ModeFix, "shortcut-*.kubectl": exercises.ModeQuery} {
+			found, _ := fs.Glob(k8slings.Solutions, path.Join(path.Dir(ex.SolutionPath()), pattern))
+			if len(found) > 0 && ex.Mode != mode {
+				t.Errorf("%s: %s belongs to %s exercises, not to %s", ex.Name, pattern, mode, ex.Mode)
+			}
 		}
 		for _, f := range shortcuts {
 			data, _ := fs.ReadFile(k8slings.Solutions, f)
@@ -178,6 +188,28 @@ func TestModesAndImages(t *testing.T) {
 		case exercises.ModeManifest:
 			if c.HasSteps() {
 				t.Errorf("%s is a manifest exercise, so its check.yaml must not have steps", ex.Name)
+			}
+		case exercises.ModeQuery:
+			// Images matter only where a Pod is created: in the state and its variant.
+			var sources [][]byte
+			if _, err := fs.Stat(k8slings.FS, ex.SetupPath()); err == nil {
+				files, err := exercises.SetupFiles(k8slings.FS, ex.Path)
+				if err != nil {
+					t.Fatal(err)
+				}
+				files = append(files, path.Join(ex.Path, exercises.VariantFile))
+				for _, f := range files {
+					if step, err := fs.ReadFile(k8slings.FS, f); err == nil {
+						sources = append(sources, step)
+					}
+				}
+			}
+			for _, src := range sources {
+				for _, m := range imageRe.FindAllSubmatch(src, -1) {
+					if !preloaded[string(m[1])] {
+						t.Errorf("%s uses the image %s, which cluster.PreloadImages does not list", ex.Name, m[1])
+					}
+				}
 			}
 		case exercises.ModeCluster, exercises.ModeFix:
 			if c.ShippedDetails != "" && c.Shipped == "" {
@@ -309,6 +341,15 @@ func testFixExercise(t *testing.T, ex exercises.Exercise) {
 // a gap and within the limit, and are never given to the learner.
 func TestSetupStepsAreConsecutive(t *testing.T) {
 	for _, ex := range load(t) {
+		if ex.Mode == exercises.ModeQuery {
+			// A query exercise with a state is checked like a fix one; without, it has none.
+			if _, err := fs.Stat(k8slings.FS, ex.SetupPath()); err == nil {
+				if _, err := exercises.SetupFiles(k8slings.FS, ex.Path); err != nil {
+					t.Errorf("%s: %v", ex.Name, err)
+				}
+			}
+			continue
+		}
 		if ex.Mode != exercises.ModeFix {
 			if _, err := fs.Stat(k8slings.FS, ex.SetupPath()); err == nil {
 				t.Errorf("%s is not a fix exercise and must not have a setup", ex.Name)

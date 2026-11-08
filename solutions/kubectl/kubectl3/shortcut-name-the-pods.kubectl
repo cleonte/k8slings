@@ -1,0 +1,2 @@
+# rejected: "Do not name a Pod"
+kubectl get pods done stuck -o name

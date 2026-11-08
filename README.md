@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->115<!-- /count --> exercises in <!-- count:topics -->21<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
+You get <!-- count:exercises -->128<!-- /count --> exercises in <!-- count:topics -->22<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -15,7 +15,9 @@ Each exercise is a Kubernetes manifest that is broken in one small way (the last
 
 - **Fix exercises** break the cluster on purpose and hand you a ticket, as in a real incident: Pods that keep restarting, a Service with no endpoints. There is no file to edit. You look around and repair it with `kubectl` (`k8slings kubectl ...` is `kubectl` for the k8slings cluster), and `watch` turns green by itself when it works. Deleting the broken thing and creating a new one does not count: k8slings notices.
 
-What you will practise: Pods, labels and selectors, namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
+- **Query exercises** have you write a `kubectl` command: select Pods by label, print a table with `custom-columns`, pull a value out with `jsonpath`, sort, ask `explain`, generate YAML with `--dry-run=client`. You write one command in `answer.kubectl`, and k8slings runs it on its own cluster (read-only commands only; never in a shell) and compares what it prints with the expected output, once for the cluster as it is and once with more objects in it, so typing in today's names does not pass. Quote as you would in a POSIX shell (`-o jsonpath='{.items[*].metadata.name}'`); PowerShell quotes differently, so use single quotes as shown. A few of these need only `kubectl` and no cluster.
+
+What you will practise: Pods, labels and selectors, the kubectl you use every day (selectors, jsonpath, custom columns, sorting, explain, generating YAML), namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
 
 ## Install
 
@@ -30,7 +32,8 @@ go install github.com/cleonte/k8slings/k8slings@latest
 | For | You need |
 |---|---|
 | Manifest exercises | Nothing else. |
-| Cluster exercises | Docker (Docker Desktop, Colima, Lima with the Docker template, or Docker on Linux), [kind](https://kind.sigs.k8s.io/) v0.33.0 or newer, and `kubectl`. |
+| Query exercises that generate YAML | `kubectl`. |
+| Cluster, fix and the other query exercises | Docker (Docker Desktop, Colima, Lima with the Docker template, or Docker on Linux), [kind](https://kind.sigs.k8s.io/) v0.33.0 or newer, and `kubectl`. |
 
 `k8slings doctor` checks all of it, says whether each half is ready, and prints the exact fix for anything that is not. One thing to know about Colima and Lima: their VMs allow too few inotify instances for a 3-node cluster by default, and `k8slings cluster up` tells you the one command that fixes it.
 

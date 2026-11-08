@@ -1,0 +1,13 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'output' in flags && flags['output'].startsWith('jsonpath=')"
+      message: "Use -o jsonpath."
+    - expr: "positional.size() == 1"
+      message: "Do not name a Deployment: print them all."
+    - expr: "flags['output'].contains('.spec.template.spec.containers')"
+      message: "The images are in .spec.template.spec.containers."
+steps:
+  - rollout: deployment/shop
+  - rollout: deployment/site
+  - rollout: deployment/worker

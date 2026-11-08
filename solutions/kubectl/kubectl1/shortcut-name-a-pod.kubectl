@@ -1,0 +1,2 @@
+# rejected: "Do not name a Pod"
+kubectl get pods web-0 -l app=web -o name

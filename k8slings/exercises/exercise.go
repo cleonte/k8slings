@@ -17,11 +17,13 @@ import (
 )
 
 // Modes an exercise can run in: manifest needs no cluster, cluster applies the
-// exercise to one, fix breaks the cluster for the learner to repair.
+// exercise to one, fix breaks the cluster for the learner to repair, query has
+// the learner write one kubectl command and compares what it prints.
 const (
 	ModeManifest = "manifest"
 	ModeCluster  = "cluster"
 	ModeFix      = "fix"
+	ModeQuery    = "query"
 )
 
 // File names inside an exercise folder.
@@ -34,6 +36,13 @@ const (
 	ReadmeFile = "README.md"
 	// ScriptFile is the solution of a fix exercise: a kubectl script.
 	ScriptFile = "solution.sh"
+	// AnswerFile is what the learner writes in a query exercise, and the
+	// reference answer in solutions/. It is not a script and is never run by a
+	// shell (k8slings reads it), which is why it is not called .sh.
+	AnswerFile = "answer.kubectl"
+	// VariantFile adds objects to the state of a query exercise, to prove an
+	// answer does not depend on the names and values of the first one.
+	VariantFile = "setup-variant.yaml"
 )
 
 var notDoneRegex = regexp.MustCompile(`(?m)^\s*#\s*I\s+AM\s+NOT\s+DONE`)
@@ -52,6 +61,9 @@ type Exercise struct {
 	Requires []string
 	// Timeout is how long cluster and fix modes wait for the check to pass.
 	Timeout string
+	// Offline marks a query exercise that needs no cluster (kubectl create ...
+	// --dry-run=client). It has no setup.yaml.
+	Offline bool
 }
 
 var (
@@ -75,8 +87,10 @@ func ParseInfo(data []byte) ([]Exercise, error) {
 			return nil, fmt.Errorf("info.toml: duplicate exercise %q", e.Name)
 		case e.Path == "" || e.Topic == "" || e.Hint == "":
 			return nil, fmt.Errorf("info.toml: exercise %q needs path, topic and hint", e.Name)
-		case e.Mode != ModeManifest && e.Mode != ModeCluster && e.Mode != ModeFix:
+		case e.Mode != ModeManifest && e.Mode != ModeCluster && e.Mode != ModeFix && e.Mode != ModeQuery:
 			return nil, fmt.Errorf("info.toml: exercise %q has unknown mode %q", e.Name, e.Mode)
+		case e.Offline && e.Mode != ModeQuery:
+			return nil, fmt.Errorf("info.toml: exercise %q is offline, which only a query exercise can be", e.Name)
 		}
 		seen[e.Name] = true
 	}
@@ -159,7 +173,7 @@ func (e Exercise) File() string {
 	if e.Mode == ModeFix {
 		return filepath.FromSlash(path.Join(e.Path, ReadmeFile))
 	}
-	return filepath.FromSlash(path.Join(e.Path, ExerciseFile))
+	return filepath.FromSlash(e.Source())
 }
 
 // EmbeddedOnly says whether a file of an exercise folder stays in the binary and
@@ -168,7 +182,7 @@ func (e Exercise) File() string {
 // reset and doctor all decide with this one function.
 func EmbeddedOnly(name string) bool {
 	base := path.Base(name)
-	return base == CheckFile || base == SetupFile || setupStepRe.MatchString(base)
+	return base == CheckFile || base == SetupFile || base == VariantFile || setupStepRe.MatchString(base)
 }
 
 var setupStepRe = regexp.MustCompile(`^setup-([0-9]+)\.yaml$`)
@@ -215,12 +229,20 @@ func (e Exercise) SetupPath() string { return path.Join(e.Path, SetupFile) }
 
 // Embedded names inside the embedded exercise tree (always forward slashes).
 func (e Exercise) CheckPath() string { return path.Join(e.Path, CheckFile) }
-func (e Exercise) Source() string    { return path.Join(e.Path, ExerciseFile) }
+func (e Exercise) Source() string {
+	if e.Mode == ModeQuery {
+		return path.Join(e.Path, AnswerFile)
+	}
+	return path.Join(e.Path, ExerciseFile)
+}
 
 // SolutionPath is where the solution lives in the embedded solutions tree.
 func (e Exercise) SolutionPath() string {
 	if e.Mode == ModeFix {
 		return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), ScriptFile)
+	}
+	if e.Mode == ModeQuery {
+		return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), AnswerFile)
 	}
 	return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), ExerciseFile)
 }

@@ -1,0 +1,2 @@
+# rejected: "Ask for the field itself"
+kubectl explain deployment.spec.strategy.rollingUpdate
