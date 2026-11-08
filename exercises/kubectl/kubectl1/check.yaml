@@ -1,0 +1,15 @@
+shipped: "The output is not the one"
+query:
+  command:
+    - expr: "'selector' in flags"
+      message: "Select the Pods with a label selector (-l)."
+    - expr: "positional.size() == 1"
+      message: "Do not name a Pod: the selector finds them."
+    - expr: "'output' in flags && flags['output'] == 'name'"
+      message: "Print the names with -o name."
+  variant_steps:
+    - assert: {resource: pod/web-extra, expr: "object.status.phase == 'Running'", message: "web-extra is not Running yet"}
+steps:
+  - rollout: deployment/web
+  - rollout: deployment/cache
+  - rollout: deployment/db

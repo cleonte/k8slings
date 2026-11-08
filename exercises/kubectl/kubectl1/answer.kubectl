@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl1: the Pods behind a label.
+# TODO: print only the Pods labelled app=web, by name.
+kubectl get pods

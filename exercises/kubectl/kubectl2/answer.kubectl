@@ -1,0 +1,5 @@
+# I AM NOT DONE
+# k8slings reads this file; it is not a script, do not run it with a shell.
+# kubectl2: set-based selectors.
+# TODO: select the Pods by tier and by the absence of canary.
+kubectl get pods -l tier=frontend -o name

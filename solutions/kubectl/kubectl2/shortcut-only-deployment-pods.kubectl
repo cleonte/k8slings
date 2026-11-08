@@ -1,0 +1,2 @@
+# rejected: "other objects are in the namespace"
+kubectl get pods -l 'tier in (frontend,cache),!canary,pod-template-hash' -o name

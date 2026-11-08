@@ -153,6 +153,33 @@ A quota limits the namespace it is in. Which namespace is this one in?"""
 docs = "https://kubernetes.io/docs/concepts/policy/resource-quotas/"
 
 [[exercises]]
+name = "kubectl1"
+path = "exercises/kubectl/kubectl1"
+topic = "kubectl"
+mode = "query"
+hint = """
+A selector goes after -l. How do you say "the label app has the value web"? And which -o format prints only the kind and the name?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors"
+
+[[exercises]]
+name = "kubectl2"
+path = "exercises/kubectl/kubectl2"
+topic = "kubectl"
+mode = "query"
+hint = """
+Put the whole selector in single quotes. Which keyword means "one of these values", and how do you say "has no such label"?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#set-based-requirement"
+
+[[exercises]]
+name = "kubectl3"
+path = "exercises/kubectl/kubectl3"
+topic = "kubectl"
+mode = "query"
+hint = """
+Not everything you can select on is a label. Which field of a Pod says whether it is Running, and how do you say "is not"?"""
+docs = "https://kubernetes.io/docs/concepts/overview/working-with-objects/field-selectors/"
+
+[[exercises]]
 name = "deployments1"
 path = "exercises/deployments/deployments1"
 topic = "deployments"

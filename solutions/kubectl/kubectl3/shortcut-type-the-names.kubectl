@@ -1,0 +1,2 @@
+# rejected: "Print the names with -o name"
+kubectl get pods --field-selector='status.phase!=Running' -o 'jsonpath=pod/done{"\n"}pod/stuck{"\n"}'
