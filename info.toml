@@ -326,6 +326,17 @@ The class is a field of the spec, and it is the name of an IngressClass. Which o
 docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
 
 [[exercises]]
+name = "ingress4"
+path = "exercises/ingress/ingress4"
+topic = "ingress"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "90s"
+hint = """
+Which controller serves this cluster's Ingresses, and what does its IngressClass say? `k8slings kubectl get ingressclass` shows it."""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"
