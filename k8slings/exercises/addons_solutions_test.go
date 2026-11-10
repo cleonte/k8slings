@@ -108,6 +108,18 @@ func TestAddonsInstall(t *testing.T) {
 		}
 	}
 
+	// The gateway: the GatewayClass is accepted and the Gateway programmed.
+	if addons.Find(cl.Registry, "gateway") != nil {
+		out, err := cl.Kubectl(ctx, "get", "gatewayclass", "traefik", "-o", `jsonpath={.status.conditions[?(@.type=="Accepted")].status}`)
+		if err != nil || strings.TrimSpace(out) != "True" {
+			t.Errorf("GatewayClass traefik is not Accepted: %s", out)
+		}
+		out, err = cl.Kubectl(ctx, "get", "gateway", "gateway", "-n", "addon-traefik", "-o", `jsonpath={.status.conditions[?(@.type=="Programmed")].status}`)
+		if err != nil || strings.TrimSpace(out) != "True" {
+			t.Errorf("Gateway addon-traefik/gateway is not Programmed: %s", out)
+		}
+	}
+
 	// metrics-server answers: kubectl top returns rows.
 	if addons.Find(cl.Registry, "metrics-server") != nil {
 		deadline := time.Now().Add(2 * time.Minute)
