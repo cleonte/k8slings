@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: HTTPRoute, name: beta}
+    assert:
+      - expr: "object.spec.rules.size() == 1 && object.spec.rules[0].matches.size() == 1"
+        message: "One request is one match: put the conditions in a single match, not in a list of matches."
+      - expr: "has(object.spec.rules[0].matches[0].path) && object.spec.rules[0].matches[0].path.value == '/api'"
+        message: "The match has to include the path /api."
+      - expr: "has(object.spec.rules[0].matches[0].headers) && object.spec.rules[0].matches[0].headers.exists(h, (h.name == 'X-Team' || h.name == 'x-team') && h.value == 'blue')"
+        message: "The same match has to include the header X-Team: blue."

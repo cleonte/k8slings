@@ -1071,6 +1071,15 @@ A Service can have several ports. Which one does the route send to?"""
 docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httpbackendref"
 
 [[exercises]]
+name = "gatewayapi3"
+path = "exercises/gatewayapi/gatewayapi3"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+Alternatives are separate items of a list. What is one item made of?"""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httprouterule"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"
