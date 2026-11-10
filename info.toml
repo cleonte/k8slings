@@ -308,6 +308,15 @@ Exact matches one path. Which pathType matches a path and everything below it?""
 docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types"
 
 [[exercises]]
+name = "ingress2"
+path = "exercises/ingress/ingress2"
+topic = "ingress"
+mode = "manifest"
+hint = """
+The backend names a port of the Service. What is the port of the Service called?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-backend"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"
