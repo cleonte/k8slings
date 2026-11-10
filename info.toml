@@ -804,6 +804,15 @@ Each type of target has its own field. Which one is a percentage?"""
 docs = "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec"
 
 [[exercises]]
+name = "autoscaling4"
+path = "exercises/autoscaling/autoscaling4"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+behavior has one block for each direction. Which direction should be patient, and what limits how many Pods go in one period?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"

@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: HorizontalPodAutoscaler, name: web}
+    assert:
+      - expr: "has(object.spec.behavior) && has(object.spec.behavior.scaleDown) && has(object.spec.behavior.scaleDown.stabilizationWindowSeconds) && object.spec.behavior.scaleDown.stabilizationWindowSeconds == 300"
+        message: "Scaling down has to wait five minutes: stabilizationWindowSeconds 300 under scaleDown."
+      - expr: "has(object.spec.behavior.scaleDown.policies) && object.spec.behavior.scaleDown.policies.exists(p, p.type == 'Pods' && p.value == 1 && p.periodSeconds == 60)"
+        message: "Scaling down has to remove at most one Pod every 60 seconds."
+      - expr: "!has(object.spec.behavior.scaleUp) || !has(object.spec.behavior.scaleUp.stabilizationWindowSeconds) || object.spec.behavior.scaleUp.stabilizationWindowSeconds == 0"
+        message: "Scaling up must not wait: it is the load going away that needs patience."
