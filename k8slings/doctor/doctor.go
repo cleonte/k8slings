@@ -73,10 +73,11 @@ func DefaultEnv(schemas fs.FS, cl *cluster.Cluster) Env {
 // Run executes all checks and returns their results in display order.
 func Run(ctx context.Context, infoFile string, env Env) []Check {
 	checks := offlineChecks(infoFile, env)
+	all, listErr := exercises.List(infoFile)
 	if env.Cluster != nil {
-		checks = append(checks, clusterChecks(ctx, env.Cluster)...)
+		checks = append(checks, clusterChecks(ctx, env.Cluster, all)...)
 	}
-	if all, err := exercises.List(infoFile); err == nil {
+	if listErr == nil {
 		checks = append(checks, modesCheck(all, Ready(checks, ClusterMode) && env.Cluster != nil))
 	}
 	for i := range checks {

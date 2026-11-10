@@ -3,9 +3,12 @@ package doctor
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
+	"github.com/cleonte/k8slings/k8slings/addons"
 	"github.com/cleonte/k8slings/k8slings/cluster"
+	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
 func clusterCheck(name string, status Status, format string, args ...any) Check {
@@ -16,7 +19,7 @@ func clusterCheck(name string, status Status, format string, args ...any) Check 
 // pods of the cluster. Each check only runs when what it depends on is there,
 // and a missing tool or a cluster that does not exist yet is a warning: it only
 // means that cluster exercises are skipped.
-func clusterChecks(ctx context.Context, cl *cluster.Cluster) []Check {
+func clusterChecks(ctx context.Context, cl *cluster.Cluster, all []exercises.Exercise) []Check {
 	var checks []Check
 	add := func(c ...Check) { checks = append(checks, c...) }
 
@@ -114,15 +117,16 @@ func clusterChecks(ctx context.Context, cl *cluster.Cluster) []Check {
 		add(versionCheck(server, kubectlVersion))
 	}
 	if len(cl.Registry) > 0 {
-		add(addonsCheck(ctx, cl))
+		add(addonsCheck(ctx, cl, all))
 	}
 	return checks
 }
 
 // addonsCheck reports the add-ons. One that is not installed is only a note: the
-// exercises that need it are skipped with the command that installs it. One that
-// is installed and not ready, or older than this build's, is a warning.
-func addonsCheck(ctx context.Context, cl *cluster.Cluster) Check {
+// exercises that need it are skipped with the command that installs it, and the
+// note says which they are. One that is installed and not ready, or older than
+// this build's, is a warning.
+func addonsCheck(ctx context.Context, cl *cluster.Cluster, all []exercises.Exercise) Check {
 	states, err := cl.AddonStates(ctx)
 	if err != nil {
 		return clusterCheck("Add-ons", Warn, "%s", err)
@@ -132,7 +136,7 @@ func addonsCheck(ctx context.Context, cl *cluster.Cluster) Check {
 		name := st.Addon.Name
 		switch {
 		case !st.Installed:
-			parts = append(parts, name+" not installed")
+			parts = append(parts, name+" not installed"+unlocks(name, cl.Registry, all))
 		case !st.Ready:
 			parts = append(parts, name+" "+st.Version+" not ready")
 			problems = append(problems, name+" is installed but not ready; look with `k8slings kubectl get pods -A`")
@@ -148,6 +152,34 @@ func addonsCheck(ctx context.Context, cl *cluster.Cluster) Check {
 		return clusterCheck("Add-ons", Warn, "%s\n%s", detail, strings.Join(problems, "\n"))
 	}
 	return clusterCheck("Add-ons", OK, "%s", detail)
+}
+
+// unlocks says, for an add-on that is not installed, which exercises it would
+// run, so that "5 skipped" has an answer: " (runs ingress4, gatewayapi6, ...)".
+// An add-on that only another one needs says so instead.
+func unlocks(name string, registry []addons.Addon, all []exercises.Exercise) string {
+	var names []string
+	for _, e := range all {
+		if slices.Contains(e.Requires, name) {
+			names = append(names, e.Name)
+		}
+	}
+	if len(names) == 0 {
+		var by []string
+		for _, a := range registry {
+			if slices.Contains(a.Requires, name) {
+				by = append(by, a.Name)
+			}
+		}
+		if len(by) > 0 {
+			return " (installed with " + strings.Join(by, ", ") + ")"
+		}
+		return ""
+	}
+	if len(names) > 4 {
+		return fmt.Sprintf(" (runs %s and %d more)", strings.Join(names[:4], ", "), len(names)-4)
+	}
+	return " (runs " + strings.Join(names, ", ") + ")"
 }
 
 func corePodsCheck(ctx context.Context, cl *cluster.Cluster) Check {
