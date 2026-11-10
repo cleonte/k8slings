@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.14.1] - 2026-11-10
+
 ### Added
 
 - A Homebrew tap: `brew install cleonte/tap/k8slings` (macOS). It is a cask that GoReleaser updates on every release, and on macOS it removes the quarantine flag, so the first run is not refused for want of a signature.
@@ -214,7 +216,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.14.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.14.1...HEAD
+[0.14.1]: https://github.com/cleonte/k8slings/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/cleonte/k8slings/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/cleonte/k8slings/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/cleonte/k8slings/compare/v0.12.0...v0.12.1
