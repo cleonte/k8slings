@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-10
+
 ### Added
 
 - The **gateway** add-on (Traefik v3.7.17: the Ingress controller and the Gateway API controller) and **gateway-api** (the Gateway API v1.6.1 CRDs), installed with `k8slings cluster addon install gateway`. It is reached inside the cluster, so nothing is published on the host and no cluster is recreated. Gateway, GatewayClass, HTTPRoute and ReferenceGrant validate offline against schemas converted from the pinned CRDs. The `http` step can ask a Service of another namespace.
@@ -208,7 +210,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.13.0...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.14.0...HEAD
+[0.14.0]: https://github.com/cleonte/k8slings/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/cleonte/k8slings/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/cleonte/k8slings/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/cleonte/k8slings/compare/v0.11.0...v0.12.0
