@@ -1109,6 +1109,17 @@ The status of the route says why it is not accepted. What does the listener of t
 docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#hostnames"
 
 [[exercises]]
+name = "gatewayapi7"
+path = "exercises/gatewayapi/gatewayapi7"
+topic = "gatewayapi"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "120s"
+hint = """
+Weights are shares. Which version is the stable one, and which weight gives the canary about a tenth?"""
+docs = "https://gateway-api.sigs.k8s.io/guides/traffic-splitting/"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"

@@ -1,0 +1,23 @@
+shipped: "version two answered 18"
+objects:
+  - select: {kind: HTTPRoute, name: canary}
+    assert:
+      - expr: "object.spec.rules.size() == 1 && object.spec.rules[0].backendRefs.size() == 2 && object.spec.rules[0].backendRefs.exists(b, b.name == 'v1') && object.spec.rules[0].backendRefs.exists(b, b.name == 'v2')"
+        message: "Keep both versions in the route: v1 and v2."
+      - expr: "object.spec.rules[0].backendRefs.all(b, !has(b.weight) || b.weight > 0)"
+        message: "Both versions have to receive traffic: a canary gets some, not none."
+steps:
+  - ready: {pod: v1}
+  - ready: {pod: v2}
+  - ready: {pod: client}
+  - assert:
+      resource: httproute/canary
+      expr: "has(object.status) && has(object.status.parents) && object.status.parents.exists(p, p.conditions.exists(c, c.type == 'Accepted' && c.status == 'True'))"
+      message: "The route is not Accepted yet."
+  - exec:
+      pod: client
+      args:
+        - sh
+        - -c
+        - 'n=0; for i in $(seq 1 200); do r=$(wget -qO- -T 3 --header "Host: gatewayapi7.example.test" http://traefik.addon-traefik.svc.cluster.local/); case "$r" in *two*) n=$((n+1));; esac; done; echo "version two answered $n of 200"; [ "$n" -ge 10 ] && [ "$n" -le 30 ] && echo canary-ok'
+      contains: canary-ok
