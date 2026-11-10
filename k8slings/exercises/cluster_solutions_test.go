@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/cleonte/k8slings"
+	"github.com/cleonte/k8slings/k8slings/addons"
 	"github.com/cleonte/k8slings/k8slings/check"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
@@ -40,7 +41,12 @@ func proofCluster(t *testing.T, ctx context.Context) *cluster.Cluster {
 			proof.err = err
 			return
 		}
-		proof.cl = &cluster.Cluster{Name: "k8slings-proof", Kubeconfig: filepath.Join(dir, "kubeconfig"), Runner: cluster.ExecRunner{}}
+		reg, err := addons.Load(k8slings.Addons)
+		if err != nil {
+			proof.err = err
+			return
+		}
+		proof.cl = &cluster.Cluster{Name: "k8slings-proof", Kubeconfig: filepath.Join(dir, "kubeconfig"), Runner: cluster.ExecRunner{}, Registry: reg}
 		var up bytes.Buffer
 		if err := proof.cl.Up(ctx, cluster.UpOptions{Out: &up}); err != nil {
 			proof.err = fmt.Errorf("cluster up: %w\n%s", err, up.String())
@@ -84,7 +90,7 @@ func TestClusterSolutions(t *testing.T) {
 		if ex.Mode != exercises.ModeCluster {
 			continue
 		}
-		if !inShard(t, ex.Name) {
+		if !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {
@@ -117,7 +123,15 @@ func TestClusterSolutions(t *testing.T) {
 			// A generic first problem does not say why: the diagnosis, which a failed
 			// run carries, does (see shipped_details in CLAUDE.md).
 			if want := compiled.ShippedDetails; want != "" {
-				if diagnosis := strings.Join(failed.Details, "\n"); !strings.Contains(diagnosis, want) {
+				diagnosis := strings.Join(failed.Details, "\n")
+				// Some causes are reported late: an autoscaler says "missing request
+				// for cpu" only once the metrics exist, a good while after the first
+				// look. The cause has to show up, but may take a moment.
+				for deadline := time.Now().Add(90 * time.Second); !strings.Contains(diagnosis, want) && time.Now().Before(deadline); {
+					time.Sleep(3 * time.Second)
+					diagnosis = strings.Join(cl.Diagnose(ctx, ex.Namespace()), "\n")
+				}
+				if !strings.Contains(diagnosis, want) {
 					t.Fatalf("the diagnosis of the unsolved exercise does not show its cause:\n  want: ...%s...\n  got:\n%s", want, diagnosis)
 				}
 				t.Logf("and the diagnosis says: %s", want)
@@ -216,7 +230,7 @@ func TestFixSolutions(t *testing.T) {
 		if ex.Mode != exercises.ModeFix {
 			continue
 		}
-		if !inShard(t, ex.Name) {
+		if !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {

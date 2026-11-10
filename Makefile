@@ -19,5 +19,9 @@ cluster-test:
 # What CI runs: the exercise proofs only (sharded with K8SLINGS_SHARD), and the safety rules on a cluster of their own.
 cluster-proofs-test:
 	@go test -tags cluster -count=1 -p 1 -timeout 100m -v -run 'TestClusterSolutions|TestFixSolutions|TestQuerySolutions' ./k8slings/...
+# The add-on job: installs every add-on on the cluster and proves only the exercises that need one
+# (the shards above leave them out).
+addon-test:
+	@K8SLINGS_ADDONS=1 go test -tags cluster -count=1 -p 1 -timeout 60m -v -run 'TestAddonsInstall|TestClusterSolutions|TestFixSolutions|TestQuerySolutions' ./k8slings/...
 cluster-safety-test:
 	@go test -tags cluster -count=1 -p 1 -timeout 30m -v -run 'TestRealCluster' ./k8slings/...

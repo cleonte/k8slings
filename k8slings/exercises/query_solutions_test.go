@@ -64,7 +64,7 @@ func TestQuerySolutions(t *testing.T) {
 	solve := &exercises.Env{Embedded: k8slings.FS, Solutions: k8slings.Solutions, Validator: schema.New(k8slings.Schemas), Kube: cl}
 
 	for _, ex := range load(t) {
-		if ex.Mode != exercises.ModeQuery || !inShard(t, ex.Name) {
+		if ex.Mode != exercises.ModeQuery || !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {

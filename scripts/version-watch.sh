@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Looks for a newer kind release, or a newer default Kubernetes node image, than
-# the ones k8slings pins (k8slings/cluster/cluster.go). Dependabot cannot see
-# these: they are a constant in the code, not a dependency.
+# the ones k8slings pins (k8slings/cluster/cluster.go), and for a newer release of
+# each add-on (addons/*/addon.yaml). Dependabot cannot see these: they are a
+# constant in the code and a pinned manifest, not a dependency.
 #
 #   scripts/version-watch.sh              prints what it found, exit 0 either way
 #   OPEN_ISSUE=1 scripts/version-watch.sh also opens a GitHub issue (once) when there is news
@@ -21,6 +22,22 @@ newer() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail 
 news=()
 newer "$latest_kind" "$pinned_kind" && news+=("kind $latest_kind is out (k8slings needs at least $pinned_kind)")
 [ -n "$latest_k8s" ] && newer "$latest_k8s" "$pinned_k8s" && news+=("the default node image of kind $latest_kind is Kubernetes $latest_k8s (k8slings pins $pinned_k8s)")
+
+# Add-ons: addons/<name>/addon.yaml has the pinned version and a source (github.com/<owner>/<repo>).
+addon_news=()
+for f in "$(dirname "${BASH_SOURCE[0]}")"/../addons/*/addon.yaml; do
+  [ -e "$f" ] || continue
+  name=$(sed -n 's/^name: *//p' "$f"); pinned=$(sed -n 's/^version: *//p' "$f"); source=$(sed -n 's/^source: *github.com\///p' "$f")
+  [ -n "$source" ] || continue
+  latest=$(gh api "repos/$source/releases/latest" --jq .tag_name 2>/dev/null || true)
+  [ -n "$latest" ] || continue
+  if newer "$latest" "$pinned"; then
+    addon_news+=("add-on $name: $latest is out (pinned: $pinned, from $source)")
+  else
+    echo "add-on $name is up to date: $pinned (latest: $latest)"
+  fi
+done
+news+=("${addon_news[@]+"${addon_news[@]}"}")
 
 if [ ${#news[@]} -eq 0 ]; then
   echo "up to date: kind $pinned_kind, Kubernetes $pinned_k8s (latest kind: $latest_kind, default image: ${latest_k8s:-unknown})"
