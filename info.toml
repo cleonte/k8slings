@@ -1120,6 +1120,16 @@ Weights are shares. Which version is the stable one, and which weight gives the 
 docs = "https://gateway-api.sigs.k8s.io/guides/traffic-splitting/"
 
 [[exercises]]
+name = "gatewayapi8"
+path = "exercises/gatewayapi/gatewayapi8"
+topic = "gatewayapi"
+mode = "fix"
+requires = ["gateway"]
+hint = """
+The route is Accepted and the Service has endpoints, so the traffic is not reaching the route's rule. What does the path of the rule really say?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#matches"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"
