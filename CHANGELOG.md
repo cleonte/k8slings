@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- The header of the full-screen view says what to install when exercises are skipped only for want of an add-on: `5 skipped (run k8slings cluster addon install gateway metrics-server)`, not `(see k8slings doctor)`. It still points at doctor when the cause is something else.
+- `doctor` says, for each add-on that is not installed, which exercises it would run (`gateway not installed (runs ingress4, gatewayapi6, ...)`).
+
 ## [0.14.1] - 2026-11-10
 
 ### Added
