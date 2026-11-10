@@ -28,7 +28,13 @@ func (m *Model) header() string {
 		title += "  " + dimStyle.Render(m.topic)
 	}
 	if m.skipped > 0 {
-		title += "  " + warnStyle.Render(fmt.Sprintf("%d skipped (see k8slings doctor)", m.skipped))
+		// When every skipped exercise only waits for an add-on, say which command
+		// runs them; otherwise the cause is something doctor explains.
+		hint := "see k8slings doctor"
+		if m.skippedForAddons == m.skipped && len(m.addonsToInstall) > 0 {
+			hint = "run k8slings cluster addon install " + strings.Join(m.addonsToInstall, " ")
+		}
+		title += "  " + warnStyle.Render(fmt.Sprintf("%d skipped (%s)", m.skipped, hint))
 	}
 
 	if m.cfg.NewExercises > 0 {

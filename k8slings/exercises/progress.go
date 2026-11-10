@@ -1,6 +1,10 @@
 package exercises
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+	"strings"
+)
 
 // Availability is what this machine can run: whether the k8slings cluster is
 // there and healthy, and how many nodes it has.
@@ -15,33 +19,59 @@ type Availability struct {
 // SkipReason says why the exercise cannot run on this machine, or is empty if
 // it can. Manifest exercises always run.
 func (e Exercise) SkipReason(av Availability) string {
+	_, _, reason := e.skip(av)
+	return reason
+}
+
+// MissingAddons lists the add-ons that keep the exercise from running while
+// everything else it needs is there (the cluster, the nodes): the ones it
+// requires that this build knows and that are not installed and ready. The
+// answer to "what do I install to run it?". Nil when the cause is something
+// else, or nothing.
+func (e Exercise) MissingAddons(av Availability) []string {
+	missing, _, _ := e.skip(av)
+	return missing
+}
+
+// skip is SkipReason and MissingAddons in one place, so they cannot disagree.
+func (e Exercise) skip(av Availability) (missing []string, unknown bool, reason string) {
 	switch e.Mode {
 	case ModeCluster, ModeFix:
 		if !av.Cluster {
-			return "needs the cluster: run `k8slings cluster up`"
+			return nil, false, "needs the cluster: run `k8slings cluster up`"
 		}
 	case ModeQuery:
 		if !e.Offline && !av.Cluster {
-			return "needs the cluster: run `k8slings cluster up`"
+			return nil, false, "needs the cluster: run `k8slings cluster up`"
 		}
 	}
 	for _, need := range e.Requires {
-		switch need {
-		case "multinode":
-			if av.Nodes < 3 {
-				return "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
-			}
-		default:
-			ready, known := av.Addons[need]
-			switch {
-			case !known:
-				return fmt.Sprintf("needs the %s add-on, which is not available yet", need)
-			case !ready:
-				return fmt.Sprintf("needs the %s add-on: run `k8slings cluster addon install %s`", need, need)
-			}
+		if need == "multinode" && av.Nodes < 3 {
+			return nil, false, "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
 		}
 	}
-	return ""
+	var unknownName string
+	for _, need := range e.Requires {
+		if need == "multinode" {
+			continue
+		}
+		ready, known := av.Addons[need]
+		switch {
+		case !known:
+			if unknownName == "" {
+				unknownName = need
+			}
+		case !ready:
+			missing = append(missing, need)
+		}
+	}
+	switch {
+	case len(missing) > 0:
+		return missing, false, fmt.Sprintf("needs the %s add-on: run `k8slings cluster addon install %s`", missing[0], strings.Join(missing, " "))
+	case unknownName != "":
+		return nil, true, fmt.Sprintf("needs the %s add-on, which is not available yet", unknownName)
+	}
+	return nil, false, ""
 }
 
 // Progress counts the exercises that are done and the exercises there are.
@@ -71,6 +101,23 @@ func Skipped(infoFile string, av Availability) ([]Exercise, error) {
 		}
 	}
 	return skipped, nil
+}
+
+// SkippedForAddons says how many of the skipped exercises are skipped only for
+// want of an add-on, and which add-ons would run them (sorted, once each).
+func SkippedForAddons(skipped []Exercise, av Availability) (count int, names []string) {
+	for _, e := range skipped {
+		if m := e.MissingAddons(av); len(m) > 0 {
+			count++
+			for _, n := range m {
+				if !slices.Contains(names, n) {
+					names = append(names, n)
+				}
+			}
+		}
+	}
+	slices.Sort(names)
+	return count, names
 }
 
 // TopicProgress is how far the learner is in one topic.
