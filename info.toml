@@ -299,6 +299,15 @@ An ExternalName Service is a DNS alias. What is a DNS name, and what is not part
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#externalname"
 
 [[exercises]]
+name = "ingress1"
+path = "exercises/ingress/ingress1"
+topic = "ingress"
+mode = "manifest"
+hint = """
+Exact matches one path. Which pathType matches a path and everything below it?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"

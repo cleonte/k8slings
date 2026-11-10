@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Ingress, name: shop}
+    assert:
+      - expr: "object.spec.rules[0].http.paths.size() == 1 && object.spec.rules[0].http.paths[0].path == '/shop'"
+        message: "Keep the one path rule, /shop."
+      - expr: "object.spec.rules[0].http.paths[0].pathType == 'Prefix'"
+        message: "The application lives below /shop: the path has to match everything under it, not only itself."
