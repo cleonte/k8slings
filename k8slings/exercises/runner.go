@@ -30,6 +30,9 @@ type Kube interface {
 	// Query runs a read-only kubectl command that the query package has checked.
 	Query(ctx context.Context, args []string, offline bool) (cluster.QueryResult, error)
 	Nodes(ctx context.Context) (int, error)
+	// ReadyAddons says, for each add-on of the registry, whether it is installed
+	// and ready.
+	ReadyAddons(ctx context.Context) map[string]bool
 	Diagnose(ctx context.Context, ns string) []string
 	// For fix exercises: bring a namespace to its broken state, say whether it
 	// is in it, and tell the identity of an object.
@@ -80,7 +83,7 @@ func (e *Env) Availability(ctx context.Context) Availability {
 		return Availability{}
 	}
 	n, _ := e.Kube.Nodes(ctx)
-	return Availability{Cluster: true, Nodes: n}
+	return Availability{Cluster: true, Nodes: n, Addons: e.Kube.ReadyAddons(ctx)}
 }
 
 // Result is what a successful run reports.

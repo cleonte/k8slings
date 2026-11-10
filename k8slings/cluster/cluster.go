@@ -11,6 +11,7 @@ package cluster
 
 import (
 	"fmt"
+	"github.com/cleonte/k8slings/k8slings/addons"
 	"os"
 	"path/filepath"
 	"slices"
@@ -42,6 +43,10 @@ type Cluster struct {
 	Name       string
 	Kubeconfig string
 	Runner     Runner
+
+	// Registry is the list of add-ons this build knows (the addons package). The
+	// caller sets it; without it the cluster knows of no add-on.
+	Registry []addons.Addon
 
 	kinds *kindsCache // set by Default; without it nothing is cached
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/cleonte/k8slings/k8slings/addons"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 )
 
@@ -26,6 +27,8 @@ type machine struct {
 	pods         string
 	proxyLogs    string
 	port         string
+	addonLabel   string // what the label and version annotation of an add-on print
+	addonRollout string // replicas wanted / ready / updated of its Deployment
 }
 
 func healthy() *machine {
@@ -80,6 +83,10 @@ func (m *machine) Run(_ context.Context, c cluster.Cmd) error {
 			out = m.pods
 		case strings.Contains(args, " logs "):
 			out = m.proxyLogs
+		case strings.Contains(args, "metadata.labels"):
+			out = m.addonLabel
+		case strings.Contains(args, "status.readyReplicas"):
+			out = m.addonRollout
 		}
 	}
 	if c.Stdout != nil {
@@ -281,4 +288,29 @@ func TestExerciseModesFollowTheStateOfTheCluster(t *testing.T) {
 	m.clusters = "No kind clusters found."
 	checks = Run(context.Background(), infoFile, Env{FileExists: files, Schemas: schemas, Cluster: cl})
 	want(t, checks, "Exercise modes", Warn, "1 of 2", "skipped")
+}
+
+func TestDoctorReportsAddOns(t *testing.T) {
+	reg := []addons.Addon{{Name: "metrics-server", Version: "v0.9.1", Namespace: "kube-system", Ready: []string{"deployment/metrics-server"}}}
+	for name, tc := range map[string]struct {
+		label, rollout string
+		status         Status
+		parts          []string
+	}{
+		"not installed": {"", "", OK, []string{"metrics-server not installed", "addon install"}},
+		"ready":         {"metrics-server|v0.9.1", "1/1/1", OK, []string{"metrics-server v0.9.1 ready"}},
+		"not ready":     {"metrics-server|v0.9.1", "1/0/1", Warn, []string{"installed but not ready"}},
+		"older version": {"metrics-server|v0.9.0", "1/1/1", Warn, []string{"v0.9.0 is installed, this k8slings ships v0.9.1"}},
+	} {
+		t.Run(name, func(t *testing.T) {
+			m := healthy()
+			m.addonLabel, m.addonRollout = tc.label, tc.rollout
+			cl := &cluster.Cluster{Name: "k8slings", Kubeconfig: filepath.Join(t.TempDir(), "kubeconfig"), Runner: m, Registry: reg}
+			cfg := "apiVersion: v1\nkind: Config\nclusters:\n- name: kind-k8slings\n  cluster:\n    server: https://127.0.0.1:41539\ncontexts:\n- name: kind-k8slings\n  context:\n    cluster: kind-k8slings\n"
+			if err := os.WriteFile(cl.Kubeconfig, []byte(cfg), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			want(t, clusterChecks(context.Background(), cl), "Add-ons", tc.status, tc.parts...)
+		})
+	}
 }

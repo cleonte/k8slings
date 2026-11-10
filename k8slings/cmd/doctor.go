@@ -30,7 +30,7 @@ The exit code is non-zero only when something that should work is broken.`,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var cl *cluster.Cluster
-			if c, err := cluster.Default(); err == nil {
+			if c, err := defaultCluster(); err == nil {
 				cl = c
 			}
 			denv := doctor.DefaultEnv(schemas, cl)

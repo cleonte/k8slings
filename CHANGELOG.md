@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **Add-ons**: `k8slings cluster addon install <name>` and `cluster addon list`, `cluster up --addons`, and add-on rows in `cluster status` and `doctor`. An add-on is a pinned manifest embedded in the binary (nothing is fetched), applied server-side to the k8slings cluster, in a namespace no exercise can reach. The first is **metrics-server** v0.9.1. An exercise with `requires = ["metrics-server"]` is skipped, with the install command, until it is ready. `scripts/version-watch.sh` also looks for newer add-on releases, and a new **add-on job** in CI proves them on a real cluster.
+- The `autoscaling` topic: `autoscaling1` to `autoscaling4` (offline: the scale target's apiVersion, a floor above the ceiling, a percentage written as an amount, scale-down behaviour) and `autoscaling5` (an autoscaler that cannot compute a percentage of a request that is not there; needs metrics-server).
+
 ## [0.13.0] - 2026-11-08
 
 ### Added

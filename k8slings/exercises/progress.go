@@ -7,6 +7,9 @@ import "fmt"
 type Availability struct {
 	Cluster bool
 	Nodes   int
+	// Addons says, for every add-on of the registry, whether it is installed and
+	// ready. An add-on that is not in the map is not known to this build.
+	Addons map[string]bool
 }
 
 // SkipReason says why the exercise cannot run on this machine, or is empty if
@@ -29,7 +32,13 @@ func (e Exercise) SkipReason(av Availability) string {
 				return "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
 			}
 		default:
-			return fmt.Sprintf("needs the %s add-on, which is not available yet", need)
+			ready, known := av.Addons[need]
+			switch {
+			case !known:
+				return fmt.Sprintf("needs the %s add-on, which is not available yet", need)
+			case !ready:
+				return fmt.Sprintf("needs the %s add-on: run `k8slings cluster addon install %s`", need, need)
+			}
 		}
 	}
 	return ""

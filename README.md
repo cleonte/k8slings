@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->128<!-- /count --> exercises in <!-- count:topics -->22<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
+You get <!-- count:exercises -->133<!-- /count --> exercises in <!-- count:topics -->23<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -18,6 +18,10 @@ Most exercises are a Kubernetes manifest that is broken in one small way (the la
 - **Query exercises** have you write a `kubectl` command: select Pods by label, print a table with `custom-columns`, pull a value out with `jsonpath`, sort, ask `explain`, generate YAML with `--dry-run=client`. You write one command in `answer.kubectl`, and k8slings runs it on its own cluster (read-only commands only; never in a shell) and compares what it prints with the expected output, once for the cluster as it is and once with more objects in it, so typing in today's names does not pass. Quote as you would in a POSIX shell (`-o jsonpath='{.items[*].metadata.name}'`); PowerShell quotes differently, so use single quotes as shown. A few of these need only `kubectl` and no cluster.
 
 What you will practise: Pods, labels and selectors, the kubectl you use every day (selectors, jsonpath, custom columns, sorting, explain, generating YAML), namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
+
+## Add-ons
+
+A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling, later a Gateway API controller. `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
 
 ## Install
 

@@ -1,0 +1,100 @@
+# Proves the add-ons (addons/) on a real kind cluster, and the exercises that need
+# one: it installs every add-on, then runs the proofs of the exercises whose
+# `requires` names an add-on (make addon-test). The cluster job leaves those out,
+# so that a flaky add-on cannot fail the basic proofs.
+name: add-on tests
+
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - "addons/**"
+      - "k8slings/addons/**"
+      - "k8slings/cluster/**"
+      - "k8slings/exercises/**"
+      - "k8slings/check/**"
+      - "exercises/autoscaling/**"
+      - "exercises/ingress/**"
+      - "exercises/gatewayapi/**"
+      - "solutions/autoscaling/**"
+      - "solutions/ingress/**"
+      - "solutions/gatewayapi/**"
+      - "info.toml"
+      - "go.mod"
+      - "go.sum"
+      - "Makefile"
+      - ".github/workflows/addons.yml"
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: addons-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The oldest kind that published the pinned node image (cluster.MinKindVersion).
+  KIND_VERSION: v0.33.0
+
+jobs:
+  addons:
+    name: add-ons on kind (Kubernetes 1.37)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-go@v7
+      with:
+        go-version: "1.26"
+        cache: true
+
+    - name: Install kind
+      run: |
+        curl -fsSLo kind "https://kind.sigs.k8s.io/dl/${KIND_VERSION}/kind-linux-amd64"
+        sudo install -m 0755 kind /usr/local/bin/kind
+        kind version
+        kubectl version --client
+
+    - name: Raise the inotify limits
+      run: sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288
+
+    - name: Add-on tests
+      id: tests
+      run: |
+        start=$(date +%s)
+        set -o pipefail
+        make addon-test 2>&1 | tee addon-test.log
+        echo "duration=$(( $(date +%s) - start ))" >> "$GITHUB_OUTPUT"
+
+    - name: Report the time
+      if: always()
+      run: |
+        d="${{ steps.tests.outputs.duration }}"
+        echo "### Add-on tests" >> "$GITHUB_STEP_SUMMARY"
+        echo "Took ${d:-?} seconds (budget: about 600 s; see CLAUDE.md)." >> "$GITHUB_STEP_SUMMARY"
+        grep -E "installed |fails as intended|solution passes|^--- |^\s+--- " addon-test.log >> "$GITHUB_STEP_SUMMARY" || true
+
+    - name: Collect what the cluster said
+      if: failure()
+      run: |
+        mkdir -p diagnostics
+        docker ps -a > diagnostics/docker-ps.txt 2>&1 || true
+        for name in $(kind get clusters 2>/dev/null); do
+          kind export logs "diagnostics/$name" --name "$name" || true
+        done
+
+    - uses: actions/upload-artifact@v7
+      if: failure()
+      with:
+        name: addon-diagnostics
+        path: |
+          addon-test.log
+          diagnostics/
+        if-no-files-found: ignore
+        retention-days: 7

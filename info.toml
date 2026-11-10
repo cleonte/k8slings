@@ -777,6 +777,53 @@ Both fields say the same thing from opposite ends. Which of them do you want to 
 docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget"
 
 [[exercises]]
+name = "autoscaling1"
+path = "exercises/autoscaling/autoscaling1"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+scaleTargetRef is the address of the object to scale. In which API group and version does a Deployment live?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+
+[[exercises]]
+name = "autoscaling2"
+path = "exercises/autoscaling/autoscaling2"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+One of the two numbers is the floor and the other the ceiling. Which is which, and which number should each be?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details"
+
+[[exercises]]
+name = "autoscaling3"
+path = "exercises/autoscaling/autoscaling3"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+Each type of target has its own field. Which one is a percentage?"""
+docs = "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec"
+
+[[exercises]]
+name = "autoscaling4"
+path = "exercises/autoscaling/autoscaling4"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+behavior has one block for each direction. Which direction should be patient, and what limits how many Pods go in one period?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior"
+
+[[exercises]]
+name = "autoscaling5"
+path = "exercises/autoscaling/autoscaling5"
+topic = "autoscaling"
+mode = "cluster"
+requires = ["metrics-server"]
+timeout = "150s"
+hint = """
+The target is a percentage of something the container has to declare. What does this container declare?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#requirements"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"

@@ -147,7 +147,7 @@ func TestDoctorSaysWhetherKubectlIsThereForTheOfflineQueryExercises(t *testing.T
 	infoFile := workspace(t, info+"[[exercises]]\nname='gen'\npath='exercises/t/gen'\ntopic='t'\nmode='query'\noffline=true\nhint='h'\n")
 	for has, want := range map[bool]Status{true: OK, false: Warn} {
 		env := Env{FileExists: func(string) bool { return true }, Schemas: schemas, HasKubectl: func() bool { return has }}
-		c := byName(Run(context.Background(), infoFile, env), "kubectl")
+		c := byName(Run(context.Background(), infoFile, env), "kubectl (offline queries)")
 		if c.Status != want || c.Group != Offline || !strings.Contains(c.Detail, "1 query exercise(s)") {
 			t.Errorf("kubectl present=%v: got %+v", has, c)
 		}
@@ -156,7 +156,7 @@ func TestDoctorSaysWhetherKubectlIsThereForTheOfflineQueryExercises(t *testing.T
 	plain := workspace(t, info)
 	env := Env{FileExists: func(string) bool { return true }, Schemas: schemas, HasKubectl: func() bool { return false }}
 	for _, c := range Run(context.Background(), plain, env) {
-		if c.Name == "kubectl" {
+		if c.Name == "kubectl (offline queries)" {
 			t.Errorf("unexpected %+v", c)
 		}
 	}

@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: HorizontalPodAutoscaler, name: web}
+    assert:
+      - expr: "has(object.spec.minReplicas) && object.spec.minReplicas <= object.spec.maxReplicas"
+        message: "The floor (minReplicas) cannot be above the ceiling (maxReplicas)."
+      - expr: "object.spec.minReplicas == 2 && object.spec.maxReplicas == 6"
+        message: "The Deployment should stay between two and six Pods."

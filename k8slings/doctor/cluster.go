@@ -113,7 +113,41 @@ func clusterChecks(ctx context.Context, cl *cluster.Cluster) []Check {
 	if server, err := cl.ServerVersion(ctx); err == nil {
 		add(versionCheck(server, kubectlVersion))
 	}
+	if len(cl.Registry) > 0 {
+		add(addonsCheck(ctx, cl))
+	}
 	return checks
+}
+
+// addonsCheck reports the add-ons. One that is not installed is only a note: the
+// exercises that need it are skipped with the command that installs it. One that
+// is installed and not ready, or older than this build's, is a warning.
+func addonsCheck(ctx context.Context, cl *cluster.Cluster) Check {
+	states, err := cl.AddonStates(ctx)
+	if err != nil {
+		return clusterCheck("Add-ons", Warn, "%s", err)
+	}
+	var parts, problems []string
+	for _, st := range states {
+		name := st.Addon.Name
+		switch {
+		case !st.Installed:
+			parts = append(parts, name+" not installed")
+		case !st.Ready:
+			parts = append(parts, name+" "+st.Version+" not ready")
+			problems = append(problems, name+" is installed but not ready; look with `k8slings kubectl get pods -A`")
+		case st.Version != st.Addon.Version:
+			parts = append(parts, name+" "+st.Version)
+			problems = append(problems, fmt.Sprintf("%s %s is installed, this k8slings ships %s: run `k8slings cluster addon install %s`", name, st.Version, st.Addon.Version, name))
+		default:
+			parts = append(parts, name+" "+st.Version+" ready")
+		}
+	}
+	detail := strings.Join(parts, ", ") + " (install one with `k8slings cluster addon install <name>`)"
+	if len(problems) > 0 {
+		return clusterCheck("Add-ons", Warn, "%s\n%s", detail, strings.Join(problems, "\n"))
+	}
+	return clusterCheck("Add-ons", OK, "%s", detail)
 }
 
 func corePodsCheck(ctx context.Context, cl *cluster.Cluster) Check {

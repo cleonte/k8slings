@@ -1,0 +1,17 @@
+shipped: "ScalingActive"
+shipped_details: "missing request for cpu"
+objects:
+  - select: {kind: HorizontalPodAutoscaler, name: web}
+    assert:
+      - expr: "object.spec.metrics.exists(m, m.type == 'Resource' && m.resource.name == 'cpu' && m.resource.target.type == 'Utilization')"
+        message: "Keep the CPU Utilization target: the percentage is the point."
+  - select: {kind: Deployment, name: web}
+    assert:
+      - expr: "object.spec.template.spec.containers.size() == 1 && object.spec.template.spec.containers[0].image == 'nginx:1.27'"
+        message: "Keep the container as it is: it is what it requests that is missing."
+steps:
+  - rollout: deployment/web
+  - assert:
+      resource: hpa/web
+      expr: "has(object.status.conditions) && object.status.conditions.exists(c, c.type == 'ScalingActive' && c.status == 'True')"
+      message: "The autoscaler is not active (ScalingActive is not True): it cannot read the CPU use of the Pods as a percentage."

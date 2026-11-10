@@ -6,7 +6,6 @@ import (
 	"os/signal"
 
 	"github.com/cleonte/k8slings"
-	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/schema"
 	"github.com/spf13/cobra"
@@ -18,7 +17,7 @@ const infoFile = "info.toml"
 // exercises; without a cluster they are skipped, never failed.
 func newEnv() *exercises.Env {
 	env := &exercises.Env{Embedded: k8slings.FS, Solutions: k8slings.Solutions, Validator: schema.New(k8slings.Schemas)}
-	if cl, err := cluster.Default(); err == nil {
+	if cl, err := defaultCluster(); err == nil {
 		env.Kube = cl
 	}
 	return env
