@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: HorizontalPodAutoscaler, name: web}
+    assert:
+      - expr: "object.spec.metrics.size() == 1 && object.spec.metrics[0].resource.name == 'cpu'"
+        message: "Scale on the CPU, with one metric."
+      - expr: "object.spec.metrics[0].resource.target.type == 'Utilization'"
+        message: "The target is a percentage of the request: its type is Utilization."
+      - expr: "has(object.spec.metrics[0].resource.target.averageUtilization) && object.spec.metrics[0].resource.target.averageUtilization == 70"
+        message: "Utilization says its value in averageUtilization: 70."
+      - expr: "!has(object.spec.metrics[0].resource.target.averageValue) && !has(object.spec.metrics[0].resource.target.value)"
+        message: "A Utilization target has no averageValue and no value."

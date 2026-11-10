@@ -795,6 +795,15 @@ One of the two numbers is the floor and the other the ceiling. Which is which, a
 docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details"
 
 [[exercises]]
+name = "autoscaling3"
+path = "exercises/autoscaling/autoscaling3"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+Each type of target has its own field. Which one is a percentage?"""
+docs = "https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
