@@ -786,6 +786,15 @@ scaleTargetRef is the address of the object to scale. In which API group and ver
 docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
 
 [[exercises]]
+name = "autoscaling2"
+path = "exercises/autoscaling/autoscaling2"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+One of the two numbers is the floor and the other the ceiling. Which is which, and which number should each be?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#algorithm-details"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
