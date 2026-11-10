@@ -1062,6 +1062,15 @@ sectionName is the name of a listener of the Gateway. What is the listener calle
 docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways"
 
 [[exercises]]
+name = "gatewayapi2"
+path = "exercises/gatewayapi/gatewayapi2"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+A Service can have several ports. Which one does the route send to?"""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httpbackendref"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"

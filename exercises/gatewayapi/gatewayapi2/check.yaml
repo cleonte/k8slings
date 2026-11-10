@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: HTTPRoute, name: web}
+    assert:
+      - expr: "object.spec.rules.all(r, r.backendRefs.all(b, (has(b.kind) && b.kind != 'Service') || has(b.port)))"
+        message: "A backendRef to a Service has to say which port."
+      - expr: "object.spec.rules[0].backendRefs[0].name == 'web' && object.spec.rules[0].backendRefs[0].port == 80"
+        message: "Send the traffic to port 80 of the Service web."
