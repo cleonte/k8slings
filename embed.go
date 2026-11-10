@@ -28,3 +28,10 @@ var Solutions embed.FS
 //
 //go:embed schemas
 var Schemas embed.FS
+
+// Addons contains the registry of add-ons: addons/<name>/addon.yaml and the
+// pinned manifests it lists (see the addons package). They are applied by
+// `k8slings cluster addon install`, never fetched at run time.
+//
+//go:embed addons
+var Addons embed.FS

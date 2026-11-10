@@ -1,0 +1,17 @@
+name: metrics-server
+version: v0.9.1
+source: github.com/kubernetes-sigs/metrics-server
+description: The Metrics API (kubectl top, and the CPU and memory metrics a HorizontalPodAutoscaler reads).
+namespace: kube-system
+manifests:
+  - components.yaml
+ready:
+  - deployment/metrics-server
+images:
+  - registry.k8s.io/metrics-server/metrics-server:v0.9.1
+clusterWide:
+  - ClusterRole system:aggregated-metrics-reader
+  - ClusterRole system:metrics-server
+  - ClusterRoleBinding metrics-server:system:auth-delegator
+  - ClusterRoleBinding system:metrics-server
+  - APIService v1beta1.metrics.k8s.io

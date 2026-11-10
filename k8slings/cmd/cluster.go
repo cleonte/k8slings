@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/cleonte/k8slings/k8slings/addons"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -22,12 +23,13 @@ Manifest exercises need no cluster at all.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
-	root.AddCommand(clusterUpCmd(), clusterDownCmd(), clusterStatusCmd())
+	root.AddCommand(clusterUpCmd(), clusterDownCmd(), clusterStatusCmd(), clusterAddonCmd())
 	return root
 }
 
 func clusterUpCmd() *cobra.Command {
 	var single bool
+	var addonList string
 	c := &cobra.Command{
 		Use:   "up",
 		Short: "Create the cluster (one control plane and two workers) and wait until it is healthy",
@@ -36,16 +38,27 @@ node and two workers, which scheduling and DaemonSet exercises need. Use --singl
 on a small machine; exercises that need several nodes are then skipped.
 
 The first run pulls the node image and takes a few minutes. Running it again
-reuses the cluster.`,
+reuses the cluster.
+
+--addons installs add-ons right after (metrics-server, ...); 'k8slings cluster addon
+list' shows which there are, and 'k8slings cluster addon install' adds one later.`,
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cl, err := cluster.Default()
+			cl, err := defaultCluster()
 			if err != nil {
 				return err
 			}
+			names := addonNames(addonList)
+			if _, err := addons.Order(cl.Registry, names); err != nil {
+				color.Red("%s", err)
+				return err // before anything is created
+			}
 			err = cl.Up(cmd.Context(), cluster.UpOptions{Single: single, Out: cmd.OutOrStdout()})
+			if err == nil && len(names) > 0 {
+				err = installAddons(cmd.Context(), cl, names, cmd.OutOrStdout())
+			}
 			if err != nil {
 				color.Red("%s", err)
 			}
@@ -53,6 +66,7 @@ reuses the cluster.`,
 		},
 	}
 	c.Flags().BoolVar(&single, "single", false, "create a single node instead of a control plane and two workers")
+	c.Flags().StringVar(&addonList, "addons", "", "add-ons to install once the cluster is up, separated by commas (see `cluster addon list`)")
 	return c
 }
 
@@ -64,7 +78,7 @@ func clusterDownCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cl, err := cluster.Default()
+			cl, err := defaultCluster()
 			if err != nil {
 				return err
 			}
@@ -86,7 +100,7 @@ func clusterStatusCmd() *cobra.Command {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cl, err := cluster.Default()
+			cl, err := defaultCluster()
 			if err != nil {
 				return err
 			}
@@ -115,6 +129,10 @@ func clusterStatusCmd() *cobra.Command {
 			if ready != len(st.Nodes) {
 				return fmt.Errorf("%d of %d nodes are not Ready", len(st.Nodes)-ready, len(st.Nodes))
 			}
+			if states, err := cl.AddonStates(cmd.Context()); err == nil && len(states) > 0 {
+				fmt.Println("Add-ons:")
+				printAddons(cmd.OutOrStdout(), states)
+			}
 			return nil
 		},
 	}
@@ -142,7 +160,7 @@ current context is. Flags that choose a cluster, user or credentials (--context,
 				color.Red("%s", err)
 				return err
 			}
-			cl, err := cluster.Default()
+			cl, err := defaultCluster()
 			if err != nil {
 				return err
 			}
