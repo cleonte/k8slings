@@ -28,6 +28,7 @@ func (f *fakeCluster) ResetNamespace(context.Context, string) error       { retu
 func (f *fakeCluster) Apply(context.Context, string, []byte) (string, error) {
 	return "", nil
 }
+func (f *fakeCluster) ReadyAddons(context.Context) map[string]bool  { return nil }
 func (f *fakeCluster) Delete(context.Context, string, []byte) error { return nil }
 func (f *fakeCluster) Query(context.Context, []string, bool) (cluster.QueryResult, error) {
 	return cluster.QueryResult{}, nil

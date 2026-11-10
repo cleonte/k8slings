@@ -35,7 +35,11 @@ type fakeKube struct {
 	// query exercises
 	queryFn func(args []string, offline bool) (cluster.QueryResult, error)
 	deleted [][]byte // the manifests given to Delete
+
+	addons map[string]bool // the add-ons that are installed and ready
 }
+
+func (f *fakeKube) ReadyAddons(context.Context) map[string]bool { return f.addons }
 
 func (f *fakeKube) Delete(_ context.Context, ns string, manifest []byte) error {
 	f.calls = append(f.calls, "delete "+ns)
@@ -183,6 +187,26 @@ func TestClusterExerciseWithAnUnknownAddOnIsSkipped(t *testing.T) {
 	_, err := ex.RunSource(context.Background(), clusterEnv(&fakeKube{nodes: 3}), []byte(goodPod))
 	if !IsSkipped(err) || !strings.Contains(err.Error(), "metrics-server add-on") {
 		t.Fatalf("got %v", err)
+	}
+}
+
+// An add-on of the registry that is not installed is skipped with the command
+// that installs it, and runs once it is ready; a known add-on never says "not
+// available yet".
+func TestClusterExerciseNeedingAnAddOn(t *testing.T) {
+	ex := clusterExercise(t)
+	ex.Requires = []string{"metrics-server"}
+	_, err := ex.RunSource(context.Background(), clusterEnv(&fakeKube{nodes: 3, addons: map[string]bool{"metrics-server": false}}), []byte(goodPod))
+	if !IsSkipped(err) || !strings.Contains(err.Error(), "run `k8slings cluster addon install metrics-server`") {
+		t.Fatalf("not installed: got %v", err)
+	}
+	if _, err := ex.RunSource(context.Background(), clusterEnv(&fakeKube{nodes: 3, addons: map[string]bool{"metrics-server": true}}), []byte(goodPod)); err != nil {
+		t.Fatalf("installed and ready: %v", err)
+	}
+	// The same through the availability the list, check-all and verify use.
+	av := ex.SkipReason(Availability{Cluster: true, Nodes: 3, Addons: map[string]bool{"metrics-server": false}})
+	if !strings.Contains(av, "addon install metrics-server") {
+		t.Errorf("SkipReason = %q", av)
 	}
 }
 
