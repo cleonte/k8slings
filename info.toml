@@ -1098,6 +1098,17 @@ from has three values. Which one chooses namespaces by their labels, and what la
 docs = "https://gateway-api.sigs.k8s.io/guides/multiple-ns/"
 
 [[exercises]]
+name = "gatewayapi6"
+path = "exercises/gatewayapi/gatewayapi6"
+topic = "gatewayapi"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "120s"
+hint = """
+The status of the route says why it is not accepted. What does the listener of the Gateway require of the route's hostnames?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#hostnames"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"

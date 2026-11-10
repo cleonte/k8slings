@@ -1,0 +1,54 @@
+# rejected: "Keep the Gateway as it is"
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: shop
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      port: 8000
+      protocol: HTTP
+      hostname: store.gatewayapi6.example.test
+      allowedRoutes:
+        namespaces:
+          from: Same
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  labels: {app: web}
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: c
+      image: hashicorp/http-echo:1.0.0
+      args: ["-text=gatewayapi6 ok", "-listen=:8080"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+spec:
+  selector:
+    app: web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: shop
+spec:
+  parentRefs:
+    - name: shop
+      sectionName: web
+  hostnames:
+    - store.gatewayapi6.example.test
+  rules:
+    - backendRefs:
+        - name: web
+          port: 80
