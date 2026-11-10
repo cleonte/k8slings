@@ -118,6 +118,9 @@ func TestNoExercisePathReachesAnAddOnNamespace(t *testing.T) {
 			nss = append(nss, ns)
 		}
 		for _, ns := range nss {
+			if ns == "" {
+				continue // cluster-scoped: no namespace to reach
+			}
 			f := &fake{}
 			c := &cluster.Cluster{Name: "k8slings", Kubeconfig: "/x", Runner: f}
 			paths := map[string]error{
@@ -135,6 +138,43 @@ func TestNoExercisePathReachesAnAddOnNamespace(t *testing.T) {
 				t.Errorf("%s: %d programs were run for the namespace %s", a.Name, f.calls, ns)
 			}
 		}
+	}
+}
+
+// The controller is shared: every exercise that routes through it does so in its
+// own namespace, but a path or a hostname is global to the controller. Each
+// exercise that needs the gateway therefore uses a path or a host named after
+// itself (/ingress4, gatewayapi6.example.test), so that the Ingresses and routes
+// that other exercises left behind can never answer for it.
+func TestGatewayExercisesRouteOnTheirOwnName(t *testing.T) {
+	data, err := fs.ReadFile(k8slings.FS, "info.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	list, err := exercises.ParseInfo(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := 0
+	for _, ex := range list {
+		if !slices.Contains(ex.Requires, "gateway") {
+			continue
+		}
+		n++
+		file := exercises.ExerciseFile
+		if ex.Mode == exercises.ModeFix {
+			file = exercises.SetupFile
+		}
+		src, err := fs.ReadFile(k8slings.FS, ex.Path+"/"+file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(src), "/"+ex.Name) && !strings.Contains(string(src), ex.Name+".example.test") {
+			t.Errorf("%s routes through the shared gateway without a path or a host named after itself", ex.Name)
+		}
+	}
+	if n == 0 {
+		t.Fatal("no exercise requires the gateway")
 	}
 }
 

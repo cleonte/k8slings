@@ -143,3 +143,59 @@ func TestReadyAddonsOfAClusterThatCannotBeAsked(t *testing.T) {
 		t.Errorf("got %v: every add-on is listed, and none is ready", got)
 	}
 }
+
+var crdAddon = addons.Addon{
+	Name: "gateway-api", Version: "v1.6.1",
+	Manifests: []string{"standard-install.yaml"},
+	CRDs:      []string{"gateways.gateway.networking.k8s.io", "httproutes.gateway.networking.k8s.io"},
+}
+
+// An add-on that is only CRDs has no namespace and nothing to roll out: its main
+// object is its first CRD (cluster-scoped, so no -n), and it is ready when its
+// CRDs are Established.
+func TestInstallAnAddOnThatIsOnlyCRDs(t *testing.T) {
+	f := &fakeRunner{handle: func(Cmd) (string, error) { return "", nil }}
+	if err := newQueryCluster(f).InstallAddon(context.Background(), crdAddon, [][]byte{[]byte("kind: CustomResourceDefinition\n")}, nil); err != nil {
+		t.Fatal(err)
+	}
+	var lines []string
+	for _, c := range f.calls {
+		lines = append(lines, strings.Join(c.Args, " "))
+	}
+	all := strings.Join(lines, "\n")
+	for _, want := range []string{
+		"label customresourcedefinition/gateways.gateway.networking.k8s.io k8slings.io/addon=gateway-api --overwrite",
+		"wait --for=condition=Established crd/gateways.gateway.networking.k8s.io",
+		"wait --for=condition=Established crd/httproutes.gateway.networking.k8s.io",
+	} {
+		if !strings.Contains(all, want) {
+			t.Errorf("no call with %q in:\n%s", want, all)
+		}
+	}
+	if strings.Contains(all, " -n ") && strings.Contains(all, "label customresourcedefinition/gateways.gateway.networking.k8s.io -n") {
+		t.Error("a CRD is cluster-scoped: no namespace")
+	}
+}
+
+func TestCRDAddOnStates(t *testing.T) {
+	for name, tc := range map[string]struct {
+		established string
+		want        bool
+	}{"established": {"True", true}, "not yet": {"", false}} {
+		t.Run(name, func(t *testing.T) {
+			f := &fakeRunner{handle: func(c Cmd) (string, error) {
+				line := strings.Join(c.Args, " ")
+				if strings.Contains(line, "metadata.labels") {
+					return "gateway-api|v1.6.1", nil
+				}
+				return tc.established, nil
+			}}
+			c := newQueryCluster(f)
+			c.Registry = []addons.Addon{crdAddon}
+			states, err := c.AddonStates(context.Background())
+			if err != nil || !states[0].Installed || states[0].Ready != tc.want {
+				t.Fatalf("states=%+v err=%v", states, err)
+			}
+		})
+	}
+}
