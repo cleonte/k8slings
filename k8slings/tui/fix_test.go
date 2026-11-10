@@ -20,7 +20,10 @@ import (
 func init() { fixRecheckEvery = time.Millisecond }
 
 // fakeCluster is a cluster that is always there and healthy, and counts seeds.
-type fakeCluster struct{ seeds, seededCalls atomic.Int32 }
+type fakeCluster struct {
+	seeds, seededCalls atomic.Int32
+	addons             map[string]bool // the add-ons of the registry, and whether each is ready
+}
 
 func (f *fakeCluster) Kubectl(context.Context, ...string) (string, error) { return "", nil }
 func (f *fakeCluster) Verify(context.Context) error                       { return nil }
@@ -28,7 +31,7 @@ func (f *fakeCluster) ResetNamespace(context.Context, string) error       { retu
 func (f *fakeCluster) Apply(context.Context, string, []byte) (string, error) {
 	return "", nil
 }
-func (f *fakeCluster) ReadyAddons(context.Context) map[string]bool  { return nil }
+func (f *fakeCluster) ReadyAddons(context.Context) map[string]bool  { return f.addons }
 func (f *fakeCluster) Delete(context.Context, string, []byte) error { return nil }
 func (f *fakeCluster) Query(context.Context, []string, bool) (cluster.QueryResult, error) {
 	return cluster.QueryResult{}, nil
@@ -247,4 +250,66 @@ func TestSetupShowsProgressAndQuittingCancelsIt(t *testing.T) {
 	case <-time.After(5 * time.Second):
 		t.Fatal("quitting did not cancel the setup")
 	}
+}
+
+const addonInfo = `[[exercises]]
+name='plain'
+path='exercises/t/plain'
+topic='t'
+mode='cluster'
+hint='h'
+
+[[exercises]]
+name='hpa'
+path='exercises/t/hpa'
+topic='t'
+mode='cluster'
+requires=['metrics-server']
+hint='h'
+
+[[exercises]]
+name='route'
+path='exercises/t/route'
+topic='t'
+mode='cluster'
+requires=['gateway']
+hint='h'
+`
+
+func addonModel(t *testing.T, info string, kube *fakeCluster) *Model {
+	t.Helper()
+	t.Chdir(t.TempDir())
+	if err := os.WriteFile("info.toml", []byte(info), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	embedded := fstest.MapFS{}
+	env := &exercises.Env{Embedded: embedded, Validator: schema.New(embedded)}
+	if kube != nil { // a nil *fakeCluster in the interface would not be a nil Kube
+		env.Kube = kube
+	}
+	m := New(Config{InfoFile: "info.toml", Env: env, Run: failingRun})
+	m.width, m.height = 140, 30
+	settle(t, m, m.startRun())
+	return m
+}
+
+// When the exercises are skipped only because add-ons are not installed, the
+// header says which command runs them instead of pointing at doctor.
+func TestHeaderNamesTheAddOnsThatSkippedExercisesWaitFor(t *testing.T) {
+	m := addonModel(t, addonInfo, &fakeCluster{addons: map[string]bool{"metrics-server": false, "gateway": false, "gateway-api": false}})
+	want(t, m, "2 skipped (run k8slings cluster addon install gateway metrics-server)")
+	if strings.Contains(screen(m), "see k8slings doctor") {
+		t.Fatal("the cause is known: say what to install")
+	}
+
+	// Once one is installed only the other is named.
+	m = addonModel(t, addonInfo, &fakeCluster{addons: map[string]bool{"metrics-server": true, "gateway": false}})
+	want(t, m, "1 skipped (run k8slings cluster addon install gateway)")
+}
+
+// A skip with another cause keeps pointing at doctor: no cluster is not fixed by
+// installing an add-on.
+func TestHeaderStillPointsToDoctorWhenTheCauseIsNotAnAddOn(t *testing.T) {
+	m := addonModel(t, addonInfo, nil) // Env.Kube is nil: no cluster at all
+	want(t, m, "3 skipped (see k8slings doctor)")
 }
