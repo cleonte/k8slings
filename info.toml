@@ -317,6 +317,15 @@ The backend names a port of the Service. What is the port of the Service called?
 docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-backend"
 
 [[exercises]]
+name = "ingress3"
+path = "exercises/ingress/ingress3"
+topic = "ingress"
+mode = "manifest"
+hint = """
+The class is a field of the spec, and it is the name of an IngressClass. Which one does Traefik install?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"
