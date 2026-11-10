@@ -47,6 +47,28 @@ release:
 
     Manifest exercises need nothing else. Cluster exercises need Docker (or Colima, Lima, ...), [kind](https://kind.sigs.k8s.io/) and kubectl: run `k8slings doctor` to check, and `k8slings cluster up` to create the cluster.
 
+# The Homebrew cask in the tap cleonte/homebrew-tap (brew install cleonte/tap/k8slings).
+# A cask, because GoReleaser deprecated formulas for pre-built binaries (v2.10).
+# The binaries are not signed or notarized, so the cask removes the quarantine
+# flag that macOS puts on downloads; that is what stops Gatekeeper from refusing
+# the first run. The token is a personal access token with write access to the tap
+# only: the GITHUB_TOKEN of a workflow cannot push to another repository.
+homebrew_casks:
+  - name: k8slings
+    repository:
+      owner: cleonte
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/cleonte/k8slings
+    description: "Learn Kubernetes through small broken exercises (rustlings for Kubernetes)"
+    license: Apache-2.0
+    hooks:
+      post:
+        install_steps: |
+          on_macos do
+            run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "{{ .StagedPath }}/k8slings"]
+          end
+
 changelog:
   sort: asc
   filters:

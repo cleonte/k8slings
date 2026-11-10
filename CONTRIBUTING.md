@@ -84,3 +84,5 @@ So before tagging:
 1. Move what is under "Unreleased" in `CHANGELOG.md` into a section `## [X.Y.Z] - date`, and update the two links at the bottom.
 2. Check the release locally: `goreleaser check`, then `goreleaser release --snapshot --clean --skip=publish` builds every archive into `dist/` without publishing anything.
 3. Tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+The release also updates the Homebrew cask in the tap [cleonte/homebrew-tap](https://github.com/cleonte/homebrew-tap) (`homebrew_casks` in `.goreleaser.yaml`). That needs the repository secret `HOMEBREW_TAP_TOKEN`: a fine-grained personal access token with **Contents: read and write on the tap repository only** (the `GITHUB_TOKEN` of a workflow cannot push to another repository). Without it the release fails at the publish step, after the archives are built. The token has an expiry: when it lapses, create a new one and `gh secret set HOMEBREW_TAP_TOKEN`.

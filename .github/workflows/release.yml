@@ -39,3 +39,6 @@ jobs:
           args: release --clean ${{ steps.notes.outputs.flags }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # A token that can push to the tap (cleonte/homebrew-tap); the GITHUB_TOKEN of
+          # a workflow cannot write to another repository. See CONTRIBUTING.md, Releasing.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
