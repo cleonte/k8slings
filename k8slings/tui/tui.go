@@ -84,14 +84,17 @@ type Model struct {
 	scroll int    // lines scrolled off the top of the body
 	notice string // one line shown instead of the key help
 
-	status   status
-	message  string // for statusError
-	done     int
-	total    int
-	skipped  int
-	topic    string // e.g. "Topic: pods (2/5)"
-	exercise exercises.Exercise
-	avail    exercises.Availability // what this machine can run, looked at on every run
+	status  status
+	message string // for statusError
+	done    int
+	total   int
+	skipped int
+	// How many of them wait for an add-on, and which ones would run them.
+	skippedForAddons int
+	addonsToInstall  []string
+	topic            string // e.g. "Topic: pods (2/5)"
+	exercise         exercises.Exercise
+	avail            exercises.Availability // what this machine can run, looked at on every run
 	// pinned is the exercise picked from the list. It is the one that runs
 	// until n moves on, instead of the first pending one.
 	pinned string
@@ -468,8 +471,10 @@ func (m *Model) startRun() tea.Cmd {
 	}
 	m.done, m.total = done, total
 	m.avail = m.cfg.Env.Availability(context.Background())
+	m.skipped, m.skippedForAddons, m.addonsToInstall = 0, 0, nil
 	if skipped, err := exercises.Skipped(m.cfg.InfoFile, m.avail); err == nil {
 		m.skipped = len(skipped)
+		m.skippedForAddons, m.addonsToInstall = exercises.SkippedForAddons(skipped, m.avail)
 	}
 
 	exercise, err := m.nextExercise()

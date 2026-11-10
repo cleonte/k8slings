@@ -324,3 +324,35 @@ steps:
 		t.Fatalf("took %v: %v", time.Since(start), err)
 	}
 }
+
+// MissingAddons names what to install, SkipReason says it, and SkippedForAddons
+// counts the exercises that only wait for an add-on.
+func TestMissingAddonsAreNamedAllTogether(t *testing.T) {
+	av := Availability{Cluster: true, Nodes: 3, Addons: map[string]bool{"gateway": false, "metrics-server": false, "other": true}}
+	both := Exercise{Name: "both", Mode: ModeCluster, Requires: []string{"metrics-server", "gateway", "other"}}
+	if got := both.MissingAddons(av); len(got) != 2 || got[0] != "metrics-server" || got[1] != "gateway" {
+		t.Errorf("MissingAddons = %v", got)
+	}
+	if r := both.SkipReason(av); !strings.Contains(r, "needs the metrics-server add-on") || !strings.HasSuffix(r, "`k8slings cluster addon install metrics-server gateway`") {
+		t.Errorf("SkipReason = %q", r)
+	}
+
+	// Something else comes first: the cluster, then the nodes. Then the add-on is
+	// not what to install.
+	if got := both.MissingAddons(Availability{Addons: av.Addons}); got != nil {
+		t.Errorf("with no cluster the cluster is the cause, got %v", got)
+	}
+	multi := Exercise{Name: "m", Mode: ModeCluster, Requires: []string{"multinode", "gateway"}}
+	if got := multi.MissingAddons(Availability{Cluster: true, Nodes: 1, Addons: av.Addons}); got != nil {
+		t.Errorf("several nodes are needed first, got %v", got)
+	}
+	if got := (Exercise{Mode: ModeCluster, Requires: []string{"unheard-of"}}).MissingAddons(av); got != nil {
+		t.Errorf("an add-on this build does not know cannot be installed, got %v", got)
+	}
+
+	skipped := []Exercise{both, {Name: "g", Mode: ModeCluster, Requires: []string{"gateway"}}, {Name: "x", Mode: ModeCluster, Requires: []string{"unheard-of"}}}
+	n, names := SkippedForAddons(skipped, av)
+	if n != 2 || len(names) != 2 || names[0] != "gateway" || names[1] != "metrics-server" {
+		t.Errorf("SkippedForAddons = %d %v (sorted, once each, only the exercises that wait for an add-on)", n, names)
+	}
+}
