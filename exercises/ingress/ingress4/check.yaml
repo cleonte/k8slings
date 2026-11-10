@@ -1,0 +1,9 @@
+shipped: "GET /ingress4 on Service traefik:80 fails"
+objects:
+  - select: {kind: Ingress, name: shop}
+    assert:
+      - expr: "object.spec.rules[0].http.paths.size() == 1 && object.spec.rules[0].http.paths[0].path == '/ingress4' && object.spec.rules[0].http.paths[0].backend.service.name == 'shop'"
+        message: "Keep the path /ingress4 and the backend Service shop: it is the class that is wrong."
+steps:
+  - ready: {pod: shop}
+  - http: {namespace: addon-traefik, service: traefik, port: 80, path: /ingress4, body_contains: "shop is open"}

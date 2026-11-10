@@ -1,0 +1,36 @@
+# Values for scripts/render-addons.sh: Traefik as the Gateway API controller and
+# the Ingress controller of the k8slings cluster. ClusterIP only: nothing is
+# published on the host, exercises reach it inside the cluster.
+deployment:
+  replicas: 1
+service:
+  spec:
+    type: ClusterIP
+providers:
+  # Traefik's own CRDs (IngressRoute, ...) are not used.
+  kubernetesCRD:
+    enabled: false
+  kubernetesGateway:
+    enabled: true
+  kubernetesIngress:
+    enabled: true
+    publishedService:
+      enabled: true
+gatewayClass:
+  enabled: true
+gateway:
+  enabled: true
+  name: gateway
+  listeners:
+    web:
+      port: 8000
+      protocol: HTTP
+      namespacePolicy:
+        from: All   # routes of every exercise namespace may attach
+ingressClass:
+  enabled: true
+  isDefaultClass: false
+ports:
+  websecure:
+    expose:
+      default: false

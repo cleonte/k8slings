@@ -1,0 +1,15 @@
+shipped: "GET /gatewayapi8/api on Service traefik:80 fails"
+steps:
+  - unchanged: httproute/api
+  - assert:
+      resource: httproute/api
+      expr: "object.spec.rules.size() >= 1 && object.spec.rules.all(r, r.backendRefs.all(b, b.name == 'web'))"
+      message: "Keep sending to the Service web."
+    now: true
+  - assert:
+      resource: httproute/api
+      expr: "object.spec.rules.all(r, !has(r.matches) || r.matches.all(m, !has(m.path) || m.path.value.startsWith('/gatewayapi8/')))"
+      message: "The route has to stay specific: it serves /gatewayapi8/api, not the whole site."
+    now: true
+  - ready: {pod: web}
+  - http: {namespace: addon-traefik, service: traefik, port: 80, path: /gatewayapi8/api, body_contains: "api is up"}

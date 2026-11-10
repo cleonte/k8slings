@@ -1,0 +1,30 @@
+name: gateway-api
+version: v1.6.1
+source: github.com/kubernetes-sigs/gateway-api
+description: The Gateway API definitions (Gateway, HTTPRoute, ...), standard channel. A controller (the gateway add-on) is what serves them.
+manifests:
+  - standard-install.yaml
+crds:
+  - backendtlspolicies.gateway.networking.k8s.io
+  - gatewayclasses.gateway.networking.k8s.io
+  - gateways.gateway.networking.k8s.io
+  - grpcroutes.gateway.networking.k8s.io
+  - httproutes.gateway.networking.k8s.io
+  - listenersets.gateway.networking.k8s.io
+  - referencegrants.gateway.networking.k8s.io
+  - tcproutes.gateway.networking.k8s.io
+  - tlsroutes.gateway.networking.k8s.io
+  - udproutes.gateway.networking.k8s.io
+clusterWide:
+  - CustomResourceDefinition backendtlspolicies.gateway.networking.k8s.io
+  - CustomResourceDefinition gatewayclasses.gateway.networking.k8s.io
+  - CustomResourceDefinition gateways.gateway.networking.k8s.io
+  - CustomResourceDefinition grpcroutes.gateway.networking.k8s.io
+  - CustomResourceDefinition httproutes.gateway.networking.k8s.io
+  - CustomResourceDefinition listenersets.gateway.networking.k8s.io
+  - CustomResourceDefinition referencegrants.gateway.networking.k8s.io
+  - CustomResourceDefinition tcproutes.gateway.networking.k8s.io
+  - CustomResourceDefinition tlsroutes.gateway.networking.k8s.io
+  - CustomResourceDefinition udproutes.gateway.networking.k8s.io
+  - ValidatingAdmissionPolicy safe-upgrades.gateway.networking.k8s.io
+  - ValidatingAdmissionPolicyBinding safe-upgrades.gateway.networking.k8s.io

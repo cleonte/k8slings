@@ -176,6 +176,18 @@ func TestHTTPGoesThroughTheServiceProxy(t *testing.T) {
 	}
 }
 
+func TestHTTPCanAskAServiceInAnotherNamespace(t *testing.T) {
+	c := steps(t, "  - http: {namespace: addon-traefik, service: traefik, port: 80, path: /shop, body_contains: one}\n")
+	k := &fakeKube{rules: []rule{{words: []string{"get --raw /api/v1/namespaces/addon-traefik/services/traefik:80/proxy/shop"}, out: "version one"}}}
+	if got := run(c, k); got != "" {
+		t.Fatalf("got %q", got)
+	}
+	k.rules[0].err, k.rules[0].out = true, "Error from server (NotFound)"
+	if got := run(c, k); !strings.Contains(got, "GET /shop on Service traefik:80 fails") {
+		t.Fatalf("got %q", got)
+	}
+}
+
 func TestExecNeedsARunningPodAndCanExpectFailure(t *testing.T) {
 	c := steps(t, `  - exec: {pod: client, args: [wget, -qO-, http://server]}
   - exec: {pod: intruder, args: [wget, -qO-, -T, "3", http://server], ok: false}

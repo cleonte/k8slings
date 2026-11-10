@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: HTTPRoute, name: web}
+    assert:
+      - expr: "object.spec.parentRefs.size() == 1 && object.spec.parentRefs[0].name == 'shop'"
+        message: "Keep attaching to the Gateway shop."
+      - expr: "objects.exists(g, g.kind == 'Gateway' && g.metadata.name == 'shop' && !has(object.spec.parentRefs[0].sectionName)) || objects.exists(g, g.kind == 'Gateway' && g.metadata.name == 'shop' && has(object.spec.parentRefs[0].sectionName) && g.spec.listeners.exists(l, l.name == object.spec.parentRefs[0].sectionName))"
+        message: "The Gateway shop has no listener with the name the route asks for."

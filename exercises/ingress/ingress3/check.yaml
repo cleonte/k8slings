@@ -1,0 +1,5 @@
+objects:
+  - select: {kind: Ingress, name: web}
+    assert:
+      - expr: "has(object.spec.ingressClassName) && object.spec.ingressClassName == 'traefik'"
+        message: "Say which controller serves the Ingress: ingressClassName traefik."

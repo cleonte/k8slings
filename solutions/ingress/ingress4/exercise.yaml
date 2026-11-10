@@ -1,0 +1,41 @@
+# ingress4: an Ingress for a controller that is not there.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shop
+  labels: {app: shop}
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: c
+      image: hashicorp/http-echo:1.0.0
+      args: ["-text=shop is open", "-listen=:8080"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shop
+spec:
+  selector:
+    app: shop
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shop
+spec:
+  ingressClassName: traefik
+  rules:
+    - http:
+        paths:
+          - path: /ingress4
+            pathType: Prefix
+            backend:
+              service:
+                name: shop
+                port:
+                  name: http

@@ -2,7 +2,7 @@
 
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
-You get <!-- count:exercises -->133<!-- /count --> exercises in <!-- count:topics -->23<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
+You get <!-- count:exercises -->145<!-- /count --> exercises in <!-- count:topics -->25<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
 
 ![k8slings watch](misc/demo-tui.gif)
 
@@ -21,7 +21,7 @@ What you will practise: Pods, labels and selectors, the kubectl you use every da
 
 ## Add-ons
 
-A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling, later a Gateway API controller. `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
+A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling (`metrics-server`), and an Ingress and Gateway API controller (`gateway`, which is Traefik, with the Gateway API definitions it needs). `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server,gateway`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
 
 ## Install
 

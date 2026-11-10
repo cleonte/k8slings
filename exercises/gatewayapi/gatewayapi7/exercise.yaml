@@ -1,0 +1,77 @@
+# I AM NOT DONE
+# gatewayapi7: a canary that gets nine requests in ten.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: v1
+  labels: {app: v1}
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: c
+      image: hashicorp/http-echo:1.0.0
+      args: ["-text=version one", "-listen=:8080"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: v2
+  labels: {app: v2}
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: c
+      image: hashicorp/http-echo:1.0.0
+      args: ["-text=version two", "-listen=:8080"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: v1
+spec:
+  selector:
+    app: v1
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: v2
+spec:
+  selector:
+    app: v2
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: client
+spec:
+  terminationGracePeriodSeconds: 0
+  containers:
+    - name: c
+      image: busybox:1.37
+      command: [sh, -c, "while :; do sleep 3600; done"]
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: canary
+spec:
+  parentRefs:
+    - name: gateway
+      namespace: addon-traefik
+      sectionName: web
+  hostnames:
+    - gatewayapi7.example.test
+  rules:
+    - backendRefs:
+        # TODO: which version is the canary?
+        - {name: v1, port: 80, weight: 10}
+        - {name: v2, port: 80, weight: 90}

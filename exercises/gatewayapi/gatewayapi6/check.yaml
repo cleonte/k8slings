@@ -1,0 +1,21 @@
+shipped: "Accepted"
+objects:
+  - select: {kind: Gateway, name: shop}
+    assert:
+      - expr: "object.spec.listeners.size() == 1 && object.spec.listeners[0].hostname == 'shop.gatewayapi6.example.test'"
+        message: "Keep the Gateway as it is: its listener serves shop.gatewayapi6.example.test."
+  - select: {kind: HTTPRoute, name: shop}
+    assert:
+      - expr: "object.spec.parentRefs.size() == 1 && object.spec.parentRefs[0].name == 'shop' && object.spec.rules[0].backendRefs[0].name == 'web'"
+        message: "Keep the route attached to the Gateway shop, and sending to the Service web."
+steps:
+  - ready: {pod: web}
+  - ready: {pod: client}
+  - assert:
+      resource: httproute/shop
+      expr: "has(object.status) && has(object.status.parents) && object.status.parents.exists(p, p.conditions.exists(c, c.type == 'Accepted' && c.status == 'True'))"
+      message: "The route is not Accepted by the listener: read status.parents[].conditions of the route for the reason."
+  - exec:
+      pod: client
+      args: [wget, -qO-, -T, "3", --header, "Host: shop.gatewayapi6.example.test", "http://traefik.addon-traefik.svc.cluster.local/"]
+      contains: "gatewayapi6 ok"

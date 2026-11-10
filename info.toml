@@ -299,6 +299,44 @@ An ExternalName Service is a DNS alias. What is a DNS name, and what is not part
 docs = "https://kubernetes.io/docs/concepts/services-networking/service/#externalname"
 
 [[exercises]]
+name = "ingress1"
+path = "exercises/ingress/ingress1"
+topic = "ingress"
+mode = "manifest"
+hint = """
+Exact matches one path. Which pathType matches a path and everything below it?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types"
+
+[[exercises]]
+name = "ingress2"
+path = "exercises/ingress/ingress2"
+topic = "ingress"
+mode = "manifest"
+hint = """
+The backend names a port of the Service. What is the port of the Service called?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-backend"
+
+[[exercises]]
+name = "ingress3"
+path = "exercises/ingress/ingress3"
+topic = "ingress"
+mode = "manifest"
+hint = """
+The class is a field of the spec, and it is the name of an IngressClass. Which one does Traefik install?"""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
+
+[[exercises]]
+name = "ingress4"
+path = "exercises/ingress/ingress4"
+topic = "ingress"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "90s"
+hint = """
+Which controller serves this cluster's Ingresses, and what does its IngressClass say? `k8slings kubectl get ingressclass` shows it."""
+docs = "https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-class"
+
+[[exercises]]
 name = "config1"
 path = "exercises/config/config1"
 topic = "config"
@@ -1013,6 +1051,83 @@ mode = "manifest"
 hint = """
 Before a Pod connects to a Service by name it asks DNS. Where does that question go, and on which port, and with which protocols?"""
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-and-endport-filtering"
+
+[[exercises]]
+name = "gatewayapi1"
+path = "exercises/gatewayapi/gatewayapi1"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+sectionName is the name of a listener of the Gateway. What is the listener called?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways"
+
+[[exercises]]
+name = "gatewayapi2"
+path = "exercises/gatewayapi/gatewayapi2"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+A Service can have several ports. Which one does the route send to?"""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httpbackendref"
+
+[[exercises]]
+name = "gatewayapi3"
+path = "exercises/gatewayapi/gatewayapi3"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+Alternatives are separate items of a list. What is one item made of?"""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httprouterule"
+
+[[exercises]]
+name = "gatewayapi4"
+path = "exercises/gatewayapi/gatewayapi4"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+A request path begins with a character that the value is missing."""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httppathmatch"
+
+[[exercises]]
+name = "gatewayapi5"
+path = "exercises/gatewayapi/gatewayapi5"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+from has three values. Which one chooses namespaces by their labels, and what labels does the namespace shop have?"""
+docs = "https://gateway-api.sigs.k8s.io/guides/multiple-ns/"
+
+[[exercises]]
+name = "gatewayapi6"
+path = "exercises/gatewayapi/gatewayapi6"
+topic = "gatewayapi"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "120s"
+hint = """
+The status of the route says why it is not accepted. What does the listener of the Gateway require of the route's hostnames?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#hostnames"
+
+[[exercises]]
+name = "gatewayapi7"
+path = "exercises/gatewayapi/gatewayapi7"
+topic = "gatewayapi"
+mode = "cluster"
+requires = ["gateway"]
+timeout = "120s"
+hint = """
+Weights are shares. Which version is the stable one, and which weight gives the canary about a tenth?"""
+docs = "https://gateway-api.sigs.k8s.io/guides/traffic-splitting/"
+
+[[exercises]]
+name = "gatewayapi8"
+path = "exercises/gatewayapi/gatewayapi8"
+topic = "gatewayapi"
+mode = "fix"
+requires = ["gateway"]
+hint = """
+The route is Accepted and the Service has endpoints, so the traffic is not reaching the route's rule. What does the path of the rule really say?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#matches"
 
 [[exercises]]
 name = "capstone1"

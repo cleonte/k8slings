@@ -1,0 +1,40 @@
+# gatewayapi3: two conditions, two matches.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: shop
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      port: 8000
+      protocol: HTTP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: beta
+spec:
+  selector:
+    app: beta
+  ports:
+    - name: http
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: beta
+spec:
+  parentRefs:
+    - name: shop
+      sectionName: web
+  rules:
+    - matches:
+        - path: {type: PathPrefix, value: /api}
+          headers:
+            - name: X-Team
+              value: blue
+      backendRefs:
+        - name: beta
+          port: 80

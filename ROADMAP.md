@@ -6,7 +6,7 @@ Counts in this file are planning numbers. Once the consistency test exists (Phas
 
 ## Where things stand
 
-Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->23<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
+Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->25<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
 
 ## Facts checked while writing this design (2026-11-04)
 
@@ -182,7 +182,7 @@ Branch `phase-4-fix`.
 Branch per add-on.
 
 - [x] `metrics-server` add-on (pinned, `--kubelet-insecure-tls`); HPA exercises (`autoscaling1` to `autoscaling5`; a scale-up under load is not built: about 60 s of CI for one lesson).
-- [ ] Gateway add-on (Gateway API CRDs plus Traefik, after the spike confirms it serves both Ingress and Gateway API), any `extraPortMappings` create-time config, recreate-on-change prompt; Ingress and Gateway API exercises.
+- [x] Gateway add-on (Gateway API v1.6.1 CRDs plus Traefik v3.7.17, which serves both Ingress and the Gateway API; reached through its ClusterIP Service, so no `extraPortMappings` and no recreate); Ingress and Gateway API exercises (`ingress1` to `ingress4`, `gatewayapi1` to `gatewayapi8`) and offline schemas for the Gateway API kinds.
 - [ ] Optional/extras: Helm basics (offline `helm template` check), PodDisruptionBudgets, ResourceQuota deep-dives, Pod Security Admission enforcement, custom resources and CEL validation rules (ties back to the assertion format).
 - [x] A separate add-on CI job (`addons.yml`).
 

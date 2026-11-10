@@ -35,10 +35,18 @@ type AddonState struct {
 // half of checkOwned: that function says exercise paths only ever touch
 // k8slings-<name>, this one says an add-on never lives in one.
 func checkAddonNamespace(ns string) error {
-	if ns == "" || strings.HasPrefix(ns, NamespacePrefix) {
+	if strings.HasPrefix(ns, NamespacePrefix) {
 		return fmt.Errorf("refusing to install an add-on into namespace %q: namespaces named %s* belong to the exercises", ns, NamespacePrefix)
 	}
 	return nil
+}
+
+// scoped adds -n ns in front of args, except for a cluster-scoped object (ns "").
+func scoped(ns string, args ...string) []string {
+	if ns == "" {
+		return args
+	}
+	return append([]string{"-n", ns}, args...)
 }
 
 // target splits "deployment/name" or "namespace/deployment/name" into the
@@ -57,6 +65,9 @@ func target(def, ref string) (ns, obj string) {
 // until everything is ready. Only add-on code applies cluster-wide objects like
 // this; exercises never do.
 func (c *Cluster) InstallAddon(ctx context.Context, a addons.Addon, files [][]byte, out io.Writer) error {
+	if a.Namespace == "" && (len(a.Ready) > 0 || a.Gateway != "") {
+		return fmt.Errorf("add-on %s has no namespace", a.Name)
+	}
 	if err := checkAddonNamespace(a.Namespace); err != nil {
 		return err
 	}
@@ -74,15 +85,24 @@ func (c *Cluster) InstallAddon(ctx context.Context, a addons.Addon, files [][]by
 		}
 	}
 	ns, obj := a.MainObject()
-	if o, err := c.Kubectl(ctx, "label", obj, "-n", ns, AddonLabel+"="+a.Name, "--overwrite"); err != nil {
+	if o, err := c.Kubectl(ctx, append([]string{"label", obj}, scoped(ns, AddonLabel+"="+a.Name, "--overwrite")...)...); err != nil {
 		return fmt.Errorf("cannot mark %s as installed: %s", a.Name, firstLine(o))
 	}
-	if o, err := c.Kubectl(ctx, "annotate", obj, "-n", ns, AddonVersionAnnotation+"="+a.Version, "--overwrite"); err != nil {
+	if o, err := c.Kubectl(ctx, append([]string{"annotate", obj}, scoped(ns, AddonVersionAnnotation+"="+a.Version, "--overwrite")...)...); err != nil {
 		return fmt.Errorf("cannot mark %s as installed: %s", a.Name, firstLine(o))
 	}
 	for _, r := range a.Ready {
 		ns, obj := target(a.Namespace, r)
 		o, err := c.Kubectl(ctx, "rollout", "status", obj, "-n", ns, fmt.Sprintf("--timeout=%ds", int(AddonReadyTimeout/time.Second)))
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			return fmt.Errorf("%s did not become ready: %s", a.Name, firstLine(o))
+		}
+	}
+	for _, crd := range a.CRDs {
+		o, err := c.Kubectl(ctx, "wait", "--for=condition=Established", "crd/"+crd, fmt.Sprintf("--timeout=%ds", int(AddonReadyTimeout/time.Second)))
 		if err != nil {
 			if ctx.Err() != nil {
 				return ctx.Err()
@@ -112,8 +132,8 @@ func (c *Cluster) AddonStates(ctx context.Context) ([]AddonState, error) {
 		st := AddonState{Addon: a}
 		ns, obj := a.MainObject()
 		// The label and the version annotation of the main object.
-		o, err := c.Kubectl(ctx, "get", obj, "-n", ns, "--ignore-not-found", "-o",
-			`jsonpath={.metadata.labels.k8slings\.io/addon}|{.metadata.annotations.k8slings\.io/addon-version}`)
+		o, err := c.Kubectl(ctx, append([]string{"get", obj}, scoped(ns, "--ignore-not-found", "-o",
+			`jsonpath={.metadata.labels.k8slings\.io/addon}|{.metadata.annotations.k8slings\.io/addon-version}`)...)...)
 		if err != nil {
 			return nil, fmt.Errorf("cannot look for the add-on %s: %s", a.Name, firstLine(o))
 		}
@@ -138,6 +158,12 @@ func (c *Cluster) addonReady(ctx context.Context, a addons.Addon) bool {
 		want, rest, _ := strings.Cut(strings.TrimSpace(o), "/")
 		ready, updated, _ := strings.Cut(rest, "/")
 		if want == "" || want == "0" || ready != want || updated != want {
+			return false
+		}
+	}
+	for _, crd := range a.CRDs {
+		o, err := c.Kubectl(ctx, "get", "crd/"+crd, "-o", `jsonpath={.status.conditions[?(@.type=="Established")].status}`)
+		if err != nil || strings.TrimSpace(o) != "True" {
 			return false
 		}
 	}

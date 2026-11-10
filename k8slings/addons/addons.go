@@ -29,6 +29,7 @@ type Addon struct {
 	Description string `json:"description"`
 	// Namespace is where the add-on runs. It can never be a namespace that
 	// exercises own (k8slings-<exercise>), or an exercise reset could touch it.
+	// An add-on that is only CRDs runs nowhere and has none.
 	Namespace string `json:"namespace"`
 	// Manifests are the files of addons/<name>/, applied in this order.
 	Manifests []string `json:"manifests"`
@@ -38,6 +39,9 @@ type Addon struct {
 	Ready []string `json:"ready"`
 	// Gateway names a Gateway (namespace/name) that has to be Programmed too.
 	Gateway string `json:"gateway"`
+	// CRDs names CustomResourceDefinitions that have to be Established: an
+	// add-on that is only definitions has nothing to roll out.
+	CRDs []string `json:"crds"`
 	// Images are pulled into every node before the manifests are applied.
 	Images []string `json:"images"`
 	// ClusterWide lists every cluster-scoped object the manifests create, as
@@ -101,14 +105,14 @@ func (a Addon) check(fsys fs.FS, dir string) error {
 		return fmt.Errorf("version %q must be an exact version such as v1.2.3", a.Version)
 	case a.Source == "" || a.Description == "":
 		return fmt.Errorf("needs a source and a description")
-	case a.Namespace == "":
-		return fmt.Errorf("needs a namespace")
+	case a.Namespace == "" && (len(a.Ready) > 0 || a.Gateway != "" || len(a.CRDs) == 0):
+		return fmt.Errorf("needs a namespace (only an add-on that is nothing but CRDs has none)")
 	case strings.HasPrefix(a.Namespace, OwnedPrefix):
 		return fmt.Errorf("namespace %q starts with %q, which belongs to the exercises: an exercise reset could touch the add-on", a.Namespace, OwnedPrefix)
 	case len(a.Manifests) == 0:
 		return fmt.Errorf("needs at least one manifest")
-	case len(a.Ready) == 0 && a.Gateway == "":
-		return fmt.Errorf("needs something to wait for (ready or gateway)")
+	case len(a.Ready) == 0 && a.Gateway == "" && len(a.CRDs) == 0:
+		return fmt.Errorf("needs something to wait for (ready, gateway or crds)")
 	}
 	for _, m := range a.Manifests {
 		if _, err := fs.Stat(fsys, path.Join("addons", dir, m)); err != nil {
@@ -196,8 +200,12 @@ func (a Addon) Files(fsys fs.FS) ([][]byte, error) {
 }
 
 // MainObject is the object that carries the "installed" label: the first thing
-// the add-on waits for, or its Gateway. It returns the namespace and kind/name.
+// the add-on waits for, its Gateway, or its first CRD. It returns the namespace
+// (empty for a cluster-scoped object) and kind/name.
 func (a Addon) MainObject() (ns, obj string) {
+	if len(a.Ready) == 0 && a.Gateway == "" && len(a.CRDs) > 0 {
+		return "", "customresourcedefinition/" + a.CRDs[0]
+	}
 	if len(a.Ready) > 0 {
 		if parts := strings.Split(a.Ready[0], "/"); len(parts) == 3 {
 			return parts[0], parts[1] + "/" + parts[2]

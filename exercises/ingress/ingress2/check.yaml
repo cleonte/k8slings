@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: Ingress, name: web}
+    assert:
+      - expr: "object.spec.rules[0].http.paths[0].backend.service.name == 'web'"
+        message: "Keep the backend Service, web."
+      - expr: "objects.exists(s, s.kind == 'Service' && s.metadata.name == 'web' && s.spec.ports.exists(p, (has(object.spec.rules[0].http.paths[0].backend.service.port.name) && has(p.name) && p.name == object.spec.rules[0].http.paths[0].backend.service.port.name) || (has(object.spec.rules[0].http.paths[0].backend.service.port.number) && p.port == object.spec.rules[0].http.paths[0].backend.service.port.number)))"
+        message: "The Service web has no port with that name (or number): the backend points at nothing."
