@@ -777,6 +777,15 @@ Both fields say the same thing from opposite ends. Which of them do you want to 
 docs = "https://kubernetes.io/docs/tasks/run-application/configure-pdb/#specifying-a-poddisruptionbudget"
 
 [[exercises]]
+name = "autoscaling1"
+path = "exercises/autoscaling/autoscaling1"
+topic = "autoscaling"
+mode = "manifest"
+hint = """
+scaleTargetRef is the address of the object to scale. In which API group and version does a Deployment live?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"

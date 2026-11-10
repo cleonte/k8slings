@@ -1,0 +1,7 @@
+objects:
+  - select: {kind: HorizontalPodAutoscaler, name: web}
+    assert:
+      - expr: "object.spec.scaleTargetRef.kind == 'Deployment' && object.spec.scaleTargetRef.apiVersion == 'apps/v1'"
+        message: "The target has to be addressed as a Deployment of the apps/v1 API."
+      - expr: "objects.exists(d, d.kind == 'Deployment' && d.metadata.name == object.spec.scaleTargetRef.name)"
+        message: "The autoscaler names a Deployment that is not in this file."
