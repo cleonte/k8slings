@@ -27,3 +27,7 @@ for k in "${KINDS[@]}"; do
 done
 echo "$VERSION" > VERSION
 echo "wrote ${#KINDS[@]} schemas for $VERSION"
+
+# The Gateway API kinds are CRDs, so they are not in that set: they are converted
+# from the pinned CRDs of the gateway-api add-on (one source of truth).
+(cd .. && go run ./scripts/crd2schema -in addons/gateway-api/standard-install.yaml -out schemas -kinds GatewayClass,Gateway,HTTPRoute,ReferenceGrant)
