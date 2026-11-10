@@ -1,0 +1,20 @@
+name: gateway
+version: v3.7.17
+source: github.com/traefik/traefik
+description: Traefik, the Ingress controller (class traefik) and Gateway API controller (GatewayClass traefik, Gateway addon-traefik/gateway). Reached inside the cluster at traefik.addon-traefik.svc.
+namespace: addon-traefik
+manifests:
+  - traefik.yaml
+ready:
+  - deployment/traefik
+gateway: addon-traefik/gateway
+images:
+  - docker.io/traefik:v3.7.17
+clusterWide:
+  - Namespace addon-traefik
+  - ClusterRole traefik-addon-traefik
+  - ClusterRoleBinding traefik-addon-traefik
+  - IngressClass traefik
+  - GatewayClass traefik
+requires:
+  - gateway-api
