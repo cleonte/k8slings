@@ -69,6 +69,9 @@ type EndpointsStep struct {
 // (no port-forward, no host port) and wants a 2xx answer. The proxy bypasses
 // NetworkPolicy, so use an Exec step from a Pod to test those.
 type HTTPStep struct {
+	// Namespace is where the Service is; the default is the exercise's own. An
+	// add-on's controller is in another one (addon-traefik).
+	Namespace    string `json:"namespace"`
 	Service      string `json:"service"`
 	Port         int    `json:"port"`
 	Path         string `json:"path"`
@@ -504,6 +507,9 @@ func stepEndpoints(ctx context.Context, kube Kube, ns string, e EndpointsStep) s
 
 func stepHTTP(ctx context.Context, kube Kube, ns string, h HTTPStep) string {
 	path := "/" + strings.TrimPrefix(h.Path, "/")
+	if h.Namespace != "" {
+		ns = h.Namespace
+	}
 	raw := fmt.Sprintf("/api/v1/namespaces/%s/services/%s:%d/proxy%s", ns, h.Service, h.Port, path)
 	out, err := kube.Kubectl(ctx, "get", "--raw", raw)
 	if err != nil {
