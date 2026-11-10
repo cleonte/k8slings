@@ -21,7 +21,7 @@ What you will practise: Pods, labels and selectors, the kubectl you use every da
 
 ## Add-ons
 
-A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling, later a Gateway API controller. `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
+A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling (`metrics-server`), and an Ingress and Gateway API controller (`gateway`, which is Traefik, with the Gateway API definitions it needs). `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server,gateway`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
 
 ## Install
 
