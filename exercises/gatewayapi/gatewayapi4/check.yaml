@@ -1,0 +1,9 @@
+objects:
+  - select: {kind: HTTPRoute, name: api}
+    assert:
+      - expr: "object.spec.rules[0].matches[0].path.type == 'PathPrefix'"
+        message: "Keep the match type, PathPrefix."
+      - expr: "object.spec.rules[0].matches[0].path.value.startsWith('/')"
+        message: "A path match has to be an absolute path, starting with a slash."
+      - expr: "object.spec.rules[0].matches[0].path.value == '/api'"
+        message: "The route is for the requests below /api."

@@ -1,0 +1,41 @@
+# I AM NOT DONE
+# gatewayapi4: a path that is not a path.
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: shop
+spec:
+  gatewayClassName: traefik
+  listeners:
+    - name: web
+      port: 8000
+      protocol: HTTP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+spec:
+  selector:
+    app: api
+  ports:
+    - name: http
+      port: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: api
+spec:
+  parentRefs:
+    - name: shop
+      sectionName: web
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            # TODO: a request path always starts with a slash.
+            value: api
+      backendRefs:
+        - name: api
+          port: 80

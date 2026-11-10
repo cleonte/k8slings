@@ -1080,6 +1080,15 @@ Alternatives are separate items of a list. What is one item made of?"""
 docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httprouterule"
 
 [[exercises]]
+name = "gatewayapi4"
+path = "exercises/gatewayapi/gatewayapi4"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+A request path begins with a character that the value is missing."""
+docs = "https://gateway-api.sigs.k8s.io/reference/spec/#httppathmatch"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"
