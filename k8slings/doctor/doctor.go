@@ -130,9 +130,9 @@ func kubectlCheck(all []exercises.Exercise, env Env) (Check, bool) {
 		return Check{}, false
 	}
 	if env.HasKubectl() {
-		return Check{Name: "kubectl", Status: OK, Detail: fmt.Sprintf("found (it runs the %d query exercise(s) that need no cluster)", n)}, true
+		return Check{Name: "kubectl (offline queries)", Status: OK, Detail: fmt.Sprintf("found (it runs the %d query exercise(s) that need no cluster)", n)}, true
 	}
-	return Check{Name: "kubectl", Status: Warn, Detail: fmt.Sprintf("not found: the %d query exercise(s) that need no cluster are skipped until it is installed (https://kubernetes.io/docs/tasks/tools/)", n)}, true
+	return Check{Name: "kubectl (offline queries)", Status: Warn, Detail: fmt.Sprintf("not found: the %d query exercise(s) that need no cluster are skipped until it is installed (https://kubernetes.io/docs/tasks/tools/)", n)}, true
 }
 
 // Ready reports whether a group has no failures and no warnings.
