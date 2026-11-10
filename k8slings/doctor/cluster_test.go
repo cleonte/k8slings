@@ -10,6 +10,7 @@ import (
 
 	"github.com/cleonte/k8slings/k8slings/addons"
 	"github.com/cleonte/k8slings/k8slings/cluster"
+	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
 // machine is a fake computer with Docker, kind, kubectl and maybe a cluster.
@@ -107,7 +108,7 @@ func doctorFor(t *testing.T, m *machine, withKubeconfig bool) []Check {
 			t.Fatal(err)
 		}
 	}
-	return clusterChecks(context.Background(), cl)
+	return clusterChecks(context.Background(), cl, nil)
 }
 
 func find(checks []Check, name string) Check {
@@ -310,7 +311,40 @@ func TestDoctorReportsAddOns(t *testing.T) {
 			if err := os.WriteFile(cl.Kubeconfig, []byte(cfg), 0o600); err != nil {
 				t.Fatal(err)
 			}
-			want(t, clusterChecks(context.Background(), cl), "Add-ons", tc.status, tc.parts...)
+			want(t, clusterChecks(context.Background(), cl, nil), "Add-ons", tc.status, tc.parts...)
 		})
 	}
+}
+
+// An add-on that is not installed says which exercises it would run, so that a
+// count of skipped exercises has an answer; one that only another add-on needs
+// says that instead.
+func TestDoctorSaysWhatAnAddOnWouldRun(t *testing.T) {
+	reg := []addons.Addon{
+		{Name: "gateway", Version: "v1", Namespace: "addon-traefik", Ready: []string{"deployment/traefik"}, Requires: []string{"gateway-api"}},
+		{Name: "gateway-api", Version: "v1", CRDs: []string{"gateways.gateway.networking.k8s.io"}},
+		{Name: "metrics-server", Version: "v1", Namespace: "kube-system", Ready: []string{"deployment/metrics-server"}},
+	}
+	mk := func(names ...string) []exercises.Exercise {
+		var out []exercises.Exercise
+		for _, n := range names {
+			req := "gateway"
+			if strings.HasPrefix(n, "hpa") {
+				req = "metrics-server"
+			}
+			out = append(out, exercises.Exercise{Name: n, Requires: []string{req}})
+		}
+		return out
+	}
+	m := healthy() // nothing is installed: the label query prints nothing
+	cl := &cluster.Cluster{Name: "k8slings", Kubeconfig: filepath.Join(t.TempDir(), "kubeconfig"), Runner: m, Registry: reg}
+	cfg := "apiVersion: v1\nkind: Config\nclusters:\n- name: kind-k8slings\n  cluster:\n    server: https://127.0.0.1:41539\ncontexts:\n- name: kind-k8slings\n  context:\n    cluster: kind-k8slings\n"
+	if err := os.WriteFile(cl.Kubeconfig, []byte(cfg), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	checks := clusterChecks(context.Background(), cl, mk("ingress4", "gatewayapi6", "gatewayapi7", "hpa5", "gatewayapi8", "gatewayapi9"))
+	want(t, checks, "Add-ons", OK,
+		"gateway not installed (runs ingress4, gatewayapi6, gatewayapi7, gatewayapi8 and 1 more)",
+		"gateway-api not installed (installed with gateway)",
+		"metrics-server not installed (runs hpa5)")
 }
