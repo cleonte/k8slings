@@ -813,6 +813,17 @@ behavior has one block for each direction. Which direction should be patient, an
 docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#configurable-scaling-behavior"
 
 [[exercises]]
+name = "autoscaling5"
+path = "exercises/autoscaling/autoscaling5"
+topic = "autoscaling"
+mode = "cluster"
+requires = ["metrics-server"]
+timeout = "150s"
+hint = """
+The target is a percentage of something the container has to declare. What does this container declare?"""
+docs = "https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#requirements"
+
+[[exercises]]
 name = "security1"
 path = "exercises/security/security1"
 topic = "security"
