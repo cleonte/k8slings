@@ -6,7 +6,7 @@ Counts in this file are planning numbers. Once the consistency test exists (Phas
 
 ## Where things stand
 
-Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->24<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
+Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->25<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
 
 ## Facts checked while writing this design (2026-11-04)
 

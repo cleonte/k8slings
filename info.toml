@@ -1053,6 +1053,15 @@ Before a Pod connects to a Service by name it asks DNS. Where does that question
 docs = "https://kubernetes.io/docs/concepts/services-networking/network-policies/#networkpolicy-and-endport-filtering"
 
 [[exercises]]
+name = "gatewayapi1"
+path = "exercises/gatewayapi/gatewayapi1"
+topic = "gatewayapi"
+mode = "manifest"
+hint = """
+sectionName is the name of a listener of the Gateway. What is the listener called?"""
+docs = "https://gateway-api.sigs.k8s.io/api-types/httproute/#attaching-to-gateways"
+
+[[exercises]]
 name = "capstone1"
 path = "exercises/capstone/capstone1"
 topic = "capstone"
