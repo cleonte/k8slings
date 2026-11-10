@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- A Homebrew tap: `brew install cleonte/tap/k8slings` (macOS). It is a cask that GoReleaser updates on every release, and on macOS it removes the quarantine flag, so the first run is not refused for want of a signature.
+
 ## [0.14.0] - 2026-11-10
 
 ### Added
