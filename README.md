@@ -19,6 +19,10 @@ Most exercises are a Kubernetes manifest that is broken in one small way (the la
 
 What you will practise: Pods, labels and selectors, the kubectl you use every day (selectors, jsonpath, custom columns, sorting, explain, generating YAML), namespaces, Deployments and rollouts, Services, ConfigMaps and Secrets, probes, lifecycle hooks and sidecars, requests, limits and quotas, Jobs, volumes and claims, scheduling, disruption budgets, RBAC, ServiceAccounts, network policies, and a capstone: a broken stack to debug like a real incident.
 
+## Add-ons
+
+A few exercises need something on the cluster besides Kubernetes: the Metrics API for autoscaling, later a Gateway API controller. `k8slings cluster addon list` shows what there is, `k8slings cluster addon install metrics-server` adds it (or `k8slings cluster up --addons metrics-server`). The manifests ship inside k8slings, pinned, and are applied to its own cluster only. Until an add-on is installed, the exercises that need it are skipped, with this command; the rest carry on.
+
 ## Install
 
 Download the archive for your system from the [releases page](https://github.com/cleonte/k8slings/releases) and put `k8slings` on your PATH, or, with Go 1.26 or newer:

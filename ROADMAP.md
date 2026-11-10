@@ -108,7 +108,7 @@ Run on Apple silicon, Lima `docker` VM (4 CPU, 8 GiB), kind v0.33.0, node image 
 - **Strict schema validation works** with `santhosh-tekuri/jsonschema/v6` against yannh `v1.37.0-standalone-strict` (which exists). A valid Deployment passes (34 ms including compile); `contianers:` is rejected with `additional properties 'contianers' not allowed` and `missing property 'containers'`. The error text starts with a file-URL line the learner should not see, so the failure shortener must strip it. kubeconform-as-a-library was **not** benchmarked; jsonschema met every requirement, so the decision is jsonschema unless a Phase 1 problem appears.
 - **Schema size:** 26 kinds covering the topic list (workloads, Services, config, storage, RBAC, networking, HPA, quota, PDB) are 5.8 MB raw and **0.65 MB gzipped**. Decision: embed gzipped, decompress on demand. Gateway API and Traefik CRDs are separate and handled in Phase 5.
 - **Binary size:** cel-go + jsonschema + yaml: **12.8 MB** stripped. kustomize api alone (51 modules): **15.8 MB**. These overlap in shared dependencies; expect roughly 20-25 MB with the TUI. Decision stays: **embed the kustomize library**; revisit only if the real binary exceeds about 30 MB.
-- **Traefik:** documentation shows separate Kubernetes Ingress and Gateway API providers that can be enabled together, and a Gateway API conformance report exists (version claims in Traefik's own docs disagree, from v1.1 to v1.5). Running it in kind is still a Phase 5 spike.
+- **Traefik:** documentation shows separate Kubernetes Ingress and Gateway API providers that can be enabled together, and a Gateway API conformance report exists (version claims in Traefik's own docs disagree, from v1.1 to v1.5). **Phase 5 spike (2026-11-09): confirmed.** Traefik v3.7.17 (chart 42.3.1, rendered once) with the Gateway API v1.6.1 standard CRDs serves Ingress, Gateway and HTTPRoute (path and header matches, weighted backends: 180/20 of 200 requests at 90/10, twice), reports `Accepted` and `ResolvedRefs` on routes, accepts a second Gateway in an exercise namespace, and is reached through its ClusterIP Service from inside the cluster or through the API-server proxy, with no host ports. Decided item 4 stands.
 
 ## Phase 1 — Skeleton from golings, offline mode, first 10 exercises
 
@@ -178,13 +178,13 @@ Branch `phase-4-fix`.
 
 ## Phase 5 — Advanced topics and add-ons
 
-- [ ] The add-on registry: pinned manifests in `addons/`, readiness checks, `cluster up --addons` and `cluster addon install|list`, `list` showing what is locked (see CLAUDE.md, "Add-ons").
+- [x] The add-on registry: pinned manifests in `addons/`, readiness checks, `cluster up --addons` and `cluster addon install|list`, skipped exercises name the install command (see CLAUDE.md, "Add-ons").
 Branch per add-on.
 
-- [ ] `metrics-server` add-on (pinned, `--kubelet-insecure-tls`); HPA exercises.
+- [x] `metrics-server` add-on (pinned, `--kubelet-insecure-tls`); HPA exercises (`autoscaling1` to `autoscaling5`; a scale-up under load is not built: about 60 s of CI for one lesson).
 - [ ] Gateway add-on (Gateway API CRDs plus Traefik, after the spike confirms it serves both Ingress and Gateway API), any `extraPortMappings` create-time config, recreate-on-change prompt; Ingress and Gateway API exercises.
 - [ ] Optional/extras: Helm basics (offline `helm template` check), PodDisruptionBudgets, ResourceQuota deep-dives, Pod Security Admission enforcement, custom resources and CEL validation rules (ties back to the assertion format).
-- [ ] A separate add-on CI job.
+- [x] A separate add-on CI job (`addons.yml`).
 
 ## Phase 6 — CI, release and v1.0
 
