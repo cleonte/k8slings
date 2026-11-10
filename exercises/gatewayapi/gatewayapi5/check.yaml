@@ -1,0 +1,11 @@
+objects:
+  - select: {kind: Gateway, name: shared}
+    assert:
+      - expr: "object.spec.listeners.size() == 1 && object.spec.listeners[0].name == 'web'"
+        message: "Keep the one listener, web."
+      - expr: "has(object.spec.listeners[0].allowedRoutes) && has(object.spec.listeners[0].allowedRoutes.namespaces) && object.spec.listeners[0].allowedRoutes.namespaces.from != 'Same'"
+        message: "The listener only allows routes of its own namespace, infra."
+      - expr: "object.spec.listeners[0].allowedRoutes.namespaces.from != 'All'"
+        message: "Not every namespace: only the shop team's routes may attach."
+      - expr: "object.spec.listeners[0].allowedRoutes.namespaces.from == 'Selector' && has(object.spec.listeners[0].allowedRoutes.namespaces.selector) && has(object.spec.listeners[0].allowedRoutes.namespaces.selector.matchLabels) && objects.exists(n, n.kind == 'Namespace' && n.metadata.name == 'shop' && object.spec.listeners[0].allowedRoutes.namespaces.selector.matchLabels.all(k, k in n.metadata.labels && n.metadata.labels[k] == object.spec.listeners[0].allowedRoutes.namespaces.selector.matchLabels[k]))"
+        message: "The selector has to match the labels of the namespace shop."
