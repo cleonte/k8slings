@@ -220,7 +220,7 @@ func TestSetupShowsProgressAndQuittingCancelsIt(t *testing.T) {
 	m := New(Config{
 		InfoFile: "info.toml",
 		Env:      &exercises.Env{Embedded: embedded, Validator: schema.New(embedded), Kube: &fakeCluster{}},
-		Run: func(ctx context.Context, ex exercises.Exercise) (exercises.Result, error) {
+		Run: func(ctx context.Context, _ exercises.Exercise) (exercises.Result, error) {
 			cluster.Progress(ctx, "setting up f1: step 1 of 2")
 			close(started)
 			<-ctx.Done()

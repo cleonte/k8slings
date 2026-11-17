@@ -66,6 +66,7 @@ type Exercise struct {
 	Offline bool
 }
 
+// The errors that the lookup and the marker handling report.
 var (
 	ErrExerciseNotFound = errors.New("exercise not found")
 	ErrNotMarked        = errors.New("the exercise has no 'I AM NOT DONE' marker")
@@ -227,8 +228,10 @@ func SetupFiles(fsys fs.FS, dir string) ([]string, error) {
 // SetupPath is the broken state of a fix exercise, in the embedded tree.
 func (e Exercise) SetupPath() string { return path.Join(e.Path, SetupFile) }
 
-// Embedded names inside the embedded exercise tree (always forward slashes).
+// CheckPath is the check file, an embedded name inside the embedded exercise tree (always forward slashes).
 func (e Exercise) CheckPath() string { return path.Join(e.Path, CheckFile) }
+
+// Source is the file the learner edits, an embedded name like CheckPath.
 func (e Exercise) Source() string {
 	if e.Mode == ModeQuery {
 		return path.Join(e.Path, AnswerFile)
@@ -247,8 +250,10 @@ func (e Exercise) SolutionPath() string {
 	return path.Join("solutions", strings.TrimPrefix(e.Path, "exercises/"), ExerciseFile)
 }
 
+// State is whether an exercise is done.
 type State int
 
+// The two states of an exercise.
 const (
 	Pending State = iota + 1
 	Done

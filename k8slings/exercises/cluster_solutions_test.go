@@ -33,7 +33,7 @@ var proof struct {
 	log  string
 }
 
-func proofCluster(t *testing.T, ctx context.Context) *cluster.Cluster {
+func proofCluster(ctx context.Context, t *testing.T) *cluster.Cluster {
 	t.Helper()
 	proof.once.Do(func() {
 		dir, err := os.MkdirTemp("", "k8slings-proof-")
@@ -80,7 +80,7 @@ func TestClusterSolutions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 	defer cancel()
 
-	cl := proofCluster(t, ctx)
+	cl := proofCluster(ctx, t)
 
 	validator := schema.New(k8slings.Schemas)
 	solve := &exercises.Env{Embedded: k8slings.FS, Validator: validator, Kube: cl}
@@ -90,7 +90,7 @@ func TestClusterSolutions(t *testing.T) {
 		if ex.Mode != exercises.ModeCluster {
 			continue
 		}
-		if !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
+		if !inShard(t, ex.Name) || !coveredHere(ctx, t, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {
@@ -196,7 +196,7 @@ func TestFixSolutions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 70*time.Minute)
 	defer cancel()
 
-	cl := proofCluster(t, ctx)
+	cl := proofCluster(ctx, t)
 	env := &exercises.Env{Embedded: k8slings.FS, Validator: schema.New(k8slings.Schemas), Kube: cl}
 
 	// until polls: a cluster takes a few seconds to react to anything.
@@ -230,7 +230,7 @@ func TestFixSolutions(t *testing.T) {
 		if ex.Mode != exercises.ModeFix {
 			continue
 		}
-		if !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
+		if !inShard(t, ex.Name) || !coveredHere(ctx, t, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {

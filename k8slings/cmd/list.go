@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ListCmd is the list command: exercises with state, by topic.
 func ListCmd(infoFile string) *cobra.Command {
 	return &cobra.Command{
 		Use:           "list",
@@ -15,7 +16,7 @@ func ListCmd(infoFile string) *cobra.Command {
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			all, err := exercises.List(infoFile)
 			if err != nil {
 				return err

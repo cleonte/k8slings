@@ -195,7 +195,7 @@ func versionCheck(server, kubectl string) Check {
 	return clusterCheck("Kubernetes version", OK, "cluster %s (target %s), kubectl %s", server, target, kubectl)
 }
 
-func versionAtLeast(have, min string) bool { return cluster.CompareVersions(have, min) >= 0 }
+func versionAtLeast(have, floor string) bool { return cluster.CompareVersions(have, floor) >= 0 }
 
 func firstLine(s string) string {
 	line, _, _ := strings.Cut(strings.TrimSpace(s), "\n")

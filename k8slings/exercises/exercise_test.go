@@ -1,6 +1,7 @@
 package exercises
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -41,7 +42,7 @@ func TestStateAndMarkDone(t *testing.T) {
 	if got, _ := os.ReadFile(ex.File()); string(got) != "kind: Pod\n" {
 		t.Fatalf("only the marker line should go, got %q", got)
 	}
-	if err := ex.MarkDone(); err != ErrNotMarked {
+	if err := ex.MarkDone(); !errors.Is(err, ErrNotMarked) {
 		t.Fatalf("want ErrNotMarked, got %v", err)
 	}
 }

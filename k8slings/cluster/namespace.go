@@ -246,11 +246,11 @@ func (c *Cluster) Diagnose(ctx context.Context, ns string) []string {
 	return lines
 }
 
-// groupWarnings turns "Kind/name: message" lines into at most max distinct
+// groupWarnings turns "Kind/name: message" lines into at most limit distinct
 // messages, the newest last, each naming one object and saying how many others
 // had the same warning: three Pods of a Deployment that cannot be scheduled
 // have one problem, not three.
-func groupWarnings(events []string, max int) []string {
+func groupWarnings(events []string, limit int) []string {
 	type group struct {
 		first string // Kind/name of the first object
 		msg   string
@@ -271,8 +271,8 @@ func groupWarnings(events []string, max int) []string {
 		}
 		g.n++
 	}
-	if len(groups) > max {
-		groups = groups[len(groups)-max:]
+	if len(groups) > limit {
+		groups = groups[len(groups)-limit:]
 	}
 	var out []string
 	for _, g := range groups {

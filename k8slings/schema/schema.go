@@ -5,6 +5,7 @@ package schema
 
 import (
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io/fs"
 	"sort"
@@ -22,6 +23,7 @@ type Validator struct {
 	cache map[string]*jsonschema.Schema
 }
 
+// New returns a validator that reads its schemas from fsys.
 func New(fsys fs.FS) *Validator {
 	return &Validator{fsys: fsys, cache: map[string]*jsonschema.Schema{}}
 }
@@ -56,7 +58,7 @@ func (v *Validator) compile(apiVersion, kind string) (*jsonschema.Schema, error)
 	if err != nil {
 		return nil, ErrNoSchema{apiVersion, kind}
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	zr, err := gzip.NewReader(f)
 	if err != nil {
 		return nil, err
@@ -96,8 +98,8 @@ func (v *Validator) Validate(obj map[string]any) ([]string, error) {
 	if verr == nil {
 		return nil, nil
 	}
-	ve, ok := verr.(*jsonschema.ValidationError)
-	if !ok {
+	var ve *jsonschema.ValidationError
+	if !errors.As(verr, &ve) {
 		return nil, verr
 	}
 	seen := map[string]bool{}

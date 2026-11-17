@@ -1,3 +1,4 @@
+// Package cmd holds the cobra commands of k8slings.
 package cmd
 
 import (
@@ -23,6 +24,7 @@ func newEnv() *exercises.Env {
 	return env
 }
 
+// NewRootCmd builds the k8slings command with all its subcommands.
 func NewRootCmd(version string) *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:           "k8slings",
@@ -48,11 +50,13 @@ func NewRootCmd(version string) *cobra.Command {
 	return rootCmd
 }
 
+// Execute runs the root command and exits with a non-zero status on error.
 func Execute(version string) {
 	// Ctrl-C stops a cluster exercise that is still waiting for the cluster.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-	if err := NewRootCmd(version).ExecuteContext(ctx); err != nil {
+	err := NewRootCmd(version).ExecuteContext(ctx)
+	stop()
+	if err != nil {
 		os.Exit(1)
 	}
 }

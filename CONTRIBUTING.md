@@ -54,6 +54,7 @@ A fix exercise that has a crashing or flapping Pod needs nothing special: a repa
 
 ```sh
 go test ./...        # everything that needs no cluster
+golangci-lint run ./...   # lint (v2; the config is .golangci.yml, and CI runs it)
 make cluster-test    # needs Docker, kind and kubectl; creates real clusters, checks the safety rules, proves every cluster and fix exercise; can take up to 40 minutes
 make smoke           # go install into a temp folder, then run what a learner types
                      # (macOS runs it weekly in CI, macos-smoke.yml, not on pull requests)

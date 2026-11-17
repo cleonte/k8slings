@@ -61,7 +61,7 @@ func TestSeedEmptiesLabelsAndAppliesInThatOrder(t *testing.T) {
 
 func TestSeededOnlyForThisExerciseAndOnlyWhenTheLabelMatches(t *testing.T) {
 	label := "fix1"
-	c, f := newCluster(t, func(cmd Cmd) (string, error) { return label, nil })
+	c, f := newCluster(t, func(_ Cmd) (string, error) { return label, nil })
 	if !c.Seeded(context.Background(), "ns", "fix1") {
 		t.Fatal("the label matches")
 	}

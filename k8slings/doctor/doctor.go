@@ -16,8 +16,10 @@ import (
 	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
+// Status is the outcome of one check.
 type Status int
 
+// The outcomes of a check, from best to worst.
 const (
 	OK Status = iota
 	Warn
@@ -30,6 +32,7 @@ const (
 	ClusterMode = "Cluster mode"
 )
 
+// Check is one line of the report.
 type Check struct {
 	Group  string
 	Name   string
@@ -53,6 +56,7 @@ type Env struct {
 	HasKubectl func() bool
 }
 
+// DefaultEnv is the environment of this machine: its tools, the schemas and the cluster.
 func DefaultEnv(schemas fs.FS, cl *cluster.Cluster) Env {
 	return Env{
 		Cluster: cl,
@@ -194,7 +198,7 @@ func filesCheck(all []exercises.Exercise, env Env) Check {
 func modesCheck(all []exercises.Exercise, clusterReady bool) Check {
 	needs := 0
 	for _, e := range all {
-		if e.Mode != exercises.ModeManifest && !(e.Mode == exercises.ModeQuery && e.Offline) {
+		if e.Mode != exercises.ModeManifest && (e.Mode != exercises.ModeQuery || !e.Offline) {
 			needs++
 		}
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ResetCmd is the reset command: it restores one exercise.
 func ResetCmd(src fs.FS, root string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "reset <exercise name>",

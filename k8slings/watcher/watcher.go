@@ -38,7 +38,7 @@ func Watch(ctx context.Context, root string, quiet time.Duration) (<-chan []stri
 		defer close(stopped)
 		defer cancel()
 		defer close(changes)
-		defer w.Close() // nolint
+		defer func() { _ = w.Close() }()
 
 		pending := map[string]bool{}
 		// The timer only runs while there are pending changes.

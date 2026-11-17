@@ -13,6 +13,7 @@ import (
 	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
+// ErrExists is returned when the destination already exists.
 var ErrExists = errors.New("already exists")
 
 // Init writes the exercises in src to a new folder dest. It refuses to touch

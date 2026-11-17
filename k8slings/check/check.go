@@ -39,6 +39,7 @@ type File struct {
 // boolean false, so that is accepted as "off" too.
 type SchemaMode string
 
+// UnmarshalJSON reads the mode from a string or from a YAML boolean.
 func (m *SchemaMode) UnmarshalJSON(data []byte) error {
 	switch string(data) {
 	case "false":

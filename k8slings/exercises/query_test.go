@@ -109,7 +109,7 @@ func names(k *fakeKube) string {
 
 func okKube() *fakeKube {
 	k := &fakeKube{nodes: 3, readyAfter: 1}
-	k.queryFn = func(args []string, offline bool) (cluster.QueryResult, error) {
+	k.queryFn = func(_ []string, _ bool) (cluster.QueryResult, error) {
 		return cluster.QueryResult{Stdout: names(k)}, nil
 	}
 	return k
@@ -327,7 +327,7 @@ func TestVariantWaitsForItsStepsAndAlwaysTakesTheObjectsAway(t *testing.T) {
 	k := okKube()
 	k.readyAfter = 4 // pod/extra reports Running from the fourth read on
 	var readsAtVariantQuery int32
-	k.queryFn = func(args []string, _ bool) (cluster.QueryResult, error) {
+	k.queryFn = func(_ []string, _ bool) (cluster.QueryResult, error) {
 		if variantLive(k) {
 			atomic.StoreInt32(&readsAtVariantQuery, k.reads.Load())
 		}
@@ -368,7 +368,7 @@ func TestVariantIsTakenAwayWhenTheRunIsCancelled(t *testing.T) {
 	ex := queryEx(t, "names")
 	k := okKube()
 	ctx, cancel := context.WithCancel(context.Background())
-	k.queryFn = func(args []string, _ bool) (cluster.QueryResult, error) {
+	k.queryFn = func(_ []string, _ bool) (cluster.QueryResult, error) {
 		if variantLive(k) {
 			cancel() // a save in `watch` while the variant is there
 			return cluster.QueryResult{}, context.Canceled
@@ -386,7 +386,7 @@ func TestOfflineQueryChecksTheOutputAsAManifest(t *testing.T) {
 	ex := queryEx(t, "gen")
 	k := &fakeKube{nodes: 3}
 	var offline bool
-	k.queryFn = func(args []string, off bool) (cluster.QueryResult, error) {
+	k.queryFn = func(_ []string, off bool) (cluster.QueryResult, error) {
 		offline = off
 		return cluster.QueryResult{Stdout: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web\nspec:\n  replicas: 3\n  selector: {matchLabels: {app: web}}\n  template:\n    metadata: {labels: {app: web}}\n    spec:\n      containers: [{name: nginx, image: 'nginx:1.27'}]\n"}, nil
 	}
@@ -490,7 +490,7 @@ func TestTheRulesOfTheExerciseAreReportedWithTheOutput(t *testing.T) {
 func TestACommandThatBreaksARuleFailsEvenWhenItsOutputIsRight(t *testing.T) {
 	ex := queryEx(t, "names")
 	k := okKube()
-	k.queryFn = func(args []string, _ bool) (cluster.QueryResult, error) {
+	k.queryFn = func(_ []string, _ bool) (cluster.QueryResult, error) {
 		return cluster.QueryResult{Stdout: "pod/web-1\n"}, nil // the same, whatever the command
 	}
 	writeAnswer(t, ex, "kubectl logs web-1\n") // verb is not get

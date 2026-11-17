@@ -32,7 +32,7 @@ Use --dry-run to see what it would do.`,
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			res, err := workspace.Update(src, root, dryRun)
 			if err != nil {
 				color.Red("Cannot update: %v (run it from the folder with info.toml)", err)

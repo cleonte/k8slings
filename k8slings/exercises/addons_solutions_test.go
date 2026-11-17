@@ -39,18 +39,18 @@ var addonsOnce struct {
 
 // coveredHere says whether this run proves ex, and installs the add-ons first
 // when it is the add-on run.
-func coveredHere(t *testing.T, ctx context.Context, cl *cluster.Cluster, ex exercises.Exercise) bool {
+func coveredHere(ctx context.Context, t *testing.T, cl *cluster.Cluster, ex exercises.Exercise) bool {
 	t.Helper()
 	if needsAddon(ex) != addonMode() {
 		return false
 	}
 	if addonMode() {
-		installAllAddons(t, ctx, cl)
+		installAllAddons(ctx, t, cl)
 	}
 	return true
 }
 
-func installAllAddons(t *testing.T, ctx context.Context, cl *cluster.Cluster) {
+func installAllAddons(ctx context.Context, t *testing.T, cl *cluster.Cluster) {
 	t.Helper()
 	addonsOnce.Do(func() {
 		var out strings.Builder
@@ -87,8 +87,8 @@ func TestAddonsInstall(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Minute)
 	defer cancel()
-	cl := proofCluster(t, ctx)
-	installAllAddons(t, ctx, cl)
+	cl := proofCluster(ctx, t)
+	installAllAddons(ctx, t, cl)
 
 	states, err := cl.AddonStates(ctx)
 	if err != nil {

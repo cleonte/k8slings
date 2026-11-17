@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"cel.dev/cel-go/cel"
@@ -136,7 +137,7 @@ func (c *Compiled) compileStepList(list []Step, label string) ([]compiledStep, e
 		cs := compiledStep{Step: s}
 		switch {
 		case s.Rollout != "":
-			if kind, name, ok := strings.Cut(s.Rollout, "/"); !ok || name == "" || !strings.Contains("deployment statefulset daemonset", kind) {
+			if kind, name, ok := strings.Cut(s.Rollout, "/"); !ok || name == "" || !slices.Contains([]string{"deployment", "statefulset", "daemonset"}, kind) {
 				return nil, bad("rollout wants deployment/<name>, statefulset/<name> or daemonset/<name>")
 			}
 		case s.Ready != nil:
@@ -423,7 +424,7 @@ func stepReady(ctx context.Context, kube Kube, ns string, r ReadyStep) string {
 		return "Pods " + r.Selector + ": " + problem
 	}
 	items, _ := list["items"].([]any)
-	min := max(r.Min, 1)
+	minReady := max(r.Min, 1)
 	ready, notReady := 0, ""
 	for _, it := range items {
 		pod, _ := it.(map[string]any)
@@ -433,8 +434,8 @@ func stepReady(ctx context.Context, kube Kube, ns string, r ReadyStep) string {
 			notReady = fmt.Sprintf("%s (%s)", str(pod, "metadata", "name"), podProblem(pod))
 		}
 	}
-	if ready < min {
-		msg := fmt.Sprintf("%d of %d expected Pods with %s are Ready", ready, min, r.Selector)
+	if ready < minReady {
+		msg := fmt.Sprintf("%d of %d expected Pods with %s are Ready", ready, minReady, r.Selector)
 		if notReady != "" {
 			msg += "; " + notReady + " is not"
 		}

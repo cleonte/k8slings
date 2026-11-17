@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// VerifyCmd is the verify command: it runs every exercise in order.
 func VerifyCmd(infoFile string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "verify",
@@ -18,7 +19,7 @@ func VerifyCmd(infoFile string) *cobra.Command {
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			all, err := exercises.List(infoFile)
 			if err != nil {
 				return err

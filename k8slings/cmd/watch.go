@@ -19,6 +19,7 @@ import (
 // debounce is how long the watcher waits for a burst of file events to settle.
 const debounce = 150 * time.Millisecond
 
+// WatchCmd is the watch command: the full-screen or plain view.
 func WatchCmd(infoFile string) *cobra.Command {
 	var plain bool
 
@@ -36,7 +37,7 @@ again) or q (quit).`,
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			ctx, cancel := context.WithCancel(cmd.Context())
 			defer cancel()
 

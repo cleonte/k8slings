@@ -30,6 +30,12 @@ jobs:
     - name: Vet
       run: go vet ./...
 
+    - name: Lint
+      uses: golangci/golangci-lint-action@v9
+      with:
+        version: v2.15.0
+        args: --build-tags cluster
+
     - name: Test
       run: go test -v ./...
 
