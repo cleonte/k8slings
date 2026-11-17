@@ -6,11 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-17
+
+The first stable release. Every exercise of every mode (manifest, cluster, fix and query) is proven in CI on a real kind cluster, on Linux, with the offline mode also proven on Windows and macOS. From here on the exercise names, the `info.toml` format and the `.k8slings.json` progress file do not change without a migration, and `k8slings update` brings new exercises into an existing folder.
+
 ### Changed
 
 - The README has status badges: CI, release, licence and minimum Go version.
 - The header of the full-screen view says what to install when exercises are skipped only for want of an add-on: `5 skipped (run k8slings cluster addon install gateway metrics-server)`, not `(see k8slings doctor)`. It still points at doctor when the cause is something else.
 - `doctor` says, for each add-on that is not installed, which exercises it would run (`gateway not installed (runs ingress4, gatewayapi6, ...)`).
+- Development: the code is checked with golangci-lint v2 in CI (`.golangci.yml`), and the cluster proofs are spread over the five CI jobs by their measured time instead of by the hash of the name alone (`scripts/shards`), so each takes about 11 minutes.
 
 ## [0.14.1] - 2026-11-10
 
@@ -222,7 +227,8 @@ The first release: a Rustlings-style course for Kubernetes, built like [golings]
 - CI runs on Linux (Go 1.26, 1.27 and stable) and Windows, a weekly macOS smoke test, and the cluster job.
 - A weekly job opens an issue when a newer kind release or Kubernetes node image than the pinned ones is out.
 
-[Unreleased]: https://github.com/cleonte/k8slings/compare/v0.14.1...HEAD
+[Unreleased]: https://github.com/cleonte/k8slings/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/cleonte/k8slings/compare/v0.14.1...v1.0.0
 [0.14.1]: https://github.com/cleonte/k8slings/compare/v0.14.0...v0.14.1
 [0.14.0]: https://github.com/cleonte/k8slings/compare/v0.13.0...v0.14.0
 [0.13.0]: https://github.com/cleonte/k8slings/compare/v0.12.1...v0.13.0
