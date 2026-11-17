@@ -59,7 +59,7 @@ func TestCorePodsKeepsOnlyTheCoreComponents(t *testing.T) {
 }
 
 func TestVersionsAreParsedFromKubectlJSON(t *testing.T) {
-	c, f := newCluster(t, func(cmd Cmd) (string, error) {
+	c, f := newCluster(t, func(_ Cmd) (string, error) {
 		return `{"clientVersion":{"gitVersion":"v1.37.2"},"serverVersion":{"gitVersion":"v1.37.0"}}`, nil
 	})
 	if v, err := c.KubectlVersion(context.Background()); err != nil || v != "v1.37.2" {

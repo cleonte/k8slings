@@ -37,7 +37,7 @@ func recordedPass(name string) bool {
 
 // stateOf lists the objects of a namespace with their UIDs, which is what a
 // variant must give back exactly.
-func stateOf(t *testing.T, ctx context.Context, ns string, kubectl func(context.Context, ...string) (string, error)) string {
+func stateOf(ctx context.Context, t *testing.T, ns string, kubectl func(context.Context, ...string) (string, error)) string {
 	t.Helper()
 	out, err := kubectl(ctx, "get", "all,configmap,secret,serviceaccount,role,rolebinding,networkpolicy,persistentvolumeclaim,poddisruptionbudget,cronjob,job", "-n", ns,
 		"-o", `jsonpath={range .items[*]}{.kind}/{.metadata.name}={.metadata.uid}{"\n"}{end}`)
@@ -60,11 +60,11 @@ func TestQuerySolutions(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 40*time.Minute)
 	defer cancel()
 
-	cl := proofCluster(t, ctx)
+	cl := proofCluster(ctx, t)
 	solve := &exercises.Env{Embedded: k8slings.FS, Solutions: k8slings.Solutions, Validator: schema.New(k8slings.Schemas), Kube: cl}
 
 	for _, ex := range load(t) {
-		if ex.Mode != exercises.ModeQuery || !inShard(t, ex.Name) || !coveredHere(t, ctx, cl, ex) {
+		if ex.Mode != exercises.ModeQuery || !inShard(t, ex.Name) || !coveredHere(ctx, t, cl, ex) {
 			continue
 		}
 		t.Run(ex.Name, func(t *testing.T) {
@@ -152,7 +152,7 @@ func TestQuerySolutions(t *testing.T) {
 			write(ref)
 			var before string
 			if !ex.Offline {
-				before = stateOf(t, ctx, ex.Namespace(), cl.Kubectl)
+				before = stateOf(ctx, t, ex.Namespace(), cl.Kubectl)
 			}
 			start := time.Now()
 			if _, err := ex.Run(ctx, solve); err != nil {
@@ -163,7 +163,7 @@ func TestQuerySolutions(t *testing.T) {
 				t.Fatal("a passing answer must be recorded")
 			}
 			if !ex.Offline {
-				if after := stateOf(t, ctx, ex.Namespace(), cl.Kubectl); after != before {
+				if after := stateOf(ctx, t, ex.Namespace(), cl.Kubectl); after != before {
 					t.Fatalf("the variant left the namespace different:\nbefore:\n%s\nafter:\n%s", before, after)
 				}
 			}

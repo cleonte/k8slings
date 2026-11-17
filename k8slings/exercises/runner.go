@@ -137,6 +137,7 @@ type SkippedError struct{ Reason string }
 
 func (e *SkippedError) Error() string { return e.Reason }
 
+// IsSkipped reports whether err says the exercise was skipped, not failed.
 func IsSkipped(err error) bool {
 	var s *SkippedError
 	return errors.As(err, &s)
@@ -270,7 +271,7 @@ func (e Exercise) runFix(ctx context.Context, env *Env, c *check.Compiled) (Resu
 // Reseed puts a fix exercise back into its broken state, and forgets that it
 // was fixed. It is what `reset` does for exercises that have no file.
 func (e Exercise) Reseed(ctx context.Context, env *Env) error {
-	if e.Mode != ModeFix && !(e.Mode == ModeQuery && !e.Offline) {
+	if e.Mode != ModeFix && (e.Mode != ModeQuery || e.Offline) {
 		return fmt.Errorf("%s has no cluster state to put back", e.Name)
 	}
 	raw, err := fs.ReadFile(env.Embedded, e.CheckPath())

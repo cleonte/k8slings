@@ -354,11 +354,10 @@ func check(words []string, opt Options) (*Command, error) {
 		return nil, refuse("--as is only available with kubectl auth can-i.")
 	}
 
-	if verb == "create" {
-		cmd.Args = append([]string{"create"}, cmd.Positional...)
-	} else if verb == "auth can-i" {
+	switch verb {
+	case "auth can-i":
 		cmd.Args = append([]string{"auth", "can-i"}, cmd.Positional...)
-	} else {
+	default:
 		cmd.Args = append([]string{verb}, cmd.Positional...)
 	}
 	cmd.Args = append(cmd.Args, flagArgs...)

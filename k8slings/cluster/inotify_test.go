@@ -22,7 +22,7 @@ func TestInotifyAdviceMatchesTheDockerHost(t *testing.T) {
 }
 
 func TestInotifyLimitsAreReadFromAContainerOfTheNodeImage(t *testing.T) {
-	c, f := newCluster(t, func(cmd Cmd) (string, error) { return "128\n63408\n", nil })
+	c, f := newCluster(t, func(_ Cmd) (string, error) { return "128\n63408\n", nil })
 	instances, watches, err := c.InotifyLimits(context.Background())
 	if err != nil || instances != 128 || watches != 63408 {
 		t.Fatalf("got %d %d %v", instances, watches, err)

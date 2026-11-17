@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// RunCmd is the run command: it runs the next or a named exercise.
 func RunCmd(infoFile string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "run next | <exercise name>",

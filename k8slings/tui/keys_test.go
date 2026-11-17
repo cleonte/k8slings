@@ -30,8 +30,8 @@ func isQuit(cmd tea.Cmd) bool {
 }
 
 // miniModel is a model over a workspace made of the files given, with one
-// exercise "a" that is checked against `check` (schema off).
-func miniModel(t *testing.T, info string, files map[string]string, check string) *Model {
+// exercise "a" that is checked against alwaysTrue (schema off).
+func miniModel(t *testing.T, info string, files map[string]string) *Model {
 	t.Helper()
 	t.Chdir(t.TempDir())
 	if info != "" {
@@ -47,7 +47,7 @@ func miniModel(t *testing.T, info string, files map[string]string, check string)
 			t.Fatal(err)
 		}
 	}
-	embedded := fstest.MapFS{"exercises/t/a/check.yaml": {Data: []byte(check)}}
+	embedded := fstest.MapFS{"exercises/t/a/check.yaml": {Data: []byte(alwaysTrue)}}
 	m := New(Config{
 		InfoFile: "info.toml",
 		Env:      &exercises.Env{Embedded: embedded, Validator: schema.New(embedded)},
@@ -61,7 +61,7 @@ const oneExercise = "[[exercises]]\nname='a'\npath='exercises/t/a'\ntopic='t'\nm
 const alwaysTrue = "schema: \"off\"\nobjects:\n  - select: {kind: Pod}\n    assert:\n      - {expr: \"true\", message: \"never\"}\n"
 
 func TestAllDoneScreen(t *testing.T) {
-	m := miniModel(t, oneExercise, map[string]string{"exercises/t/a/exercise.yaml": "kind: Pod\n"}, alwaysTrue)
+	m := miniModel(t, oneExercise, map[string]string{"exercises/t/a/exercise.yaml": "kind: Pod\n"})
 	want(t, m, "Congratulations", "k8slings")
 	if m.status != statusAllDone {
 		t.Fatalf("status = %d", m.status)
@@ -69,15 +69,15 @@ func TestAllDoneScreen(t *testing.T) {
 }
 
 func TestNothingToRunScreen(t *testing.T) {
-	m := miniModel(t, "", nil, alwaysTrue)
+	m := miniModel(t, "", nil)
 	want(t, m, "Failed to read the exercises") // no info.toml at all
 
-	m = miniModel(t, "exercises = []\n", nil, alwaysTrue)
+	m = miniModel(t, "exercises = []\n", nil)
 	want(t, m, "There are no exercises to run")
 }
 
 func TestErrorScreenSaysWhatToDo(t *testing.T) {
-	m := miniModel(t, "", nil, alwaysTrue)
+	m := miniModel(t, "", nil)
 	want(t, m, "Failed to read the exercises", "k8slings init")
 	// The keys that need an exercise do nothing, instead of crashing.
 	for _, k := range []string{"h", "s", "r", "n", "f"} {

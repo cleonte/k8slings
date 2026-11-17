@@ -194,7 +194,7 @@ func (c *Cluster) create(ctx context.Context, o *UpOptions) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(dir)
+	defer func() { _ = os.RemoveAll(dir) }()
 	cfgFile := filepath.Join(dir, "kind.yaml")
 	if err := os.WriteFile(cfgFile, []byte(kindConfig(o.Single)), 0o600); err != nil {
 		return err

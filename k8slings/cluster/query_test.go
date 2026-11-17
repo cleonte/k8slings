@@ -14,7 +14,7 @@ func newQueryCluster(f *fakeRunner) *Cluster {
 }
 
 func TestQueryRunsKubectlWithTheOwnedKubeconfigAndSplitsTheStreams(t *testing.T) {
-	f := &fakeRunner{handle: func(c Cmd) (string, error) { return "web-1\n", nil }}
+	f := &fakeRunner{handle: func(_ Cmd) (string, error) { return "web-1\n", nil }}
 	res, err := newQueryCluster(f).Query(t.Context(), []string{"get", "pods", "--output=name"}, false)
 	if err != nil || res.Stdout != "web-1\n" || res.Stderr != "" {
 		t.Fatalf("res=%+v err=%v", res, err)

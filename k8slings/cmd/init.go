@@ -12,6 +12,7 @@ import (
 
 const defaultWorkspace = "k8slings-exercises"
 
+// InitCmd is the init command: it writes the exercises into a workspace.
 func InitCmd(src fs.FS) *cobra.Command {
 	return &cobra.Command{
 		Use:   "init [folder]",
@@ -21,7 +22,7 @@ the info.toml that k8slings needs. Use it after installing k8slings.`,
 		Args:          cobra.MaximumNArgs(1),
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			dest := defaultWorkspace
 			if len(args) == 1 {
 				dest = args[0]

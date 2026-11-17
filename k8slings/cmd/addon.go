@@ -56,7 +56,7 @@ func clusterAddonListCmd() *cobra.Command {
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			cl, err := defaultCluster()
 			if err != nil {
 				return err

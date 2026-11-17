@@ -1,0 +1,24 @@
+version: "2"
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - copyloopvar
+    - errorlint
+    - gocritic
+    - misspell
+    - nolintlint
+    - revive
+    - unconvert
+    - unparam
+  settings:
+    errcheck:
+      exclude-functions:
+        - fmt.Fprint
+        - fmt.Fprintf
+    misspell:
+      ignore-rules:
+        - contianers # the typo that the schema tests and the exercises use on purpose
+formatters:
+  enable:
+    - gofmt

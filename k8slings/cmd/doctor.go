@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// DoctorCmd is the doctor command: it checks the environment.
 func DoctorCmd(infoFile string, schemas fs.FS) *cobra.Command {
 	return &cobra.Command{
 		Use:   "doctor",
@@ -28,7 +29,7 @@ The exit code is non-zero only when something that should work is broken.`,
 		Args:          cobra.NoArgs,
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			var cl *cluster.Cluster
 			if c, err := defaultCluster(); err == nil {
 				cl = c

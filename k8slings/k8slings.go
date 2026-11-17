@@ -1,3 +1,4 @@
+// Command k8slings is the interactive Kubernetes learning tool.
 package main
 
 import (

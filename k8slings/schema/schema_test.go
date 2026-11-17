@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"errors"
 	"os"
 	"strings"
 	"testing"
@@ -78,7 +79,8 @@ func TestValidateRejectsWrongType(t *testing.T) {
 
 func TestValidateUnknownKind(t *testing.T) {
 	_, err := validator().Validate(parse(t, "apiVersion: example.com/v1\nkind: Widget\n"))
-	if _, ok := err.(ErrNoSchema); !ok {
+	var noSchema ErrNoSchema
+	if !errors.As(err, &noSchema) {
 		t.Fatalf("want ErrNoSchema, got %v", err)
 	}
 }

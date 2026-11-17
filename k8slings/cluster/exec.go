@@ -34,6 +34,7 @@ type Runner interface {
 // ExecRunner runs real programs.
 type ExecRunner struct{}
 
+// Run runs the command and waits for it to finish.
 func (ExecRunner) Run(ctx context.Context, c Cmd) error {
 	cmd := exec.CommandContext(ctx, c.Name, c.Args...)
 	cmd.Env = c.Env
@@ -41,6 +42,7 @@ func (ExecRunner) Run(ctx context.Context, c Cmd) error {
 	return cmd.Run()
 }
 
+// Has reports whether the program is on the PATH.
 func (ExecRunner) Has(name string) bool {
 	_, err := exec.LookPath(name)
 	return err == nil

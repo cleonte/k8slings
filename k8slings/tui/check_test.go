@@ -123,8 +123,8 @@ func TestCheckAllRunsAFewAtATimeAndShowsProgress(t *testing.T) {
 	_ = pumpBatch(next)
 	waitFor(t, "the next exercise to start", func() bool { return g.started.Load() > checkWorkers })
 	want(t, m, "Checking the exercises… 1/")
-	if max := g.maxActive.Load(); max > checkWorkers {
-		t.Fatalf("%d exercises ran at once, the limit is %d", max, checkWorkers)
+	if peak := g.maxActive.Load(); peak > checkWorkers {
+		t.Fatalf("%d exercises ran at once, the limit is %d", peak, checkWorkers)
 	}
 	m.stopCheck() // release the goroutines
 }

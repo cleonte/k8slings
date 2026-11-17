@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// SolutionCmd is the solution command: it shows a verified solution.
 func SolutionCmd(infoFile string, solutions fs.FS) *cobra.Command {
 	var reveal bool
 	c := &cobra.Command{
@@ -20,7 +21,7 @@ pending, so try first; use --reveal to look anyway.`,
 		Args:          cobra.ExactArgs(1),
 		SilenceUsage:  true,
 		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			ex, err := exercises.Find(args[0], infoFile)
 			if errors.Is(err, exercises.ErrExerciseNotFound) {
 				color.White("No exercise found for '%s'", args[0])

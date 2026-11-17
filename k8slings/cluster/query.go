@@ -91,7 +91,7 @@ func (c *Cluster) Query(ctx context.Context, args []string, offline bool) (Query
 		if err != nil {
 			return QueryResult{}, err
 		}
-		defer os.RemoveAll(dir)
+		defer func() { _ = os.RemoveAll(dir) }()
 		file := filepath.Join(dir, "kubeconfig")
 		if err := os.WriteFile(file, []byte(fmt.Sprintf(offlineKubeconfig, c.Context())), 0o600); err != nil {
 			return QueryResult{}, err

@@ -12,6 +12,7 @@ import (
 	"github.com/cleonte/k8slings/k8slings/exercises"
 )
 
+// View draws the current screen.
 func (m *Model) View() tea.View {
 	view := tea.NewView(m.header() + m.body())
 	view.AltScreen = true
