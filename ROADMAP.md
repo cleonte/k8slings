@@ -6,7 +6,7 @@ Counts in this file are planning numbers. Once the consistency test exists (Phas
 
 ## Where things stand
 
-Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->25<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. What is left: add-ons and their topics (Phase 5), and the release (Phase 6); troubleshooting keeps growing.
+Phases 0 to 4 are done (fix mode shipped in 0.3.0): manifest mode, cluster mode (an isolated kind cluster, declarative check steps, a runner with diagnostics, image preload), `watch`, `doctor`, CI on Linux, Windows and a real kind cluster, fix mode with its troubleshooting exercises, and the exercises of <!-- count:topics -->25<!-- /count --> topics. The first prototype (a cluster-only version with 19 exercises) has been fully migrated and removed from the tree. Phase 5 (add-ons, autoscaling, ingress and Gateway API) and Phase 6 (the release, v1.0.0) are done too; troubleshooting keeps growing.
 
 ## Facts checked while writing this design (2026-11-04)
 
@@ -192,9 +192,9 @@ Branch per add-on.
 - [x] Scheduled version-watch job (new kind release or node image): `scripts/version-watch.sh`, weekly, opens one issue when there is news.
 - [x] GoReleaser v2 config (linux, windows, darwin; amd64, arm64), release workflow on `v*` tags using the CHANGELOG section as release notes, `scripts/release-notes.sh`. Verified with a local snapshot build: all six targets, the archives, and the stamped version.
 - [x] README with install, requirements, quick start for offline-only and for cluster, the modes explained, demo GIFs; CONTRIBUTING finalized (releasing); issue templates in place.
-- [ ] Homebrew tap (optional; decide at the time).
+- [x] Homebrew tap (a cask, `brew install cleonte/tap/k8slings`; GoReleaser updates it on every release).
 - [x] `k8slings update`: bring new exercises of a newer release into an existing folder.
-- [ ] Docs consistency test green; every exercise proven in CI; v1.0.0 tag.
+- [x] Docs consistency test green; every exercise proven in CI; v1.0.0 tag.
 
 ## Decided
 
