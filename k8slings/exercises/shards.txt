@@ -1,0 +1,22 @@
+# The shard of the slowest exercises, for 5 shards. Written by scripts/shards (see its header);
+# every exercise that is not here goes to crc32(name) mod 5. Format: name shard.
+capstone2 4
+lifecycle2 1
+troubleshooting1 0
+troubleshooting10 3
+troubleshooting11 2
+troubleshooting12 3
+troubleshooting13 1
+troubleshooting14 0
+troubleshooting16 4
+troubleshooting17 3
+troubleshooting18 0
+troubleshooting19 2
+troubleshooting2 2
+troubleshooting20 1
+troubleshooting4 3
+troubleshooting5 4
+troubleshooting6 4
+troubleshooting7 0
+troubleshooting8 2
+troubleshooting9 1

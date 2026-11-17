@@ -12,7 +12,9 @@ import (
 // inShard splits the proofs of one test across CI jobs, each with its own
 // cluster. K8SLINGS_SHARD="i/n" (i from 0) runs the exercises whose name hashes
 // to i; unset runs all of them. The split is by name, so it does not move when
-// exercises are added. (It was every n-th exercise by position, and the four
+// exercises are added, except for the slowest ones, which shards.txt places by
+// hand so that the shards take about as long as each other (scripts/shards writes
+// it from the log of a CI run). (It was every n-th exercise by position, and the four
 // slowest fix exercises were all at multiples of five, so one shard took 14 minutes
 // against 8 to 10 for the others.)
 func inShard(t *testing.T, name string) bool {
@@ -24,6 +26,11 @@ func inShard(t *testing.T, name string) bool {
 	var i, n int
 	if _, err := fmt.Sscanf(spec, "%d/%d", &i, &n); err != nil || n < 1 || i < 0 || i >= n {
 		t.Fatalf("K8SLINGS_SHARD=%q: want i/n with 0 <= i < n", spec)
+	}
+	if n == shardCount {
+		if s, ok := pinnedShards(t)[name]; ok {
+			return s == i
+		}
 	}
 	return int(crc32.ChecksumIEEE([]byte(name))%uint32(n)) == i
 }
