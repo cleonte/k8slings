@@ -1,5 +1,7 @@
 # k8slings
 
+[![CI](https://github.com/cleonte/k8slings/actions/workflows/test.yml/badge.svg)](https://github.com/cleonte/k8slings/actions/workflows/test.yml) [![Release](https://img.shields.io/github/v/release/cleonte/k8slings)](https://github.com/cleonte/k8slings/releases/latest) [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE) [![Go](https://img.shields.io/badge/go-%E2%89%A51.26-00ADD8.svg)](go.mod)
+
 Learn Kubernetes by fixing small broken manifests, in the spirit of [rustlings](https://github.com/rust-lang/rustlings) and [golings](https://github.com/cleonte/golings).
 
 You get <!-- count:exercises -->145<!-- /count --> exercises in <!-- count:topics -->25<!-- /count --> topics. Most of them need nothing but this program: your YAML is checked offline. Some run against a local cluster that k8slings creates for you, and check what really happens, and some break that cluster for you to repair.
