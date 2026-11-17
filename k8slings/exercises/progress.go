@@ -19,7 +19,7 @@ type Availability struct {
 // SkipReason says why the exercise cannot run on this machine, or is empty if
 // it can. Manifest exercises always run.
 func (e Exercise) SkipReason(av Availability) string {
-	_, _, reason := e.skip(av)
+	_, reason := e.skip(av)
 	return reason
 }
 
@@ -29,25 +29,25 @@ func (e Exercise) SkipReason(av Availability) string {
 // answer to "what do I install to run it?". Nil when the cause is something
 // else, or nothing.
 func (e Exercise) MissingAddons(av Availability) []string {
-	missing, _, _ := e.skip(av)
+	missing, _ := e.skip(av)
 	return missing
 }
 
 // skip is SkipReason and MissingAddons in one place, so they cannot disagree.
-func (e Exercise) skip(av Availability) (missing []string, unknown bool, reason string) {
+func (e Exercise) skip(av Availability) (missing []string, reason string) {
 	switch e.Mode {
 	case ModeCluster, ModeFix:
 		if !av.Cluster {
-			return nil, false, "needs the cluster: run `k8slings cluster up`"
+			return nil, "needs the cluster: run `k8slings cluster up`"
 		}
 	case ModeQuery:
 		if !e.Offline && !av.Cluster {
-			return nil, false, "needs the cluster: run `k8slings cluster up`"
+			return nil, "needs the cluster: run `k8slings cluster up`"
 		}
 	}
 	for _, need := range e.Requires {
 		if need == "multinode" && av.Nodes < 3 {
-			return nil, false, "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
+			return nil, "needs several nodes: run `k8slings cluster down`, then `k8slings cluster up` without --single"
 		}
 	}
 	var unknownName string
@@ -67,11 +67,11 @@ func (e Exercise) skip(av Availability) (missing []string, unknown bool, reason 
 	}
 	switch {
 	case len(missing) > 0:
-		return missing, false, fmt.Sprintf("needs the %s add-on: run `k8slings cluster addon install %s`", missing[0], strings.Join(missing, " "))
+		return missing, fmt.Sprintf("needs the %s add-on: run `k8slings cluster addon install %s`", missing[0], strings.Join(missing, " "))
 	case unknownName != "":
-		return nil, true, fmt.Sprintf("needs the %s add-on, which is not available yet", unknownName)
+		return nil, fmt.Sprintf("needs the %s add-on, which is not available yet", unknownName)
 	}
-	return nil, false, ""
+	return nil, ""
 }
 
 // Progress counts the exercises that are done and the exercises there are.
