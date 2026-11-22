@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- Development: CodeQL scans the Go code and the workflows on every pull request, on `main` and weekly (`codeql.yml`).
+
 ## [1.0.0] - 2026-11-17
 
 The first stable release. Every exercise of every mode (manifest, cluster, fix and query) is proven in CI on a real kind cluster, on Linux, with the offline mode also proven on Windows and macOS. From here on the exercise names, the `info.toml` format and the `.k8slings.json` progress file do not change without a migration, and `k8slings update` brings new exercises into an existing folder.
