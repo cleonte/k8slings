@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/cleonte/lingscore/style"
+	"github.com/cleonte/lingscore/tui/jumplist"
 
-	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
@@ -101,7 +101,7 @@ type Model struct {
 	// pinned is the exercise picked from the list. It is the one that runs
 	// until n moves on, instead of the first pending one.
 	pinned string
-	list   list.Model
+	list   jumplist.List
 
 	// Checking every exercise (the c key). Like runs, the results of a check
 	// that was cancelled carry an older id and are ignored.
