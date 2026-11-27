@@ -13,9 +13,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cleonte/lingscore/style"
+
 	"charm.land/bubbles/v2/list"
 	tea "charm.land/bubbletea/v2"
-	"charm.land/lipgloss/v2"
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/cleonte/k8slings/k8slings/exercises"
 	"github.com/cleonte/k8slings/k8slings/workspace"
@@ -549,11 +550,11 @@ func (m *Model) waitForChanges() tea.Cmd {
 }
 
 var (
-	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("6"))
-	dimStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
-	okStyle     = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("2"))
-	warnStyle   = lipgloss.NewStyle().Foreground(lipgloss.Color("3"))
-	errStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+	titleStyle  = style.Title
+	dimStyle    = style.Dim
+	okStyle     = style.OK
+	warnStyle   = style.Warn
+	errStyle    = style.Err
 	headerLines = 3 // title, exercise, rule
 	footerLines = 1
 )
