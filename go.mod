@@ -4,10 +4,9 @@ go 1.26.0
 
 require (
 	cel.dev/cel-go v0.33.2
-	charm.land/bubbles/v2 v2.2.1
 	charm.land/bubbletea/v2 v2.1.1
 	charm.land/lipgloss/v2 v2.0.6
-	github.com/cleonte/lingscore v0.4.1
+	github.com/cleonte/lingscore v0.5.0
 	github.com/fatih/color v1.19.0
 	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
@@ -18,6 +17,7 @@ require (
 
 require (
 	cel.dev/expr v0.25.1 // indirect
+	charm.land/bubbles/v2 v2.2.1 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
