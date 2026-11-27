@@ -12,6 +12,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/cleonte/lingscore/marker"
+
 	"github.com/cleonte/k8slings/k8slings/cluster"
 	"github.com/pelletier/go-toml/v2"
 )
@@ -45,7 +47,7 @@ const (
 	VariantFile = "setup-variant.yaml"
 )
 
-var notDoneRegex = regexp.MustCompile(`(?m)^\s*#\s*I\s+AM\s+NOT\s+DONE`)
+var notDoneRegex = marker.Hash
 
 // Exercise is one entry of info.toml.
 type Exercise struct {
@@ -69,7 +71,7 @@ type Exercise struct {
 // The errors that the lookup and the marker handling report.
 var (
 	ErrExerciseNotFound = errors.New("exercise not found")
-	ErrNotMarked        = errors.New("the exercise has no 'I AM NOT DONE' marker")
+	ErrNotMarked        = marker.ErrNotMarked
 	ErrNoPending        = errors.New("no pending exercises: you are done")
 )
 
@@ -279,11 +281,7 @@ func (e Exercise) State() State {
 
 // MarkerGone reports whether the exercise file exists without the marker line.
 func (e Exercise) MarkerGone() bool {
-	if e.Mode == ModeFix {
-		return false
-	}
-	data, err := os.ReadFile(e.File())
-	return err == nil && !notDoneRegex.Match(data)
+	return e.Mode != ModeFix && marker.Gone(e.File(), notDoneRegex)
 }
 
 // MarkDone removes the marker line, which is what a learner does by hand.
@@ -291,26 +289,5 @@ func (e Exercise) MarkDone() error {
 	if e.Mode == ModeFix {
 		return nil // a fix exercise is done when its check passes, which records it
 	}
-	info, err := os.Stat(e.File())
-	if err != nil {
-		return err
-	}
-	data, err := os.ReadFile(e.File())
-	if err != nil {
-		return err
-	}
-	lines := strings.SplitAfter(string(data), "\n")
-	kept := make([]string, 0, len(lines))
-	removed := false
-	for _, line := range lines {
-		if notDoneRegex.MatchString(line) {
-			removed = true
-			continue
-		}
-		kept = append(kept, line)
-	}
-	if !removed {
-		return ErrNotMarked
-	}
-	return os.WriteFile(e.File(), []byte(strings.Join(kept, "")), info.Mode().Perm())
+	return marker.Remove(e.File(), notDoneRegex)
 }
