@@ -10,11 +10,18 @@ import (
 	"time"
 
 	"github.com/cleonte/k8slings/k8slings/exercises"
-	"github.com/cleonte/k8slings/k8slings/watcher"
+	"github.com/cleonte/lingscore/watcher"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"golang.org/x/term"
 )
+
+// isExerciseFile is true for the files a learner edits, leaving out editor
+// backups and temporary files.
+func isExerciseFile(name string) bool {
+	base := filepath.Base(name)
+	return watcher.SkipEditorFiles(name) && (strings.HasSuffix(base, ".yaml") || strings.HasSuffix(base, ".yml") || strings.HasSuffix(base, ".kubectl"))
+}
 
 // debounce is how long the watcher waits for a burst of file events to settle.
 const debounce = 150 * time.Millisecond
@@ -42,7 +49,7 @@ again) or q (quit).`,
 			defer cancel()
 
 			root := filepath.Join(filepath.Dir(infoFile), "exercises")
-			changes, err := watcher.Watch(ctx, root, debounce)
+			changes, err := watcher.Watch(ctx, root, debounce, isExerciseFile)
 			if err != nil {
 				color.Red("Can't watch %s: %s", root, err)
 				color.Yellow("Run k8slings from the folder that holds the exercises, or create one with `k8slings init`.")
