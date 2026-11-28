@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+
+- The full-screen `watch` tells the terminal how to restart it (the Program Resume Protocol, OSC 7577; Bubble Tea 2.2.0), so a terminal that supports it, such as Rex, brings `k8slings watch` back, in the same folder, after the terminal restarts. Your progress is on disk, so nothing else is needed. Other terminals ignore it.
+
 ## [1.0.1] - 2026-11-28
 
 ### Changed
