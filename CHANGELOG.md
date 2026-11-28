@@ -6,8 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-28
+
 ### Changed
 
+- The watcher, the exercise marker, the progress file, the `update` helpers and the list of exercises in the full-screen view now come from the shared [lingscore](https://github.com/cleonte/lingscore) module, which golings and tflings use too, so the three look and behave the same. No change for learners: `.k8slings.json` keeps its format.
+- Dependencies: cel-go 0.33.4, bubbletea 2.1.2, lipgloss 2.1.1 and x/term 0.48.0.
 - Development: CodeQL scans the Go code and the workflows on every pull request, on `main` and weekly (`codeql.yml`).
 
 ## [1.0.0] - 2026-11-17
