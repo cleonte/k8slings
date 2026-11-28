@@ -10,12 +10,14 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 	"github.com/cleonte/k8slings/k8slings/exercises"
+	"github.com/cleonte/lingscore/tui/resume"
 )
 
 // View draws the current screen.
 func (m *Model) View() tea.View {
 	view := tea.NewView(m.header() + m.body())
 	view.AltScreen = true
+	resume.Set(&view)
 	view.WindowTitle = "k8slings"
 	return view
 }
