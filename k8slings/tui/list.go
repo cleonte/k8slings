@@ -36,7 +36,7 @@ func (m *Model) listKey(msg tea.KeyPressMsg) (tea.Model, tea.Cmd) {
 	switch action {
 	case jumplist.Quit:
 		m.stopRun()
-		m.stopCheck()
+		m.check.Stop()
 		return m, tea.Quit
 	case jumplist.Back:
 		m.mode = modeResult

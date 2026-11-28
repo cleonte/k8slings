@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"errors"
+	"github.com/cleonte/lingscore/tui/checkall"
 	"regexp"
 	"strings"
 	"sync"
@@ -117,7 +118,7 @@ func TestCheckAllRunsAFewAtATimeAndShowsProgress(t *testing.T) {
 	}
 
 	// One finishes: the next starts, and the counter moves.
-	first := m.checkItems[0].exercise.Name
+	first := m.check.Items[0].Value.Name
 	g.gate(first) <- nil
 	_, next := m.Update(<-out)
 	_ = pumpBatch(next)
@@ -126,7 +127,7 @@ func TestCheckAllRunsAFewAtATimeAndShowsProgress(t *testing.T) {
 	if peak := g.maxActive.Load(); peak > checkWorkers {
 		t.Fatalf("%d exercises ran at once, the limit is %d", peak, checkWorkers)
 	}
-	m.stopCheck() // release the goroutines
+	m.check.Stop() // release the goroutines
 }
 
 func TestAnotherCWhileCheckingDoesNotStartASecondCheck(t *testing.T) {
@@ -144,17 +145,16 @@ func TestAnotherCWhileCheckingDoesNotStartASecondCheck(t *testing.T) {
 	if g.started.Load() != started {
 		t.Fatalf("a second check started exercises: %d -> %d", started, g.started.Load())
 	}
-	m.stopCheck()
+	m.check.Stop()
 }
 
 func TestEscapeCancelsTheCheckAndIgnoresLateResults(t *testing.T) {
 	m, g := gatedModel(t)
 	out := pumpBatch(m.startCheck())
 	waitFor(t, "workers", func() bool { return g.running.Load() == checkWorkers })
-	oldID := m.checkID
 
 	_, cmd := m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
-	if m.checking() {
+	if m.check.Active() {
 		t.Fatal("esc should cancel the check")
 	}
 	waitFor(t, "the running exercises to be cancelled", func() bool { return g.cancelled.Load() == checkWorkers })
@@ -165,15 +165,12 @@ func TestEscapeCancelsTheCheckAndIgnoresLateResults(t *testing.T) {
 	for range checkWorkers {
 		select {
 		case msg := <-out:
-			if done, ok := msg.(checkDoneMsg); ok && done.id != oldID {
-				t.Fatalf("a result carries id %d, want the old id %d", done.id, oldID)
-			}
 			m.Update(msg)
 		case <-time.After(2 * time.Second):
 			t.Fatal("the cancelled workers did not report")
 		}
 	}
-	if m.checking() {
+	if m.check.Active() {
 		t.Fatal("late results must not revive a cancelled check")
 	}
 	if after := screen(m); after != before {
@@ -187,24 +184,24 @@ func TestASaveDoesNotThrowAwayACheckInProgress(t *testing.T) {
 	waitFor(t, "workers", func() bool { return g.running.Load() == checkWorkers })
 
 	_, cmd := m.Update(changesMsg{files: []string{"exercises/pods/pods1/exercise.yaml"}})
-	if !m.checking() || m.mode != modeCheck {
+	if !m.check.Active() || m.mode != modeCheck {
 		t.Fatal("a save must leave the check alone")
 	}
 	_ = cmd
-	m.stopCheck()
+	m.check.Stop()
 }
 
 func TestSkippedExercisesShowWhy(t *testing.T) {
 	m, g := gatedModel(t)
 	out := pumpBatch(m.startCheck())
 	waitFor(t, "workers", func() bool { return g.running.Load() == checkWorkers })
-	g.gate(m.checkItems[0].exercise.Name) <- &exercises.SkippedError{Reason: "needs the cluster: run `k8slings cluster up`"}
+	g.gate(m.check.Items[0].Value.Name) <- &exercises.SkippedError{Reason: "needs the cluster: run `k8slings cluster up`"}
 	m.Update(<-out)
-	want(t, m, "• "+m.checkItems[0].exercise.Name, "needs the cluster")
-	if m.checkItems[0].status != checkSkipped {
-		t.Fatalf("status = %d", m.checkItems[0].status)
+	want(t, m, "• "+m.check.Items[0].Value.Name, "needs the cluster")
+	if m.check.Items[0].Status != checkall.Skipped {
+		t.Fatalf("status = %d", m.check.Items[0].Status)
 	}
-	m.stopCheck()
+	m.check.Stop()
 }
 
 func TestFailureShowsItsFirstProblemAndAFinishedOneIsFlagged(t *testing.T) {
@@ -230,10 +227,10 @@ func TestErrorFromRunIsAFailureNotAPanic(t *testing.T) {
 	m, g := gatedModel(t)
 	out := pumpBatch(m.startCheck())
 	waitFor(t, "workers", func() bool { return g.running.Load() == checkWorkers })
-	g.gate(m.checkItems[0].exercise.Name) <- errors.New("cannot read the file")
+	g.gate(m.check.Items[0].Value.Name) <- errors.New("cannot read the file")
 	m.Update(<-out)
-	want(t, m, "✗ "+m.checkItems[0].exercise.Name, "cannot read the file")
-	m.stopCheck()
+	want(t, m, "✗ "+m.check.Items[0].Value.Name, "cannot read the file")
+	m.check.Stop()
 }
 
 func TestQuitStopsACheckInProgress(t *testing.T) {

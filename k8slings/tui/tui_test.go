@@ -200,7 +200,7 @@ func TestCheckAll(t *testing.T) {
 	solve(t, "pods2", false) // done and working
 	press(t, m, "c")
 	want(t, m, "Checked ", "✔ pods2", "✗ pods1")
-	if m.checking() {
+	if m.check.Active() {
 		t.Fatal("the check should be over")
 	}
 	press(t, m, "esc")
