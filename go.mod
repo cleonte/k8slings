@@ -6,7 +6,7 @@ require (
 	cel.dev/cel-go v0.33.4
 	charm.land/bubbletea/v2 v2.2.0
 	charm.land/lipgloss/v2 v2.1.1
-	github.com/cleonte/lingscore v0.6.0
+	github.com/cleonte/lingscore v0.7.0
 	github.com/fatih/color v1.19.0
 	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
